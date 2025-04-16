@@ -12,7 +12,10 @@ export enum WorkflowCategory {
   LeadQualification = "Lead Qualification",
   LeadEnrichment = "Lead Enrichment",
   AIPersonalization = "AI Personalization",
-  RepliesAndFollowups = "Replies & Follow-ups"
+  RepliesAndFollowups = "Replies & Follow-ups",
+  CampaignManagement = "Campaign Management",
+  DataIntegration = "Data Integration",
+  AnalyticsReporting = "Analytics & Reporting"
 }
 
 export interface WorkflowParameter {

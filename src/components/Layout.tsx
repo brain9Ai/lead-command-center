@@ -2,18 +2,22 @@ import React, { ReactNode } from 'react';
 import { Flex, Box } from '@chakra-ui/react';
 import Header from './Header';
 import Sidebar from './Sidebar';
-import { WorkflowCategory } from '../types/workflows';
+
+// Make the CategoryFilter more flexible
+type CategoryFilter = string;
 
 interface LayoutProps {
   children: ReactNode;
-  activeCategory: WorkflowCategory | 'all';
-  onCategoryChange: (category: WorkflowCategory | 'all') => void;
+  activeCategory?: CategoryFilter;
+  onCategoryChange?: (category: CategoryFilter) => void;
+  isExecutionManagerActive?: boolean;
 }
 
 const Layout: React.FC<LayoutProps> = ({ 
   children, 
-  activeCategory, 
-  onCategoryChange 
+  activeCategory = 'all', 
+  onCategoryChange = () => {}, 
+  isExecutionManagerActive = false
 }) => {
   return (
     <Flex h="100vh">
@@ -21,6 +25,7 @@ const Layout: React.FC<LayoutProps> = ({
       <Sidebar 
         activeCategory={activeCategory} 
         onCategoryChange={onCategoryChange} 
+        isExecutionManagerActive={isExecutionManagerActive}
       />
       
       {/* Main content area */}

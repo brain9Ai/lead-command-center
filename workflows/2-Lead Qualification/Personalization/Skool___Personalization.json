@@ -1,0 +1,1939 @@
+{
+  "name": "Skool | Personalization",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appJhNlGK8yWq6XQr",
+          "mode": "list",
+          "cachedResultName": "EffiSys | Leads",
+          "cachedResultUrl": "https://airtable.com/appJhNlGK8yWq6XQr"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblFJtYun0KM3Pq1r",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://airtable.com/appJhNlGK8yWq6XQr/tblFJtYun0KM3Pq1r"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Start Lead Enrichment": false,
+            "id": "={{ $('Pull Lead From Airtable').first().json.id }}",
+            "Lead Status": "Cold",
+            "Company Website Scrape": "={{ $('Fuse Input Into 1 Item').item.json.source1 }}",
+            "LinkedIn Personal": "=",
+            "LinkedIn Company": "={{ $('Fuse Input Into 1 Item').item.json.source2 }}",
+            "Summary": "={{ $('Fuse Input Into 1 Item2').item.json.plainText }}",
+            "Posts": "=",
+            "Personalization": "={{ $('Write Personalization - Fill Template').item.json.output.Personalization }}",
+            "Clean Company Name": "={{ $('Clean Company Name').item.json.message.content }}",
+            "Date Lead Enriched": "={{ new Date().toISOString().split('T')[0] }}",
+            "Product/Service": "={{ $('Summarize Input').item.json.message.content['Product/Service'] }}",
+            "Type of Company": "={{ $('Summarize Input').item.json.message.content['Type of Company'] }}",
+            "Instantly Camp. ID": "991e31fe-a0dd-489f-bf75-5fb93032677e"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Start Lead Enrichment",
+              "displayName": "Start Lead Enrichment",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Lead Status",
+              "displayName": "Lead Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Lead Yet to be Enriched",
+                  "value": "Lead Yet to be Enriched"
+                },
+                {
+                  "name": "Cold",
+                  "value": "Cold"
+                },
+                {
+                  "name": "Interested - RtS",
+                  "value": "Interested - RtS"
+                },
+                {
+                  "name": "Interested - MiN",
+                  "value": "Interested - MiN"
+                },
+                {
+                  "name": "Interested - CN",
+                  "value": "Interested - CN"
+                },
+                {
+                  "name": "Interested - FUL",
+                  "value": "Interested - FUL"
+                },
+                {
+                  "name": "Wrong Person - R",
+                  "value": "Wrong Person - R"
+                },
+                {
+                  "name": "Not Interested - NI",
+                  "value": "Not Interested - NI"
+                },
+                {
+                  "name": "Not Interested - NB",
+                  "value": "Not Interested - NB"
+                },
+                {
+                  "name": "Not Interested - AUS",
+                  "value": "Not Interested - AUS"
+                },
+                {
+                  "name": "Meeting Booked",
+                  "value": "Meeting Booked"
+                },
+                {
+                  "name": "No Show",
+                  "value": "No Show"
+                },
+                {
+                  "name": "Awaiting Proposal",
+                  "value": "Awaiting Proposal"
+                },
+                {
+                  "name": "Proposal Sent",
+                  "value": "Proposal Sent"
+                },
+                {
+                  "name": "Closed",
+                  "value": "Closed"
+                },
+                {
+                  "name": "Lost - U/DNC",
+                  "value": "Lost - U/DNC"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email Address",
+              "displayName": "Email Address",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Time At Company",
+              "displayName": "Time At Company",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Clean Company Name",
+              "displayName": "Clean Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Industry",
+              "displayName": "Industry",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Location",
+              "displayName": "Location",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn URL",
+              "displayName": "LinkedIn URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn Organization URL",
+              "displayName": "LinkedIn Organization URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Crunchbase URL",
+              "displayName": "Crunchbase URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company Website",
+              "displayName": "Company Website",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Meeting Date",
+              "displayName": "Meeting Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Google Meet URL",
+              "displayName": "Google Meet URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn Personal",
+              "displayName": "LinkedIn Personal",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn Company",
+              "displayName": "LinkedIn Company",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company Website Scrape",
+              "displayName": "Company Website Scrape",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Summary",
+              "displayName": "Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Posts",
+              "displayName": "Posts",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Personalization",
+              "displayName": "Personalization",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Instantly Camp. ID",
+              "displayName": "Instantly Camp. ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Date Lead Enriched",
+              "displayName": "Date Lead Enriched",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Type of Company",
+              "displayName": "Type of Company",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Product/Service",
+              "displayName": "Product/Service",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "aa769cab-b8b1-466f-9898-9b3bac543e6b",
+      "name": "Airtable",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        2080,
+        900
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "JtCSqEgmEXLGgj8l",
+          "name": "Clarence | Airtable Personal Access Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.instantly.ai/api/v1/lead/add",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"api_key\": \"CgwfRotQoCbxKVC1ABR4lDVrjwsBz\",\n  \"campaign_id\": \"991e31fe-a0dd-489f-bf75-5fb93032677e\",\n  \"skip_if_in_workspace\": false,\n  \"skip_if_in_campaign\": true,\n  \"leads\": [\n    {\n      \"email\": \"{{ $('Pull Lead From Airtable').first().json['Email Address'] }}\",\n      \"first_name\": \"{{ $('Pull Lead From Airtable').first().json['First Name'] }}\",\n      \"last_name\": \"{{ $('Pull Lead From Airtable').first().json['Full Name'].split(' ').slice(-1)[0] }}\",\n      \"company_name\": \"{{ $('Clean Company Name').item.json.message.content }}\",\n      \"personalization\": \"{{ $('Write Personalization - Fill Template').item.json.output.Personalization }}\",\n      \"phone\": \"\",\n      \"website\": \"{{ $('Pull Lead From Airtable').first().json['Company Website'] }}\",\n      \"custom_variables\": {\n        \"Type_of_Company\": \"{{ $('Summarize Input').item.json.message.content['Type of Company'] }}\",\n        \"Location\": \"{{ $('Pull Lead From Airtable').first().json['Location'].split(',')[1].trim() }}\",\n        \"Product/Service\": \"{{ $('Summarize Input').item.json.message.content['Summarized Product/Service'] }}\"\n      }\n    }\n  ]\n}\n",
+        "options": {}
+      },
+      "id": "f76d3f84-9665-4375-890f-720c6f2511f1",
+      "name": "Update Lead to Instantly",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2080,
+        1080
+      ]
+    },
+    {
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "value": "appJhNlGK8yWq6XQr",
+          "mode": "list",
+          "cachedResultName": "EffiSys | Leads",
+          "cachedResultUrl": "https://airtable.com/appJhNlGK8yWq6XQr"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblFJtYun0KM3Pq1r",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://airtable.com/appJhNlGK8yWq6XQr/tblFJtYun0KM3Pq1r"
+        },
+        "id": "={{ $json.query.recordId }}",
+        "options": {}
+      },
+      "id": "a65f5195-e034-41bb-bdbe-2e43b3887e91",
+      "name": "Pull Lead From Airtable",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        840,
+        120
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "JtCSqEgmEXLGgj8l",
+          "name": "Clarence | Airtable Personal Access Token"
+        }
+      },
+      "notes": "{{ $json.query.recordId }}"
+    },
+    {
+      "parameters": {
+        "url": "={{(() => {\n  const website = $('Pull Lead From Airtable').item.json['Company Website'];\n  const email = $('Pull Lead From Airtable').item.json['Email Address'];\n  // If 'Company Website' is empty, derive from 'Email Address'\n  return website || `https://${email.split('@')[1]}`;\n})()}}\n",
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "id": "b703f4b0-6a08-4afb-b573-ea7dbd9eb207",
+      "name": "Get Company Website",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1260,
+        500
+      ],
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput",
+      "notes": "https://{{ $json[\"Email Address\"].split('@')[1] }}"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json['LinkedIn Organization URL'] }}",
+        "options": {}
+      },
+      "id": "ee0c8dd5-7dec-4c74-ae94-984b145122c5",
+      "name": "LinkedIn Company Scraper",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        820,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const htmlContent = $node[\"LinkedIn Company Scraper\"].json[\"data\"]; // Replace this with the field containing your HTML content\n\n// Function to strip HTML tags and clean the text\nconst extractPlainText = (html) => {\n    if (!html) return \"\";\n\n    // Remove script and style tags along with their content\n    const withoutScriptsAndStyles = html.replace(/<script[\\s\\S]*?>[\\s\\S]*?<\\/script>/gi, \"\")\n                                        .replace(/<style[\\s\\S]*?>[\\s\\S]*?<\\/style>/gi, \"\");\n\n    // Remove all remaining HTML tags\n    const strippedText = withoutScriptsAndStyles.replace(/<\\/?[^>]+(>|$)/g, \"\");\n\n    // Replace HTML entities with their plain-text equivalents\n    const decodedText = strippedText.replace(/&nbsp;/gi, \" \")\n                                    .replace(/&amp;/gi, \"&\")\n                                    .replace(/&lt;/gi, \"<\")\n                                    .replace(/&gt;/gi, \">\")\n                                    .replace(/&quot;/gi, \"\\\"\")\n                                    .replace(/&#39;/gi, \"'\");\n\n    // Replace multiple spaces, tabs, and newlines with a single space\n    const cleanedText = decodedText.replace(/\\s+/g, \" \").trim();\n\n    return cleanedText;\n};\n\n// Call the function to process the HTML content\nconst plainText = extractPlainText(htmlContent);\n\n// Return the plain text as the output of this node\nreturn {\n    plainText: plainText,\n};\n\n"
+      },
+      "id": "1105a3a6-13be-422f-bcf0-4dfbdfb5113d",
+      "name": "Remove HTML LinkedIn Page",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const htmlContent = $node[\"Get Company Website\"].json[\"data\"]; // Replace this with the field containing your HTML content\n\n// Function to strip HTML tags and clean the text\nconst extractPlainText = (html) => {\n    if (!html) return \"\";\n\n    // Remove script and style tags along with their content\n    const withoutScriptsAndStyles = html.replace(/<script[\\s\\S]*?>[\\s\\S]*?<\\/script>/gi, \"\")\n                                        .replace(/<style[\\s\\S]*?>[\\s\\S]*?<\\/style>/gi, \"\");\n\n    // Remove all remaining HTML tags\n    const strippedText = withoutScriptsAndStyles.replace(/<\\/?[^>]+(>|$)/g, \"\");\n\n    // Replace HTML entities with their plain-text equivalents\n    const decodedText = strippedText.replace(/&nbsp;/gi, \" \")\n                                    .replace(/&amp;/gi, \"&\")\n                                    .replace(/&lt;/gi, \"<\")\n                                    .replace(/&gt;/gi, \">\")\n                                    .replace(/&quot;/gi, \"\\\"\")\n                                    .replace(/&#39;/gi, \"'\");\n\n    // Replace multiple spaces, tabs, and newlines with a single space\n    const cleanedText = decodedText.replace(/\\s+/g, \" \").trim();\n\n    return cleanedText;\n};\n\n// Call the function to process the HTML content\nconst plainText = extractPlainText(htmlContent);\n\n// Return the plain text as the output of this node\nreturn {\n    plainText: plainText,\n};\n\n"
+      },
+      "id": "43828083-e064-4396-bd3c-ec3891cf05d5",
+      "name": "Remove HTML Website",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1480,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Collect all the incoming data\nconst input1 = $node[\"Analyze Company Website - Check if Direct Competitor\"].json.message.content; // Extract the 'content' field\nconst input2 = $node[\"Fuse Input Into 1 Item1\"].json.plainText; // Access the 'plainText' field from the JSON output\n\n// Merge the inputs into one item\nreturn [\n  {\n    json: {\n      combinedText: `${input1}\\n\\n${input2}`, // Combine the content fields with line breaks\n      source1: input1, // Include full details from input 1\n      source2: input2, // Include full details from input 2\n    },\n  },\n];\n"
+      },
+      "id": "cf9b65ac-4619-487a-abc6-c102c266f725",
+      "name": "Fuse Input Into 1 Item",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2080,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appJhNlGK8yWq6XQr",
+          "mode": "list",
+          "cachedResultName": "EffiSys | Leads",
+          "cachedResultUrl": "https://airtable.com/appJhNlGK8yWq6XQr"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblFJtYun0KM3Pq1r",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://airtable.com/appJhNlGK8yWq6XQr/tblFJtYun0KM3Pq1r"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Start Lead Enrichment": false,
+            "id": "={{ $('Pull Lead From Airtable').item.json.id }}",
+            "Lead Status": "Lost - U/DNC",
+            "Google Meet URL": "B2C",
+            "Meeting Date": "B2C",
+            "LinkedIn Personal": "B2C",
+            "LinkedIn Company": "B2C",
+            "Company Website Scrape": "B2C",
+            "Summary": "B2C",
+            "Posts": "B2C",
+            "Personalization": "B2C"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Start Lead Enrichment",
+              "displayName": "Start Lead Enrichment",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Lead Status",
+              "displayName": "Lead Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Lead Yet to be Enriched",
+                  "value": "Lead Yet to be Enriched"
+                },
+                {
+                  "name": "Cold",
+                  "value": "Cold"
+                },
+                {
+                  "name": "Interested - RtS",
+                  "value": "Interested - RtS"
+                },
+                {
+                  "name": "Interested - MiN",
+                  "value": "Interested - MiN"
+                },
+                {
+                  "name": "Interested - CN",
+                  "value": "Interested - CN"
+                },
+                {
+                  "name": "Interested - FUL",
+                  "value": "Interested - FUL"
+                },
+                {
+                  "name": "Wrong Person - R",
+                  "value": "Wrong Person - R"
+                },
+                {
+                  "name": "Not Interested - NI",
+                  "value": "Not Interested - NI"
+                },
+                {
+                  "name": "Not Interested - NB",
+                  "value": "Not Interested - NB"
+                },
+                {
+                  "name": "Not Interested - AUS",
+                  "value": "Not Interested - AUS"
+                },
+                {
+                  "name": "Meeting Booked",
+                  "value": "Meeting Booked"
+                },
+                {
+                  "name": "No Show",
+                  "value": "No Show"
+                },
+                {
+                  "name": "Awaiting Proposal",
+                  "value": "Awaiting Proposal"
+                },
+                {
+                  "name": "Proposal Sent",
+                  "value": "Proposal Sent"
+                },
+                {
+                  "name": "Closed",
+                  "value": "Closed"
+                },
+                {
+                  "name": "Lost - U/DNC",
+                  "value": "Lost - U/DNC"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email Address",
+              "displayName": "Email Address",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Time At Company",
+              "displayName": "Time At Company",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Clean Company Name",
+              "displayName": "Clean Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Industry",
+              "displayName": "Industry",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Location",
+              "displayName": "Location",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn URL",
+              "displayName": "LinkedIn URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn Organization URL",
+              "displayName": "LinkedIn Organization URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Crunchbase URL",
+              "displayName": "Crunchbase URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company Website",
+              "displayName": "Company Website",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Meeting Date",
+              "displayName": "Meeting Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Google Meet URL",
+              "displayName": "Google Meet URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn Personal",
+              "displayName": "LinkedIn Personal",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn Company",
+              "displayName": "LinkedIn Company",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company Website Scrape",
+              "displayName": "Company Website Scrape",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Summary",
+              "displayName": "Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Posts",
+              "displayName": "Posts",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Personalization",
+              "displayName": "Personalization",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Instantly Camp. ID",
+              "displayName": "Instantly Camp. ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "574e410e-7eb3-4557-bd56-a4a0900d844c",
+      "name": "Airtable1",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1260,
+        720
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "JtCSqEgmEXLGgj8l",
+          "name": "Clarence | Airtable Personal Access Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Recursive function to parse JSON into plain text\nconst parseJSONToText = (data, depth = 0) => {\n  const indent = \"  \".repeat(depth); // Indentation for readability\n  let text = \"\";\n\n  if (typeof data === \"object\" && !Array.isArray(data) && data !== null) {\n    // Handle objects\n    for (const key in data) {\n      text += `${indent}${key}:\\n`;\n      text += parseJSONToText(data[key], depth + 1);\n    }\n  } else if (Array.isArray(data)) {\n    // Handle arrays\n    data.forEach((item, index) => {\n      text += `${indent}- [${index + 1}]\\n`;\n      text += parseJSONToText(item, depth + 1);\n    });\n  } else {\n    // Handle primitive values (string, number, boolean, etc.)\n    text += `${indent}${data}\\n`;\n  }\n\n  return text;\n};\n\n// Get the input JSON from the previous node\nconst inputData = $node[\"Summarize + Relevancy - Achievements/News/Expansion\"].json;\n\n// Convert the entire JSON into plain text\nconst plainText = parseJSONToText(inputData);\n\n// Return the plain-text result\nreturn {\n  json: {\n    plainText\n  }\n};\n"
+      },
+      "id": "c69f29c0-b31f-4000-b870-fadc0992d031",
+      "name": "Fuse Input Into 1 Item1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        820,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are an expert in professional business analysis and website data extraction. Your task is to analyze and interpret the scraped homepage of a company’s website to produce a high-quality, comprehensive report. Your responses must be precise, well-structured, and entirely based on the provided input data, without making assumptions or adding unsupported details. Focus on delivering clear, professional insights tailored to the requirements outlined below.",
+              "role": "system"
+            },
+            {
+              "content": "=Analyze the scraped homepage of the company’s website and provide a detailed, professional report covering the following points:\n\n1.) Product/Service Analysis:\n- Describe the company’s products or services in detail.\n- Identify their industry\n- Identify their ideal clients (ICP) (e.g., small businesses, enterprises, consumers, etc.).\n\n2.) Key Messaging/Value Proposition:\n- Summarize the company’s key messaging and value proposition.\n- Explain the problems or pain points they aim to solve for their customers.\n- Note any mentions of how they differentiate themselves from competitors.\n\n3.) Content Analysis:\n- Retrieve and list any success stories, or case studies mentioned on the homepage.\n- Include dates when available for relevancy ranking purposes.\n\nProvide a professional, well-organized output, ensuring each section is addressed in full detail and avoids unnecessary filler.\"\n\n#Notes\n- Title all the output as Company Website\n- If {{ $json.plainText }} is empty or contains error codes - output that the website was unsuccesfully scraped."
+            },
+            {
+              "content": "={{ $json.plainText }}\n- Today's date: {{$now}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b701985b-1703-4caa-bd77-0413a0fcf181",
+      "name": "Analyze Company Website - Check if Direct Competitor",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.7,
+      "position": [
+        1700,
+        500
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are an expert in professional business analysis and LinkedIn data extraction. Your task is to analyze the scraped LinkedIn profile of a company to produce a high-quality, detailed report. Your response must be precise, structured, and focused on the specific insights outlined below. Ensure all outputs are professional, fact-based, and well-organized.",
+              "role": "system"
+            },
+            {
+              "content": "=Analyze the scraped LinkedIn profile data to provide detailed insights in the following areas and provide a structured response with exactly three sections:\n\n1.) Company Insights:\n- Identify and summarize the company’s stated mission and vision.\n- Highlight how their mission or vision aligns with their activities or services, if applicable.\n- Identify any mentions of recent company growth, such as new offices, product launches, or increased workforce.\n- Highlight specific details that indicate expansion or scaling (e.g., \"Opened a new office in London,\" \"Grew by 25% in the past year\").\n- Retrieve any recent posts or updates shared by the company, along with their timestamps (e.g., \"22h,\" \"2w\").\n- Summarize the key points or topics covered in these updates (e.g., \"Announced partnership with XYZ,\" \"Promoted upcoming event\").\n\n2.) Business Model:\nBusiness Model (B2B/B2C): Identify whether the company operates in a B2B (business-to-business) or B2C (business-to-consumer). Always output an answer based on the analysis, can only pick ONE.\n\n3.) Number of Employees:\nMention the company’s industry and its approximate number of employees, as indicated on the profile.\n\nOutput Requirements:\n- 3 Sections: 1.) Company Insights, 2.) Business Model 3.) Number of Employees. Ensure each section is clearly labeled and in a consistent format.\n- Ensure the analysis is concise, actionable, and avoids unnecessary filler.\n\nNotes\n- Your responses must be based entirely on the input data, avoiding assumptions or filler.\n- Include dates wherever possible to provide chronological context.\n- Always output everything as a string\n- Title all the output as Company  LinkedIn\n- Never mentions, Shows, Events, Nominations as \"recent growth\".\n\nPlease format the response as a JSON object in the following structure:\n\n{\n  \"1.) Company Insights\": {\n    \"Mission\": \"Insert mission statement here.\",\n    \"Vision\": \"Insert vision statement here.\",\n    \"Alignment with Activities\": \"Describe how the activities align with the mission.\",\n    \"Recent Growth\": {\n      \"Expansion Details\": \"Describe any expansions.\",\n      \"Specific Mentions\": \"Include any specific mentions of growth.\"\n    },\n    \"Recent Posts and Updates\": {\n      \"Posts\": [\n        {\n          \"content\": \"Include recent posts here.\",\n          \"timestamp\": \"Provide timestamp for the post.\"\n        }\n      ]\n    },\n  \"2.) Business Model\": {\n    \"Business Model (B2B/B2C)\": \"Specify whether B2B or B2C.\",\n    \"Description\": \"Provide a description of the business model.\"\n  },\n  \"3.) Number of Employees\": {\n    \"Industry\": \"Specify the industry.\",\n    \"Approximate Number of Employees\": \"Provide the approximate number of employees.\"\n  }\n}\nEnsure all sections are included even if specific information is not available. For missing information, use \"Not specified.\"\n"
+            },
+            {
+              "content": "={{ $json.plainText }}\n- Today's date: {{$now}}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "id": "c352a7b9-a5b3-4edf-8d51-914dfa1e14bf",
+      "name": "Summarize + Relevancy - Achievements/News/Expansion",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.7,
+      "position": [
+        460,
+        520
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are an expert in analyzing and synthesizing business insights for B2B lead generation. Your task is to analyze the input data from the lead’s LinkedIn company profile and company website. Use your expertise in the B2B space to derive the most accurate, fact-based answers. The output must be structured, actionable, and grounded in the provided data without making up numbers or unsupported claims.\n\nNotes\n- If and only when the input from the Company website and Company LinkedIn are conflicting. ALWAYS prioritize the input from the Company LinkedIn.",
+              "role": "system"
+            },
+            {
+              "content": "=Answer the following questions comprehensively while maintaining a professional tone. Provide concise, clear, and insightful responses that can be directly used in crafting effective cold emails:\n\nAnalysis Questions:\nIndustry:\nCarefully define the company’s industry.\n\nMission/Values:\nSummarize the company’s main mission or values.\n\nProduct/Service:\nDescribe the main product or service the company offers.\n\nSummarize Products/Services:\nSummarize the main products/services in 4 words maximum. To be used at the end of a sentence, so first letter is of sentence is NEVER uppercase. It MUST be grammatically correct.\n\nUnique Selling Proposition (USP):\nHighlight the company’s main unique selling proposition.\n\nType of Company:\nIdentify the lead's EXACT company type from the input data, be as specific as possible. 5 words maximum.\nIt must fit into this sentence: Just wrapped up an amazing project with a \"Type of Company\" in — helped them add $100K/month in revenue in just 3 months.\nThe 'Type of Company\" MUST perfectly align with the \"Products/Services\" you've identified for this company\n\nTarget Audience, what are their ICP’s:\nIdentify the company’s main target audience.\n\nSpecific Achievement:\nHighlight a notable accomplishment by {{ $('Pull Lead From Airtable').item.json['Full Name'] }}'s company.\n- If personal name is mentioned in \"Specific Achievement\", it must be equal to {{ $('Pull Lead From Airtable').item.json['Full Name'] }}, If NOT, choose different achievement. Achievement picked can never be older than 9 months. \n\nPlease format the response as a JSON object in the following structure:\n\n{\n\"Industry\", \n\"Mission/Values\", \n\"Product/Service\",\n\"Summarized Product/Service\"\n\"Unique Selling Proposition (USP)\", \n\"Type of Company\",\n\"Target Audience\",\n\"Specific Achievement\" \n},\nEnsure all sections are included even if specific information is not available. For missing information, use \"Not specified.\""
+            },
+            {
+              "content": "=Company Website: {{ $('Fuse Input Into 1 Item').item.json.source1 }}\n\nCompany LinkedIn: {{ $('Fuse Input Into 1 Item').item.json.source2 }}\n\nLead's Name: {{ $('Pull Lead From Airtable').item.json['Full Name'] }}\n\nToday's date: {{ $now }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "id": "2ad9ec5c-3aed-443c-841d-6753fcb40696",
+      "name": "Summarize Input",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.7,
+      "position": [
+        1700,
+        700
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "claude-3-5-sonnet-20241022",
+        "options": {}
+      },
+      "id": "064f1f0f-2091-4a95-a3c0-a3497537fa91",
+      "name": "Anthropic Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.2,
+      "position": [
+        1720,
+        1080
+      ],
+      "credentials": {
+        "anthropicApi": {
+          "id": "yDhhQblXJg7yONbY",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Specific Achievement: {{ $('Summarize Input').item.json.message.content['Specific Achievement'] }}\nLead's name: {{ $('Pull Lead From Airtable').item.json['Full Name'] }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are an expert in crafting engaging and ego-boosting compliments for cold emails. Based on the \"Specific Achievement\" input write a short and polite comment about them or their business. \n\nONLY when \"Specific Achievement\" = Not specified. use: {{ $('Summarize Input').item.json.message.content['Mission/Values'] }}, {{ $('Summarize Input').item.json.message.content['Unique Selling Proposition (USP)'] }}\n\n\n\nExamples: \n- Congrats on opening a new office in London\n- Love how you did X\n- Impressed by your results for Y Company\n\nNotes:\n- Only output the compliment\n- Use fifth grade language. \n- Be warm and kind, using human like words, don't overcomplicate. \n- 15 words maximum.\n- Use congrats instead of congratulation, when aplicable. \n- If there's no input just give a general compliment that could apply to any business.\n- NEVER say things like: Hope you're having a great day. \n- Make sure lead's name and name mentioned in input (if any) are a match to address correct person. \n- NEVER mention lead's personal name in the sentence."
+            }
+          ]
+        }
+      },
+      "id": "ddab4d24-36a9-4b96-814d-903726399e40",
+      "name": "Write Personalization - Fill Template",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        1700,
+        900
+      ],
+      "onError": "continueRegularOutput",
+      "notes": "Notes: \n- Only output the email personalization (the one-line opener). \n- Never make it a question. \n- Use the cleaned version of the company name when referencing it. \n- Do not assume authorship of LinkedIn posts, blog content, or other materials unless the input explicitly states that the lead is the author or is featured. \n- Avoid using personal names in the output, keeping the focus on the company or professional context.\n- 15 words maximum.\n- Use 'Congrats' (not 'Congratulations') when there is something specific to congratulate them about.\n\nExamples for Inspiration:\nReally impressed by (Achievement) - impressive stuff\nCongrats on you feature in Forbes - remarkable achievement\nFascinating that you've doubled your revenue in 3 years - truly inspiring\nGood work on the (project) - masterful execution\n\nYour task is to write a concise, conversational, and professional opener based on the provided topic. \nThe goal is to compliment the recipient or their company in a genuine, tailored way while sparking curiosity and setting a positive tone for the email.\n\n"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "o1-mini",
+          "mode": "list",
+          "cachedResultName": "O1-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are an expert in simplifying and cleaning company names for conversational and professional use in email communication. Your task is to reduce the provided company name to the core term that employees or customers would naturally use when referring to the company. Remove unnecessary elements such as 'LLC,' 'Inc.,' or 'Ltd.' and avoid additional formalities like 'and Co' or similar suffixes. Ensure the name is concise, informal, and aligns with how people inside or outside the organization would refer to it in day-to-day conversations.\n\nNotes:\nOutput only the clean version of the company name."
+            },
+            {
+              "content": "={{ $json.combinedText }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1ff7f8bd-ee37-4a45-9836-c047fca96c0b",
+      "name": "Clean Company Name",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.7,
+      "position": [
+        2300,
+        500
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "9bf164bf-39fa-49fd-b2be-251a1eac6c76",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        620,
+        120
+      ],
+      "id": "a87f3c10-0f1e-48b0-8870-cdb364657d10",
+      "name": "Webhook",
+      "webhookId": "9bf164bf-39fa-49fd-b2be-251a1eac6c76"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Recursive function to parse JSON into plain text\nconst parseJSONToText = (data, depth = 0) => {\n  const indent = \"  \".repeat(depth); // Indentation for readability\n  let text = \"\";\n\n  if (typeof data === \"object\" && !Array.isArray(data) && data !== null) {\n    // Handle objects\n    for (const key in data) {\n      text += `${indent}${key}:\\n`;\n      text += parseJSONToText(data[key], depth + 1);\n    }\n  } else if (Array.isArray(data)) {\n    // Handle arrays\n    data.forEach((item, index) => {\n      text += `${indent}- [${index + 1}]\\n`;\n      text += parseJSONToText(item, depth + 1);\n    });\n  } else {\n    // Handle primitive values (string, number, boolean, etc.)\n    text += `${indent}${data}\\n`;\n  }\n\n  return text;\n};\n\n// Get the input JSON from the previous node\nconst inputData = $node[\"Summarize Input\"].json;\n\n// Convert the entire JSON into plain text\nconst plainText = parseJSONToText(inputData);\n\n// Return the plain-text result\nreturn {\n  json: {\n    plainText\n  }\n};\n"
+      },
+      "id": "0cc9143c-fd6c-4b8a-932c-7a5ef1b5a337",
+      "name": "Fuse Input Into 1 Item2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2080,
+        700
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appJhNlGK8yWq6XQr",
+          "mode": "list",
+          "cachedResultName": "EffiSys | Leads",
+          "cachedResultUrl": "https://airtable.com/appJhNlGK8yWq6XQr"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblFJtYun0KM3Pq1r",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://airtable.com/appJhNlGK8yWq6XQr/tblFJtYun0KM3Pq1r"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Start Lead Enrichment": false,
+            "id": "={{ $('Pull Lead From Airtable').item.json.id }}",
+            "Lead Status": "Lost - U/DNC",
+            "Summary": "Not US",
+            "Posts": "Not US",
+            "Personalization": "Not US",
+            "Company Website Scrape": "Not US",
+            "LinkedIn Company": "Not US",
+            "LinkedIn Personal": "Not US",
+            "Google Meet URL": "Not US"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Start Lead Enrichment",
+              "displayName": "Start Lead Enrichment",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Lead Status",
+              "displayName": "Lead Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Lead Yet to be Enriched",
+                  "value": "Lead Yet to be Enriched"
+                },
+                {
+                  "name": "Cold",
+                  "value": "Cold"
+                },
+                {
+                  "name": "Interested - RtS",
+                  "value": "Interested - RtS"
+                },
+                {
+                  "name": "Interested - MiN",
+                  "value": "Interested - MiN"
+                },
+                {
+                  "name": "Interested - CN",
+                  "value": "Interested - CN"
+                },
+                {
+                  "name": "Interested - FUL",
+                  "value": "Interested - FUL"
+                },
+                {
+                  "name": "Wrong Person - R",
+                  "value": "Wrong Person - R"
+                },
+                {
+                  "name": "Not Interested - NI",
+                  "value": "Not Interested - NI"
+                },
+                {
+                  "name": "Not Interested - NB",
+                  "value": "Not Interested - NB"
+                },
+                {
+                  "name": "Not Interested - AUS",
+                  "value": "Not Interested - AUS"
+                },
+                {
+                  "name": "Meeting Booked",
+                  "value": "Meeting Booked"
+                },
+                {
+                  "name": "No Show",
+                  "value": "No Show"
+                },
+                {
+                  "name": "Awaiting Proposal",
+                  "value": "Awaiting Proposal"
+                },
+                {
+                  "name": "Proposal Sent",
+                  "value": "Proposal Sent"
+                },
+                {
+                  "name": "Closed",
+                  "value": "Closed"
+                },
+                {
+                  "name": "Lost - U/DNC",
+                  "value": "Lost - U/DNC"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email Address",
+              "displayName": "Email Address",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Time At Company",
+              "displayName": "Time At Company",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Clean Company Name",
+              "displayName": "Clean Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Industry",
+              "displayName": "Industry",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Location",
+              "displayName": "Location",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn URL",
+              "displayName": "LinkedIn URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn Organization URL",
+              "displayName": "LinkedIn Organization URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Crunchbase URL",
+              "displayName": "Crunchbase URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company Website",
+              "displayName": "Company Website",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Meeting Date",
+              "displayName": "Meeting Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Google Meet URL",
+              "displayName": "Google Meet URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn Personal",
+              "displayName": "LinkedIn Personal",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn Company",
+              "displayName": "LinkedIn Company",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company Website Scrape",
+              "displayName": "Company Website Scrape",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Summary",
+              "displayName": "Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Posts",
+              "displayName": "Posts",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Personalization",
+              "displayName": "Personalization",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Instantly Camp. ID",
+              "displayName": "Instantly Camp. ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1c8fc06a-5c49-4174-9725-6997340e91b0",
+      "name": "Airtable2",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1260,
+        260
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "JtCSqEgmEXLGgj8l",
+          "name": "Clarence | Airtable Personal Access Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7540d0aa-8723-4dd0-9c11-f9ad60a4fa38",
+              "leftValue": "={{ $json.Location }}",
+              "rightValue": "United States",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "90497e08-3c85-4a7f-904a-60c00da8a064",
+      "name": "US or Not",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1040,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7540d0aa-8723-4dd0-9c11-f9ad60a4fa38",
+              "leftValue": "={{ $('Summarize + Relevancy - Achievements/News/Expansion').item.json.message.content['Company LinkedIn']['2.) Business Model']['Business Model (B2B/B2C)'] }}",
+              "rightValue": "B2C",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "982f05ff-e049-43ec-9f51-7c3e08be2585",
+      "name": "B2C",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1040,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"Personalization\": \"\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        1860,
+        1080
+      ],
+      "id": "b6e77865-0ab8-4897-ae45-10a0667364c5",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        620,
+        340
+      ],
+      "id": "542c2237-f2aa-4b2b-8530-2288f7492d56",
+      "name": "Wait1",
+      "webhookId": "39e6600d-92ea-44b3-b0f5-501c430387c9"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Pull Lead From Airtable": {
+      "main": [
+        [
+          {
+            "node": "US or Not",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Company Website": {
+      "main": [
+        [
+          {
+            "node": "Remove HTML Website",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LinkedIn Company Scraper": {
+      "main": [
+        [
+          {
+            "node": "Remove HTML LinkedIn Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove HTML LinkedIn Page": {
+      "main": [
+        [
+          {
+            "node": "Summarize + Relevancy - Achievements/News/Expansion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove HTML Website": {
+      "main": [
+        [
+          {
+            "node": "Analyze Company Website - Check if Direct Competitor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fuse Input Into 1 Item": {
+      "main": [
+        [
+          {
+            "node": "Clean Company Name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fuse Input Into 1 Item1": {
+      "main": [
+        [
+          {
+            "node": "B2C",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Company Website - Check if Direct Competitor": {
+      "main": [
+        [
+          {
+            "node": "Fuse Input Into 1 Item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarize + Relevancy - Achievements/News/Expansion": {
+      "main": [
+        [
+          {
+            "node": "Fuse Input Into 1 Item1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarize Input": {
+      "main": [
+        [
+          {
+            "node": "Fuse Input Into 1 Item2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Write Personalization - Fill Template",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write Personalization - Fill Template": {
+      "main": [
+        [
+          {
+            "node": "Airtable",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update Lead to Instantly",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Company Name": {
+      "main": [
+        [
+          {
+            "node": "Summarize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Pull Lead From Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fuse Input Into 1 Item2": {
+      "main": [
+        [
+          {
+            "node": "Write Personalization - Fill Template",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "US or Not": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Airtable2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "B2C": {
+      "main": [
+        [
+          {
+            "node": "Get Company Website",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Airtable1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Write Personalization - Fill Template",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "LinkedIn Company Scraper",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "8427d451-332d-4281-8228-dd2502d2e497",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "be9861782fae15eac6af5bd3da39e0377359813f71b0e0ed19ed3a98eb035f79"
+  },
+  "id": "dBnO1sfFOFDboK6f",
+  "tags": [
+    {
+      "createdAt": "2024-11-22T10:34:31.143Z",
+      "updatedAt": "2024-11-22T10:34:31.143Z",
+      "id": "CzLOKS0NcJRCdd84",
+      "name": "Sales"
+    },
+    {
+      "createdAt": "2024-11-21T16:21:04.680Z",
+      "updatedAt": "2024-11-21T16:21:04.680Z",
+      "id": "Yv1rEhxu4YlygqU1",
+      "name": "EffiSys"
+    }
+  ]
+}

@@ -1,0 +1,1000 @@
+{
+  "name": "Skool | LinkedIn Job Scraper",
+  "nodes": [
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "id": "d4ba8fef-5431-4903-9313-0015f6f6c7d1",
+      "name": "Wait",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -320,
+        80
+      ],
+      "webhookId": "80f46cdf-ef90-45da-9c65-a3737782e5aa"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -1220,
+        20
+      ],
+      "id": "2605b0dc-e514-4cbb-b4aa-844a84f45d06",
+      "name": "Merge",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: Object.keys($json).length > 0 ? $json : { status: \"not ready\" }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -780,
+        0
+      ],
+      "id": "e5394568-35cd-414a-b08a-fd38df192d63",
+      "name": "Verify Dataset Availability"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1660,
+        0
+      ],
+      "id": "c91af60f-9c52-4f5d-be27-ef687ed7fb51",
+      "name": "When clicking ‘Test workflow’"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.apify.com/v2/acts/BHzefUZlZRKWxkTck/runs",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"companyName\": [\n        \"Hatch\"\n    ],\n    \"location\": \"United States\",\n    \"proxy\": {\n        \"useApifyProxy\": true,\n        \"apifyProxyGroups\": [\n            \"RESIDENTIAL\"\n        ],\n        \"apifyProxyCountry\": \"US\"\n    },\n    \"rows\": 1,\n    \"title\": \"Sales Development Representative\"\n}",
+        "options": {}
+      },
+      "id": "723d5b48-9c83-41f5-be37-18f55623da25",
+      "name": "LinkedIn Job Scraper",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1440,
+        0
+      ],
+      "onError": "continueRegularOutput",
+      "notes": "apify_api_XKBcenjb3kTEc8AYVwJY1O5TyIjZ3f2InUct"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.apify.com/v2/datasets/{{ $('LinkedIn Job Scraper').item.json.data.defaultDatasetId }}/items?format=json",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer "
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "78676217-98a3-4438-aa1b-9ff71d7f6f8c",
+      "name": "Retrieve Dataset",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1000,
+        0
+      ],
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput",
+      "notes": "apify_api_XKBcenjb3kTEc8AYVwJY1O5TyIjZ3f2InUct"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.companyUrl }}",
+        "options": {}
+      },
+      "id": "93e5ecfa-c8af-481c-b735-488605b594e0",
+      "name": "LinkedIn Company Scraper",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -140,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3115f34e-2c04-4949-8705-0b963775b936",
+              "leftValue": "={{ $('Dataset Available?').item.json.posterFullName }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        680,
+        -100
+      ],
+      "id": "659c6041-3bdb-4ceb-b1a1-41e5bc301e41",
+      "name": "Poster Name Available?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8a723b17-b46e-4c1c-b051-e410bd3a101e",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "not ready",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -560,
+        0
+      ],
+      "id": "4e3bee23-21b2-4309-b99f-1b7e8bfd96ae",
+      "name": "Dataset Available?"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Identify Company URL').item.json.message.content }}",
+        "options": {}
+      },
+      "id": "ffb03967-f8de-4295-8f16-557e64952f0e",
+      "name": "Scrape Company Website",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        60
+      ],
+      "onError": "continueRegularOutput",
+      "notes": "https://{{ $('Extract Company URL').item.json.text }}"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anymailfinder.com/v5.0/search/company.json",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "domain",
+              "value": "={{ $('Identify Company URL').item.json.message.content }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer "
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "cd13f3cc-07a0-4737-a943-457aac75fa8d",
+      "name": "Any Mail Finder 1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        60
+      ],
+      "alwaysOutputData": false,
+      "onError": "continueRegularOutput",
+      "notes": "{{ $json.text }}\\"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.instantly.ai/api/v1/lead/add",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"api_key\": \"CgwfRotQoCbxKVC1ABR4lDVrjwsBz\",\n  \"campaign_id\": \"c756bfe1-edba-4c1c-be88-efcfad77220f\",\n  \"skip_if_in_workspace\": false,\n  \"skip_if_in_campaign\": true,\n  \"leads\": [\n    {\n      \"email\": \"{{ $('Any Mail Finder 1').item.json.results.emails[0] }}\",\n      \"first_name\": \"{{ $('Get First Name').item.json.message.content }}\",\n      \"last_name\": \"\",\n      \"company_name\": \"{{ $('Clean Company Name1').item.json.message.content }}\",\n      \"personalization\": \"{{ $('Write Cold Email').item.json.output.output[0].content }}\",\n      \"phone\": \"\",\n      \"website\": \"{{ $('Any Mail Finder 1').item.json.results.emails[0].split('@')[1] }}\",\n      \"custom_variables\": {\n        \"Email 1-2\": \"{{ $('Write Cold Email').item.json.output.output[1].content }}\",\n        \"Email 1-3\": \"{{ $('Write Cold Email').item.json.output.output[2].content }}\",\n        \"Email 1-4\": \"{{ $('Write Cold Email').item.json.output.output[3].content }}\",\n        \"Email 2-1\": \"{{ $('Write 2nd Cold Email').item.json.output.output[0].content }}\",\n        \"Email 2-2\": \"{{ $('Write 2nd Cold Email').item.json.output.output[1].content }}\",\n        \"Email 2-3\": \"{{ $('Write 2nd Cold Email').item.json.output.output[2].content }}\",\n        \"Email 3-1\": \"{{ $json.output.output[0].content }}\",\n        \"Email 3-2\": \"{{ $json.output.output[1].content }}\"\n      }\n    }\n  ]\n}",
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "id": "f3b3449b-abb1-40be-8c7e-48b81a895bf5",
+      "name": "Upload Lead to Instantly",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2300,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Extract the first name from the email address {{ $('Any Mail Finder 1').first().json.results.emails[0] }} and output only the result. Assume the first name is the part before any dots, numbers or special characters, and capitalize only the first letter. If the email doesn’t contain a clear first name, leave the field empty"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f4b8b67a-95b6-40b7-8ab1-3782dedd9574",
+      "name": "Get First Name",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.7,
+      "position": [
+        1540,
+        260
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://www.myoprocess.com",
+        "options": {}
+      },
+      "id": "7ec1c2cb-bc5c-41e6-af66-286c24becd21",
+      "name": "Scrape Company Website1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        -260
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const htmlContent = $node[\"Scrape Company Website1\"].json[\"data\"]; // Replace this with the field containing your HTML content\n\n// Function to strip HTML tags and clean the text\nconst extractPlainText = (html) => {\n    if (!html) return \"\";\n\n    // Remove script and style tags along with their content\n    const withoutScriptsAndStyles = html.replace(/<script[\\s\\S]*?>[\\s\\S]*?<\\/script>/gi, \"\")\n                                        .replace(/<style[\\s\\S]*?>[\\s\\S]*?<\\/style>/gi, \"\");\n\n    // Remove all remaining HTML tags\n    const strippedText = withoutScriptsAndStyles.replace(/<\\/?[^>]+(>|$)/g, \"\");\n\n    // Replace HTML entities with their plain-text equivalents\n    const decodedText = strippedText.replace(/&nbsp;/gi, \" \")\n                                    .replace(/&amp;/gi, \"&\")\n                                    .replace(/&lt;/gi, \"<\")\n                                    .replace(/&gt;/gi, \">\")\n                                    .replace(/&quot;/gi, \"\\\"\")\n                                    .replace(/&#39;/gi, \"'\");\n\n    // Replace multiple spaces, tabs, and newlines with a single space\n    const cleanedText = decodedText.replace(/\\s+/g, \" \").trim();\n\n    return cleanedText;\n};\n\n// Call the function to process the HTML content\nconst plainText = extractPlainText(htmlContent);\n\n// Return the plain text as the output of this node\nreturn {\n    plainText: plainText,\n};"
+      },
+      "id": "efbb1909-b15a-48da-8856-7bd52e29591f",
+      "name": "Remove HTML.",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        -260
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const htmlContent = $node[\"Scrape Company Website\"].json[\"data\"]; // Replace this with the field containing your HTML content\n\n// Function to strip HTML tags and clean the text\nconst extractPlainText = (html) => {\n    if (!html) return \"\";\n\n    // Remove script and style tags along with their content\n    const withoutScriptsAndStyles = html.replace(/<script[\\s\\S]*?>[\\s\\S]*?<\\/script>/gi, \"\")\n                                        .replace(/<style[\\s\\S]*?>[\\s\\S]*?<\\/style>/gi, \"\");\n\n    // Remove all remaining HTML tags\n    const strippedText = withoutScriptsAndStyles.replace(/<\\/?[^>]+(>|$)/g, \"\");\n\n    // Replace HTML entities with their plain-text equivalents\n    const decodedText = strippedText.replace(/&nbsp;/gi, \" \")\n                                    .replace(/&amp;/gi, \"&\")\n                                    .replace(/&lt;/gi, \"<\")\n                                    .replace(/&gt;/gi, \">\")\n                                    .replace(/&quot;/gi, \"\\\"\")\n                                    .replace(/&#39;/gi, \"'\");\n\n    // Replace multiple spaces, tabs, and newlines with a single space\n    const cleanedText = decodedText.replace(/\\s+/g, \" \").trim();\n\n    return cleanedText;\n};\n\n// Call the function to process the HTML content\nconst plainText = extractPlainText(htmlContent);\n\n// Return the plain text as the output of this node\nreturn {\n    plainText: plainText,\n};"
+      },
+      "id": "2fc062b1-201b-4fe7-a15b-3e6c0ae33822",
+      "name": "Remove HTML,",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        60
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const htmlContent = $node[\"LinkedIn Company Scraper\"].json[\"data\"]; // Replace this with the field containing your HTML content\n\n// Function to strip HTML tags and clean the text\nconst extractPlainText = (html) => {\n    if (!html) return \"\";\n\n    // Remove script and style tags along with their content\n    const withoutScriptsAndStyles = html.replace(/<script[\\s\\S]*?>[\\s\\S]*?<\\/script>/gi, \"\")\n                                        .replace(/<style[\\s\\S]*?>[\\s\\S]*?<\\/style>/gi, \"\");\n\n    // Remove all remaining HTML tags\n    const strippedText = withoutScriptsAndStyles.replace(/<\\/?[^>]+(>|$)/g, \"\");\n\n    // Replace HTML entities with their plain-text equivalents\n    const decodedText = strippedText.replace(/&nbsp;/gi, \" \")\n                                    .replace(/&amp;/gi, \"&\")\n                                    .replace(/&lt;/gi, \"<\")\n                                    .replace(/&gt;/gi, \">\")\n                                    .replace(/&quot;/gi, \"\\\"\")\n                                    .replace(/&#39;/gi, \"'\");\n\n    // Replace multiple spaces, tabs, and newlines with a single space\n    const cleanedText = decodedText.replace(/\\s+/g, \" \").trim();\n\n    return cleanedText;\n};\n\n// Call the function to process the HTML content\nconst plainText = extractPlainText(htmlContent);\n\n// Return the plain text as the output of this node\nreturn {\n    plainText: plainText,\n};"
+      },
+      "id": "13520686-47a0-4803-bf7f-0f28ae7a2df6",
+      "name": "Remove HTML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        80,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are an expert in simplifying and cleaning company names for conversational and professional use in email communication. Your task is to reduce the provided company name to the core term that employees or customers would naturally use when referring to the company. Remove unnecessary elements such as 'LLC,' 'Inc.,' or 'Ltd.' and avoid additional formalities like 'and Co' or similar suffixes. Ensure the name is concise, informal, and aligns with how people inside or outside the organization would refer to it in day-to-day conversations.\n\nNotes:\nOutput only the clean version of the company name."
+            },
+            {
+              "content": "=Company website + Company LinkedIn: {{ $('Remove HTML').item.json.plainText }}\nCompany Domain: {{ $('Identify Company URL').item.json.message.content }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "95cc3a78-fafb-4b75-8d00-2cd761762fca",
+      "name": "Clean Company Name.",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.7,
+      "position": [
+        1900,
+        60
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are an expert in simplifying and cleaning company names for conversational and professional use in email communication. Your task is to reduce the provided company name to the core term that employees or customers would naturally use when referring to the company. Remove unnecessary elements such as 'LLC,' 'Inc.,' or 'Ltd.' and avoid additional formalities like 'and Co' or similar suffixes. Ensure the name is concise, informal, and aligns with how people inside or outside the organization would refer to it in day-to-day conversations.\n\nNotes:\nOutput only the clean version of the company name."
+            },
+            {
+              "content": "=Company website + Company LinkedIn: {{ $json.combinedText }}\nCompany Domain: {{ $('Extract Company URL').first().json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "77585afa-cd66-4a6f-b8c6-6462e84050d8",
+      "name": "Clean Company Name,",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.7,
+      "position": [
+        1920,
+        -260
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anymailfinder.com/v5.0/search/company.json",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "domain",
+              "value": "=www.apify.com"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer xPmsQ1FcRUfxztbDlRZLXyFP"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ff14b21f-e2c8-4c60-9535-9a59dbb4aaae",
+      "name": "Any Mail Finder ",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        -260
+      ],
+      "alwaysOutputData": false,
+      "onError": "continueRegularOutput",
+      "notes": "{{ $json.text }}\\"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are an expert in extracting and analyzing business information from website data. Your role is to interpret the scraped content from a company’s homepage to identify key elements such as testimonials, recent growth, and success stories. Your responses must be concise, structured, and fully aligned with the provided input, avoiding assumptions or unsupported details. Deliver actionable and professional insights that directly address the requested categories, ensuring clarity and relevance in your output.",
+              "role": "system"
+            },
+            {
+              "content": "=Analyze the following data scraped from a company's homepage. \n\nExtract and organize the following information:\n\nTestimonials: Identify any customer reviews, client quotes, or feedback, and present them as a list.\n\nRecent Growth: Highlight any mentions of company milestones, achievements, or performance metrics (e.g., revenue growth, customer acquisition numbers, product launches).\n\nSuccess Stories: Extract examples or case studies of how the company has helped its clients, showcasing measurable results or significant impacts.\n\nEnsure the output is structured clearly under the headings Testimonials, Recent Growth, and Success Stories, and only include relevant content. \n\nIf no information for a category is found, leave that section empty."
+            },
+            {
+              "content": "={{ $json.plainText }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0b2c5194-e614-4a4c-94a0-dd1801c14ce3",
+      "name": "Get Recent/Growth/Milestones.",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.7,
+      "position": [
+        1540,
+        60
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are an expert in professional business analysis and website data extraction. Your task is to analyze and interpret the scraped homepage of a company’s website to produce a high-quality, comprehensive report. Your responses must be precise, well-structured, and entirely based on the provided input data, without making assumptions or adding unsupported details. Focus on delivering clear, professional insights tailored to the requirements outlined below.",
+              "role": "system"
+            },
+            {
+              "content": "=Analyze the scraped homepage of the company’s website and provide a detailed, professional report covering the following points:\n\n1.) Product/Service Analysis:\n- Describe the company’s products or services in detail.\n- Indicate whether the company operates in a B2B or B2C model.\n- Identify their industry and ideal clients (e.g., small businesses, enterprises, consumers, etc.).\n\n2.) Key Messaging/Value Proposition:\n- Summarize the company’s key messaging and value proposition.\n- Explain the problems or pain points they aim to solve for their customers.\n- Note any mentions of how they differentiate themselves from competitors.\n- Geographic Focus: Identify the regions or markets they explicitly target.\n\n3.) Content Analysis:\n- Retrieve and list any success stories, testimonials, or case studies mentioned on the homepage.\n- Include dates when available for relevancy ranking purposes.\n\n4.) Opportunity Analysis:\n- Identify any potential gaps or needs your cold email outbound lead generation agency could address for them.\n- Suggest how your services might complement or enhance their current efforts.\n\nProvide a professional, well-organized output, ensuring each section is addressed in full detail and avoids unnecessary filler.\"\n\n- Title all the output as Company Website"
+            },
+            {
+              "content": "={{ $json.plainText }}\n- Today's date: {{$now}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8deda114-84ac-4c06-81ca-73d7b27dcd36",
+      "name": "Get Recent/Growth/Milestones.1",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.7,
+      "position": [
+        1540,
+        -260
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=- Cleaned Company Name: {{ $('Clean Company Name1').item.json.message.content }}\n- Main Revenue-Generating Activities: {{ $('Retrieve Main Revenue Generating Activities').item.json.message.content }}\n- - Success Stories/Testimonials/Case Studies: {{ $('Retrieve Case Studies/Success Stories/ Testimonials').item.json.message.content }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are an expert in crafting personalized and engaging outreach emails. Use the provided data points to create a concise, three-line outreach message targeting B2B leaders."
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "Instructions:\n\nLine1: Friend of mine told me about [Company Name] couple of weeks ago. I'm impressed by [Pain points their company solves, recent case study, success story or testimonials]\n\nLine2: Random, but noticed you've got a few job openings for SDRs.\n\nLine3: Reason I’m reaching out is I run a cold outbound agency. We can send at 17x the volume of a typical SDR, and our emails are usually twice as effective. We have generated $10M in pipeline for companies like Proton & Glove. \n\nLine4: Worth a chat this week?\n\nConciseness: Ensure the email is under 150 words, eliminating unnecessary text, jargon, or filler.\n\nDerived Insights:\nUse the provided input data to infer:\n- Specific details about their industry, role, or company focus.\n- Potential pain points related to lead generation or business strategy.\n- Relevant opportunities for growth.\n\nNotes\n- Don't make any changes to line 2, 3 and 4"
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "Output format:|Line1: [Personalized opening referencing the previous email and connecting to their challenge or goal].  Line2: [Value proposition highlighting benefits tied to their KPIs].  Line3: [Brief, actionable CTA]. "
+            }
+          ]
+        }
+      },
+      "id": "1fba41d6-f74f-422a-b567-300e8b3ac66a",
+      "name": "Write Cold Email.",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [
+        1540,
+        -520
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=First Name: {{ $json.message.content }}\nCompany Name: {{ $('Clean Company Name.').item.json.message.content }}\nResult: {{ $('Get Recent/Growth/Milestones.').item.json.message.content }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are a conversational, approachable email-writing assistant. Complete the template below using placeholders for personalization. Keep the tone casual and friendly while maintaining clarity. Avoid adding unnecessary details or extra commentary. Deliver the completed email exactly as requested, without additional text or formatting.  \n\nHey {First Name},\n\nA friend mentioned {Cleaned Company Name} recently, and I’ve been meaning to reach out—sounds like you’re making big moves!\n\nCongrats on the {result}, by the way.\n\nSaw you’ve got some SDR roles open and figured I’d drop you a note.\n\nI run an agency specializing in cold outbound, and we can handle outreach at 15x the pace of a typical SDR, with response rates consistently outperforming industry averages.\n\nWe’ve helped companies like Bolt and Deliveroo create over $8M in pipeline.\n\nWould love to explore if we could do the same for you—free for a quick chat this week?\n\nCheers,\nClarence\n\nNotes\n- For {Result} Pick the most interesting thing from the website. "
+            }
+          ]
+        }
+      },
+      "id": "23f1668d-f30f-472e-8669-01e8c3999332",
+      "name": "Write Cold Email",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [
+        1920,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.instantly.ai/api/v1/lead/add",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"api_key\": \"CgwfRotQoCbxKVC1ABR4lDVrjwsBz\",\n  \"campaign_id\": \"c756bfe1-edba-4c1c-be88-efcfad77220f\",\n  \"skip_if_in_workspace\": false,\n  \"skip_if_in_campaign\": true,\n  \"leads\": [\n    {\n      \"email\": \"{{ $('Any Mail Finder 1').item.json.results.emails[0] }}\",\n      \"first_name\": \"{{ $('Get First Name').item.json.message.content }}\",\n      \"last_name\": \"\",\n      \"company_name\": \"{{ $('Clean Company Name1').item.json.message.content }}\",\n      \"personalization\": \"{{ $('Write Cold Email').item.json.output.output[0].content }}\",\n      \"phone\": \"\",\n      \"website\": \"{{ $('Any Mail Finder 1').item.json.results.emails[0].split('@')[1] }}\",\n      \"custom_variables\": {\n        \"Email 1-2\": \"{{ $('Write Cold Email').item.json.output.output[1].content }}\",\n        \"Email 1-3\": \"{{ $('Write Cold Email').item.json.output.output[2].content }}\",\n        \"Email 1-4\": \"{{ $('Write Cold Email').item.json.output.output[3].content }}\",\n        \"Email 2-1\": \"{{ $('Write 2nd Cold Email').item.json.output.output[0].content }}\",\n        \"Email 2-2\": \"{{ $('Write 2nd Cold Email').item.json.output.output[1].content }}\",\n        \"Email 2-3\": \"{{ $('Write 2nd Cold Email').item.json.output.output[2].content }}\",\n        \"Email 3-1\": \"{{ $json.output.output[0].content }}\",\n        \"Email 3-2\": \"{{ $json.output.output[1].content }}\"\n      }\n    }\n  ]\n}",
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "id": "995ca7a6-c044-4e8c-9b64-f4a94c5f0405",
+      "name": "Upload Lead to Instantly1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1920,
+        -520
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "Based on the provided LinkedIn profile content, identify the company name mentioned in the profile. Locate the website URL associated with this company and return it as plain text. Ensure the output contains only the website URL with no additional formatting or text. If no URL is found, return nothing.\n\nExample Input:\n[Insert the full content of a LinkedIn profile, as shown in the example.]\n\nExpected Output for the Example Input:\nhttps://www.bluebite.com"
+            },
+            {
+              "content": "=Input: {{ $json.plainText }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        300,
+        -100
+      ],
+      "id": "b0b0cf03-d129-4c84-824b-c7d6bb541b74",
+      "name": "Identify Company URL",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.2,
+      "position": [
+        1880,
+        440
+      ],
+      "id": "5c5b0e75-9061-4e6b-85bf-d1952a9b7be6",
+      "name": "Anthropic Chat Model",
+      "credentials": {
+        "anthropicApi": {
+          "id": "yDhhQblXJg7yONbY",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.2,
+      "position": [
+        1640,
+        -360
+      ],
+      "id": "5dd87a66-e95e-4f70-91ef-6d57ee64cae2",
+      "name": "Anthropic Chat Model1",
+      "credentials": {
+        "anthropicApi": {
+          "id": "yDhhQblXJg7yONbY",
+          "name": "Anthropic account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Retrieve Dataset",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Dataset Availability": {
+      "main": [
+        [
+          {
+            "node": "Dataset Available?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "LinkedIn Job Scraper",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LinkedIn Job Scraper": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retrieve Dataset": {
+      "main": [
+        [
+          {
+            "node": "Verify Dataset Availability",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LinkedIn Company Scraper": {
+      "main": [
+        [
+          {
+            "node": "Remove HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dataset Available?": {
+      "main": [
+        [
+          {
+            "node": "LinkedIn Company Scraper",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scrape Company Website": {
+      "main": [
+        [
+          {
+            "node": "Remove HTML,",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Any Mail Finder 1": {
+      "main": [
+        [
+          {
+            "node": "Scrape Company Website",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Poster Name Available?": {
+      "main": [
+        [
+          {
+            "node": "Any Mail Finder ",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Any Mail Finder 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get First Name": {
+      "main": [
+        [
+          {
+            "node": "Write Cold Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scrape Company Website1": {
+      "main": [
+        [
+          {
+            "node": "Remove HTML.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove HTML.": {
+      "main": [
+        [
+          {
+            "node": "Get Recent/Growth/Milestones.1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove HTML,": {
+      "main": [
+        [
+          {
+            "node": "Get Recent/Growth/Milestones.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove HTML": {
+      "main": [
+        [
+          {
+            "node": "Identify Company URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Company Name.": {
+      "main": [
+        [
+          {
+            "node": "Get First Name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Company Name,": {
+      "main": [
+        [
+          {
+            "node": "Write Cold Email.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Any Mail Finder ": {
+      "main": [
+        [
+          {
+            "node": "Scrape Company Website1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Recent/Growth/Milestones.": {
+      "main": [
+        [
+          {
+            "node": "Clean Company Name.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Recent/Growth/Milestones.1": {
+      "main": [
+        [
+          {
+            "node": "Clean Company Name,",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write Cold Email.": {
+      "main": [
+        [
+          {
+            "node": "Upload Lead to Instantly1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write Cold Email": {
+      "main": [
+        [
+          {
+            "node": "Upload Lead to Instantly",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Identify Company URL": {
+      "main": [
+        [
+          {
+            "node": "Poster Name Available?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Write Cold Email",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Write Cold Email.",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "12de9355-56d8-4659-a1f2-6c1f1f2feffd",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "be9861782fae15eac6af5bd3da39e0377359813f71b0e0ed19ed3a98eb035f79"
+  },
+  "id": "BPcv6ja8CxQ08qJN",
+  "tags": []
+}
