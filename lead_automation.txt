@@ -1,0 +1,47 @@
+
+
+Automated Lead Scraping and Email Outreach System
+Lead Automation Command Center - Dashboard:
+
+
+Lead Automation Command Center - Execution Manager: 
+Lead Automation Command Center - Settings:   
+
+
+
+
+
+
+
+
+
+
+
+
+
+N8n Workflows:
+1 - Lead Generation
+Sales | LG | LinkedIn Job Scraper 
+Sales | LG | Apollo Lead Scraper
+
+Sales | LG | Sales Navigator Lead Scraper  
+Sales | LG | Name Only   Sales | LG | Decision Makers   
+Sales | LG | Automation System LinkedIn Job Scraper   
+
+
+2 - Lead Qualification
+
+Sales | LQ | Personalization   
+Sales | LQ | 3-Step Lead Qualification  
+ 3 - Lead Enrichment  Sales | LE | LinkedIn 
+Sales | LE | Scrape + Enrich   
+Sales | LE | LinkedIn Personalization    Sales | LE | Company Website Smart Crawler    Sales | LE | Enrichment Website Sections   
+4 - AI Personalization
+
+Sales | AP |  Deep Insights - About Page    Sales | AP| LinkedIn Post | Personal + Company 
+
+Sales | AP | AI Personalization | 3 Snippets  
+
+Sales | AP |  AI Personalization | Departments    5 - Replies & Follow-ups
+
+My Sales | R&F | AI Personalization | Departments 35  
