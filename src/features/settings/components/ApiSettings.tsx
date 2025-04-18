@@ -11,8 +11,6 @@ import {
   useToast,
   FormHelperText,
   Switch,
-  HStack,
-  Badge,
   NumberInput,
   NumberInputField,
   NumberInputStepper,
@@ -23,23 +21,27 @@ import {
   Card,
   CardBody,
   CardHeader,
-  Divider
+  Divider,
+  IconButton
 } from '@chakra-ui/react';
-import { FiSave, FiRefreshCw } from 'react-icons/fi';
+import { FiSave, FiEye, FiEyeOff } from 'react-icons/fi';
 import { apiConfig } from '../../../config/apiConfig';
 import { createChakraIcon } from '../../../utils';
+import { TestConnection } from './TestConnection';
 
-interface ApiSettings {
+interface ApiSettingsState {
   n8nBaseUrl: string;
   callbackEndpoint: string;
   pollingEnabled: boolean;
   pollingInterval: number;
   lastConnectionTest: string | null;
   lastSaved?: string;
+  apiKey: string;
+  showApiKey: boolean;
 }
 
 // Function to load settings from localStorage
-const loadSettings = (): ApiSettings => {
+const loadSettings = (): ApiSettingsState => {
   const savedSettings = localStorage.getItem('apiSettings');
   if (savedSettings) {
     try {
@@ -53,118 +55,116 @@ const loadSettings = (): ApiSettings => {
     callbackEndpoint: apiConfig.webhooks.callbackEndpoint,
     pollingEnabled: apiConfig.polling.enabled,
     pollingInterval: apiConfig.polling.interval / 1000, // Convert to seconds for display
-    lastConnectionTest: null
+    lastConnectionTest: null,
+    apiKey: apiConfig.apiKey,
+    showApiKey: false
   };
 };
 
-const ApiSettings: React.FC = () => {
-  const [settings, setSettings] = useState<ApiSettings>(loadSettings);
-  const [isTestingConnection, setIsTestingConnection] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState<'success' | 'error' | 'unknown'>('unknown');
+export const ApiSettings: React.FC = () => {
+  const [settings, setSettings] = useState<ApiSettingsState>(loadSettings);
   const toast = useToast();
   
   const SaveIcon = createChakraIcon(FiSave);
-  const RefreshIcon = createChakraIcon(FiRefreshCw);
+  const EyeIcon = createChakraIcon(FiEye);
+  const EyeOffIcon = createChakraIcon(FiEyeOff);
   
-  // Handle form submission
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  // Load saved settings on mount
+  useEffect(() => {
+    const savedSettings = localStorage.getItem('apiSettings');
+    if (savedSettings) {
+      try {
+        const parsedSettings = JSON.parse(savedSettings);
+        setSettings((prev: ApiSettingsState) => ({
+          ...prev,
+          n8nBaseUrl: parsedSettings.n8nBaseUrl || apiConfig.n8nBaseUrl,
+          callbackEndpoint: parsedSettings.callbackEndpoint || apiConfig.webhooks.callbackEndpoint,
+          pollingEnabled: parsedSettings.pollingEnabled !== undefined ? parsedSettings.pollingEnabled : apiConfig.polling.enabled,
+          pollingInterval: parsedSettings.pollingInterval || apiConfig.polling.interval / 1000,
+          apiKey: parsedSettings.apiKey || apiConfig.apiKey,
+          showApiKey: parsedSettings.showApiKey || false
+        }));
+      } catch (e) {
+        console.error('Error parsing saved API settings:', e);
+      }
+    }
+  }, []);
+  
+  // Handle save settings
+  const saveSettings = () => {
     try {
-      // Save to localStorage
-      localStorage.setItem('apiSettings', JSON.stringify({
-        ...settings,
-        lastSaved: new Date().toISOString()
-      }));
+      // Validate the API key - it should look like a JWT token
+      if (settings.apiKey && !settings.apiKey.includes('.')) {
+        toast({
+          title: "Invalid API Key",
+          description: "The API key should be a JWT token (contains periods)",
+          status: "warning",
+          duration: 5000,
+          isClosable: true,
+        });
+        return; // Don't save invalid API key
+      }
       
-      // Update global config (this would be handled differently in a real application)
+      // Save to localStorage
+      const settingsToSave = {
+        n8nBaseUrl: settings.n8nBaseUrl,
+        apiKey: settings.apiKey,
+        callbackEndpoint: settings.callbackEndpoint,
+        pollingEnabled: settings.pollingEnabled,
+        pollingInterval: settings.pollingInterval,
+      };
+      
+      localStorage.setItem('apiSettings', JSON.stringify(settingsToSave));
+      
       // For now, we'll just update the values we need to access elsewhere
       (apiConfig as any).n8nBaseUrl = settings.n8nBaseUrl;
+      (apiConfig as any).apiKey = settings.apiKey;
       (apiConfig.webhooks as any).callbackEndpoint = settings.callbackEndpoint;
       (apiConfig.polling as any).enabled = settings.pollingEnabled;
-      (apiConfig.polling as any).interval = settings.pollingInterval * 1000; // Convert seconds to ms
+      (apiConfig.polling as any).interval = settings.pollingInterval * 1000;
       
       toast({
-        title: 'Settings saved',
-        description: 'Your API configuration has been updated',
-        status: 'success',
+        title: "Settings saved",
+        status: "success",
         duration: 3000,
         isClosable: true,
       });
-    } catch (error) {
-      toast({
-        title: 'Error saving settings',
-        description: 'There was a problem saving your settings',
-        status: 'error',
-        duration: 3000,
-        isClosable: true,
-      });
-    }
-  };
-  
-  // Test the connection to n8n
-  const testConnection = async () => {
-    setIsTestingConnection(true);
-    setConnectionStatus('unknown');
-    
-    try {
-      // Make a simple GET request to the n8n health endpoint
-      const response = await fetch(`${settings.n8nBaseUrl}/api/v1/health`);
       
-      if (response.ok) {
-        setConnectionStatus('success');
-        setSettings((prev: ApiSettings) => ({
-          ...prev,
-          lastConnectionTest: new Date().toISOString()
-        }));
-        
-        toast({
-          title: 'Connection successful',
-          description: 'Successfully connected to n8n',
-          status: 'success',
-          duration: 3000,
-          isClosable: true,
-        });
-      } else {
-        setConnectionStatus('error');
-        toast({
-          title: 'Connection failed',
-          description: `Could not connect to n8n: ${response.statusText}`,
-          status: 'error',
-          duration: 3000,
-          isClosable: true,
-        });
+      setSettings(prev => ({
+        ...prev,
+        lastSaved: new Date().toLocaleTimeString()
+      }));
+      
+      // Log the first part of the API key for debugging (never log the full key)
+      if (settings.apiKey) {
+        console.log('API Key (first 10 chars):', settings.apiKey.substring(0, 10) + '...');
       }
-    } catch (error: any) {
-      setConnectionStatus('error');
+    } catch (error) {
+      console.error('Error saving settings:', error);
       toast({
-        title: 'Connection error',
-        description: error.message || 'Failed to connect to n8n',
-        status: 'error',
-        duration: 3000,
+        title: "Error saving settings",
+        description: String(error),
+        status: "error",
+        duration: 5000,
         isClosable: true,
       });
-    } finally {
-      setIsTestingConnection(false);
     }
   };
   
-  // Handle input changes
+  // Handle form field changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
-    setSettings((prev: ApiSettings) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
+    const { id, value, checked, type } = e.target;
+    
+    setSettings((prevSettings: ApiSettingsState) => ({
+      ...prevSettings,
+      [id]: type === 'checkbox' ? checked : value
     }));
   };
   
-  // Handle number input change
-  const handleNumberChange = (name: string, value: string) => {
-    setSettings((prev: ApiSettings) => ({
-      ...prev,
-      [name]: parseInt(value, 10)
-    }));
-  };
+  const toggleApiKeyVisibility = () => setSettings((prev: ApiSettingsState) => ({
+    ...prev,
+    showApiKey: !prev.showApiKey
+  }));
   
   return (
     <Card>
@@ -176,117 +176,124 @@ const ApiSettings: React.FC = () => {
       </CardHeader>
       
       <CardBody>
-        <form onSubmit={handleSubmit}>
-          <VStack spacing={6} align="start">
-            <Box width="100%">
-              <Heading size="sm" mb={4}>n8n Connection</Heading>
-              
-              <FormControl id="n8nBaseUrl" isRequired mb={4}>
-                <FormLabel>n8n Base URL</FormLabel>
-                <InputGroup>
-                  <Input 
-                    name="n8nBaseUrl"
-                    value={settings.n8nBaseUrl}
-                    onChange={handleChange}
-                    placeholder="https://n8n-cloud.example.com"
-                  />
-                  <InputRightElement width="4.5rem">
-                    <Button 
-                      h="1.75rem" 
-                      size="sm" 
-                      onClick={testConnection}
-                      isLoading={isTestingConnection}
-                    >
-                      Test
-                    </Button>
-                  </InputRightElement>
-                </InputGroup>
-                <FormHelperText>
-                  The base URL of your n8n cloud environment
-                </FormHelperText>
-                
-                {connectionStatus !== 'unknown' && (
-                  <Badge 
-                    colorScheme={connectionStatus === 'success' ? 'green' : 'red'}
-                    mt={2}
-                  >
-                    {connectionStatus === 'success' ? 'Connected' : 'Connection Failed'}
-                  </Badge>
-                )}
-              </FormControl>
-              
-              <FormControl id="callbackEndpoint" mb={4}>
-                <FormLabel>Webhook Callback URL</FormLabel>
-                <Input 
-                  name="callbackEndpoint"
-                  value={settings.callbackEndpoint}
-                  onChange={handleChange}
-                  placeholder="https://your-app.example.com/api/webhook-callback"
-                />
-                <FormHelperText>
-                  The endpoint that will receive webhook callbacks from n8n
-                </FormHelperText>
-              </FormControl>
-            </Box>
+        <form onSubmit={(e) => { e.preventDefault(); saveSettings(); }}>
+          <VStack spacing={6} align="stretch">
+            <Heading size="sm">n8n API Connection</Heading>
             
-            <Divider />
-            
-            <Box width="100%">
-              <Heading size="sm" mb={4}>Polling Settings</Heading>
-              
-              <FormControl id="pollingEnabled" mb={4}>
-                <HStack justifyContent="space-between">
-                  <Box>
-                    <FormLabel mb={0}>Enable Automatic Polling</FormLabel>
-                    <FormHelperText mt={0}>
-                      Periodically check the status of running workflows
-                    </FormHelperText>
-                  </Box>
-                  <Switch 
-                    name="pollingEnabled"
-                    isChecked={settings.pollingEnabled}
-                    onChange={handleChange}
-                    colorScheme="brand"
-                  />
-                </HStack>
-              </FormControl>
-              
-              {settings.pollingEnabled && (
-                <FormControl id="pollingInterval" mb={4}>
-                  <FormLabel>Polling Interval (seconds)</FormLabel>
-                  <NumberInput 
-                    min={5} 
-                    max={120} 
-                    value={settings.pollingInterval}
-                    onChange={(value) => handleNumberChange('pollingInterval', value)}
-                  >
-                    <NumberInputField />
-                    <NumberInputStepper>
-                      <NumberIncrementStepper />
-                      <NumberDecrementStepper />
-                    </NumberInputStepper>
-                  </NumberInput>
-                  <FormHelperText>
-                    How often to check for workflow status updates (5-120 seconds)
-                  </FormHelperText>
-                </FormControl>
+            <FormControl id="n8nBaseUrl">
+              <FormLabel>n8n Base URL</FormLabel>
+              <Input 
+                value={settings.n8nBaseUrl} 
+                id="n8nBaseUrl"
+                onChange={handleChange}
+                placeholder="https://your-n8n-instance.com" 
+              />
+              {settings.n8nBaseUrl && !settings.n8nBaseUrl.startsWith('http') && (
+                <FormHelperText color="red.500">
+                  URL must start with http:// or https://
+                </FormHelperText>
               )}
-            </Box>
+            </FormControl>
+            
+            <FormControl id="apiKey">
+              <FormLabel>n8n API Key</FormLabel>
+              <InputGroup>
+                <Input 
+                  type={settings.showApiKey ? 'text' : 'password'} 
+                  value={settings.apiKey} 
+                  id="apiKey"
+                  onChange={handleChange}
+                  placeholder="Your n8n API key"
+                />
+                <InputRightElement>
+                  <IconButton
+                    aria-label={settings.showApiKey ? 'Hide API key' : 'Show API key'}
+                    icon={settings.showApiKey ? <EyeOffIcon /> : <EyeIcon />}
+                    onClick={toggleApiKeyVisibility}
+                    variant="ghost"
+                    size="sm"
+                  />
+                </InputRightElement>
+              </InputGroup>
+              <FormHelperText>
+                Required for authenticated n8n instances. Find this in your n8n settings.
+              </FormHelperText>
+            </FormControl>
+            
+            <TestConnection />
+            
+            <Divider my={2} />
+            
+            <Heading size="sm">Webhook Settings</Heading>
+            
+            <FormControl id="callbackEndpoint">
+              <FormLabel>Callback Endpoint</FormLabel>
+              <Input 
+                value={settings.callbackEndpoint} 
+                id="callbackEndpoint"
+                onChange={handleChange}
+                placeholder="https://your-app.example.com/api/webhook-callback" 
+              />
+              <FormHelperText>
+                The endpoint where n8n can send callbacks (optional)
+              </FormHelperText>
+            </FormControl>
+            
+            <FormControl display="flex" alignItems="center">
+              <Switch 
+                id="pollingEnabled" 
+                isChecked={settings.pollingEnabled} 
+                onChange={handleChange}
+                mr={2}
+              />
+              <FormLabel htmlFor="pollingEnabled" mb={0}>
+                Enable Polling
+              </FormLabel>
+            </FormControl>
+            
+            {settings.pollingEnabled && (
+              <FormControl id="pollingInterval">
+                <FormLabel>Polling Interval (seconds)</FormLabel>
+                <NumberInput 
+                  min={1} 
+                  max={60} 
+                  value={settings.pollingInterval}
+                  onChange={(value) => {
+                    setSettings(prev => ({
+                      ...prev,
+                      pollingInterval: Number(value)
+                    }));
+                  }}
+                >
+                  <NumberInputField id="pollingInterval" />
+                  <NumberInputStepper>
+                    <NumberIncrementStepper />
+                    <NumberDecrementStepper />
+                  </NumberInputStepper>
+                </NumberInput>
+                <FormHelperText>
+                  How often to check for workflow status updates
+                </FormHelperText>
+              </FormControl>
+            )}
             
             <Button 
-              colorScheme="brand" 
+              mt={4} 
+              colorScheme="blue" 
               type="submit"
               leftIcon={<SaveIcon />}
-              alignSelf="flex-end"
-              mt={4}
             >
               Save Settings
             </Button>
+            
+            {settings.lastSaved && (
+              <Text fontSize="sm" color="gray.500" mt={2}>
+                Last saved: {settings.lastSaved}
+              </Text>
+            )}
           </VStack>
         </form>
       </CardBody>
     </Card>
   );
-};
-
-export default ApiSettings; 
+}; 

@@ -1,8 +1,9 @@
 import { useState, useCallback, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Workflow, WorkflowExecution, WorkflowStatus } from '../types';
+import { WorkflowCategory } from '../../../types/workflows';
 import { workflowApi } from '../../../services/api/workflowApi';
-import { apiConfig } from '../../../config/apiConfig';
+import { apiConfig, getWebhookId, getCorsProxyUrl } from '../../../config/apiConfig';
 
 // Store for executions, shared across hook instances
 let executionsStore: WorkflowExecution[] = [];
@@ -163,23 +164,33 @@ export const useWorkflowExecution = () => {
     };
   }, []);
   
-  // Initialize event source and polling on mount
+  // On initialization, setup event sources if polling is disabled
   useEffect(() => {
-    // Load saved executions from localStorage
+    console.log('useWorkflowExecution hook initialized');
+    
+    // Disable automatic health check
+    // testN8nConnectivity();
+    
+    // If polling is disabled, we need to set up event sources for push notifications
+    if (!apiConfig.polling.enabled) {
+      setupEventSource();
+    }
+    
+    // Make sure we have a workflow execution store
     syncWithLocalStorage().then(() => {
-      // Set up event source for real-time updates
-      const cleanupEventSource = setupEventSource();
-      
-      // Set up polling for workflow status updates
+      // Set up polling for workflow status updates if there are running executions
       const cleanupPolling = setupPolling();
       
       // Return cleanup function
       return () => {
-        cleanupEventSource();
         cleanupPolling();
+        // Clean up event sources if they exist
+        if (eventSource && typeof eventSource !== 'function') {
+          eventSource.close();
+        }
       };
     });
-  }, [syncWithLocalStorage, setupEventSource, setupPolling]);
+  }, [setupEventSource, setupPolling, syncWithLocalStorage]);
   
   // Update an execution in the store
   const updateExecution = useCallback((execution: WorkflowExecution) => {
@@ -209,8 +220,11 @@ export const useWorkflowExecution = () => {
     parameters: Record<string, any> = {}
   ): Promise<{ success: boolean; executionId: string }> => {
     try {
+      // Generate a webhookId for this workflow
+      const webhookId = getWebhookId(workflow.name, workflow.category);
+      
       // Trigger the workflow via the API
-      const result = await workflowApi.triggerWorkflow(workflow.id, parameters);
+      const result = await workflowApi.triggerWorkflow(webhookId, parameters);
       
       if (result.success && result.executionId) {
         // Create a new execution record
@@ -250,129 +264,279 @@ export const useWorkflowExecution = () => {
         
         return {
           success: false,
-          executionId: newExecution.id
+          executionId: ''
         };
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error executing workflow:', error);
-      
-      // Create a failed execution record
-      const newExecution: WorkflowExecution = {
-        id: uuidv4(),
-        workflowId: workflow.id,
-        status: 'failed',
-        startTime: new Date().toISOString(),
-        endTime: new Date().toISOString(),
-        parameters,
-        result: null,
-        error: error.message || 'An error occurred while executing the workflow'
-      };
-      
-      // Update the store
-      updateExecution(newExecution);
-      
       return {
         success: false,
-        executionId: newExecution.id
+        executionId: ''
       };
     }
   }, [updateExecution]);
   
-  // Execute multiple workflows in batch
-  const executeBatch = useCallback(async (
-    workflows: Workflow[],
+  // Execute a workflow using the specialized API methods based on the workflow category and name
+  const executeSpecializedWorkflow = useCallback(async (
+    workflow: Workflow,
     parameters: Record<string, any> = {}
-  ): Promise<{ success: boolean; executionIds: string[] }> => {
-    const executionIds: string[] = [];
-    let allSuccessful = true;
-    
-    for (const workflow of workflows) {
-      const result = await executeWorkflow(workflow, parameters);
-      
-      if (result.success) {
-        executionIds.push(result.executionId);
-      } else {
-        allSuccessful = false;
-      }
-    }
-    
-    return {
-      success: allSuccessful,
-      executionIds
-    };
-  }, [executeWorkflow]);
-  
-  // Check the status of an execution
-  const checkExecutionStatus = useCallback(async (executionId: string): Promise<WorkflowExecution | null> => {
+  ): Promise<{ success: boolean; executionId: string }> => {
     try {
-      // Find the execution in the store
-      const existingExecution = executionsStore.find(e => e.id === executionId);
+      // Use specialized workflow API methods based on category and name
+      let result;
+      const category = workflow.category;
+      const name = workflow.name;
       
-      if (!existingExecution) {
-        console.error(`No execution found with ID ${executionId}`);
-        return null;
+      // Check the workflow category and use the appropriate API method
+      switch (category) {
+        case "Lead Generation":
+          if (name === 'Sales Navigator Lead Scraper') {
+            result = await workflowApi.triggerSalesNavigatorScraper(parameters.filterCriteria);
+          } else if (name === 'Automated LinkedIn Job Scraper') {
+            result = await workflowApi.triggerLinkedInJobScraper(parameters.searchQuery, parameters.maxResults);
+          } else if (name === 'Apollo Lead Scrape') {
+            result = await workflowApi.triggerApolloLeadScraper(parameters.domains, parameters.jobTitles);
+          } else if (name === 'Lead Generation | Decision Makers') {
+            result = await workflowApi.triggerDecisionMakers(parameters.companyDomains, parameters.jobTitles);
+          } else {
+            // Fall back to generic execution
+            return executeWorkflow(workflow, parameters);
+          }
+          break;
+          
+        case "Lead Qualification":
+          if (name === '3-Step Lead Qualification') {
+            result = await workflowApi.trigger3StepQualification(parameters.inputSource);
+          } else if (name === 'Personalization') {
+            result = await workflowApi.triggerPersonalization(parameters.minScore);
+          } else {
+            return executeWorkflow(workflow, parameters);
+          }
+          break;
+          
+        case "Lead Enrichment":
+          if (name === 'LinkedIn Personalization') {
+            result = await workflowApi.triggerLinkedInPersonalization(parameters.profileUrls);
+          } else if (name === 'Scrape + Enrich') {
+            result = await workflowApi.triggerScrapeEnrich(parameters.leadIds);
+          } else if (name === 'Enrichment | Website Sections') {
+            result = await workflowApi.triggerWebsiteSections(parameters.domainName, parameters.sections);
+          } else {
+            return executeWorkflow(workflow, parameters);
+          }
+          break;
+          
+        case "AI Personalization":
+          if (name === 'Deep Insights - About Page') {
+            result = await workflowApi.triggerDeepInsights(parameters.companyUrl);
+          } else if (name === 'LinkedIn Post | Personal + Company') {
+            result = await workflowApi.triggerLinkedInPostAnalysis(parameters.profileUrl, parameters.companyUrl);
+          } else if (name === 'AI Personalization | 3 Snippets') {
+            result = await workflowApi.trigger3Snippets(parameters.profileData);
+          } else {
+            return executeWorkflow(workflow, parameters);
+          }
+          break;
+          
+        case "Replies & Follow-ups":
+          if (name === 'AI Personalization | Departments') {
+            result = await workflowApi.triggerDepartmentFollowup(parameters.department, parameters.profileData);
+          } else {
+            return executeWorkflow(workflow, parameters);
+          }
+          break;
+          
+        default:
+          // For other categories, use the generic execution method
+          return executeWorkflow(workflow, parameters);
+      }
+      
+      if (result?.success && result?.executionId) {
+        // Create a new execution record
+        const newExecution: WorkflowExecution = {
+          id: result.executionId,
+          workflowId: workflow.id,
+          status: 'running',
+          startTime: new Date().toISOString(),
+          endTime: undefined as unknown as string,
+          parameters,
+          result: null,
+          error: null
+        };
+        
+        // Update the store
+        updateExecution(newExecution);
+        
+        return {
+          success: true,
+          executionId: result.executionId
+        };
+      } else {
+        // Create a failed execution record
+        const newExecution: WorkflowExecution = {
+          id: uuidv4(),
+          workflowId: workflow.id,
+          status: 'failed',
+          startTime: new Date().toISOString(),
+          endTime: new Date().toISOString(),
+          parameters,
+          result: null,
+          error: result?.message || 'Failed to trigger workflow'
+        };
+        
+        // Update the store
+        updateExecution(newExecution);
+        
+        return {
+          success: false,
+          executionId: ''
+        };
+      }
+    } catch (error) {
+      console.error('Error executing specialized workflow:', error);
+      
+      // Fall back to the generic execution method
+      return executeWorkflow(workflow, parameters);
+    }
+  }, [executeWorkflow, updateExecution]);
+  
+  // Check execution status
+  const checkExecutionStatus = useCallback(async (executionId: string): Promise<boolean> => {
+    try {
+      // Find the execution in our store
+      const index = executionsStore.findIndex(e => e.id === executionId);
+      if (index === -1) {
+        console.error(`Execution ${executionId} not found in store`);
+        return false;
+      }
+      
+      // Get the current execution
+      const execution = executionsStore[index];
+      
+      // Only check status for running executions
+      if (execution.status !== 'running') {
+        return true;
       }
       
       // Check status via API
-      const statusResult = await workflowApi.checkExecutionStatus(executionId);
+      const result = await workflowApi.checkExecutionStatus(executionId);
       
-      if (statusResult) {
-        // Create a complete WorkflowExecution object by merging the result with existing data
-        const updatedExecution: WorkflowExecution = {
-          ...existingExecution,
-          status: statusResult.status as WorkflowStatus
-        };
-        
-        if (statusResult.data) {
-          updatedExecution.result = statusResult.data;
-        }
-        
-        // Update the execution in the store
-        updateExecution(updatedExecution);
-        return updatedExecution;
-      }
+      // Update the execution with the new status
+      updateExecution({
+        ...execution,
+        status: result.status as WorkflowStatus,
+        result: result.data,
+        endTime: result.status === 'completed' || result.status === 'failed' 
+          ? new Date().toISOString() 
+          : undefined as unknown as string
+      });
       
-      return null;
+      return true;
     } catch (error) {
       console.error('Error checking execution status:', error);
-      return null;
+      return false;
     }
   }, [updateExecution]);
   
+  // Get executions by workflow ID
+  const getExecutionsByWorkflowId = useCallback((workflowId: string): WorkflowExecution[] => {
+    return executionsStore
+      .filter(e => e.workflowId === workflowId)
+      .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
+  }, []);
+  
   // Get recent executions
-  const getRecentExecutions = useCallback((limit: number = 10): WorkflowExecution[] => {
+  const getRecentExecutions = useCallback((limit = 10): WorkflowExecution[] => {
     return [...executionsStore]
       .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime())
       .slice(0, limit);
   }, []);
   
-  // Get executions for a specific workflow
-  const getExecutionsByWorkflowId = useCallback((workflowId: string): WorkflowExecution[] => {
-    return [...executionsStore]
-      .filter(execution => execution.workflowId === workflowId)
-      .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
-  }, []);
-  
-  // Clear all executions
-  const clearExecutions = useCallback(() => {
+  // Clear execution history
+  const clearExecutions = useCallback((): boolean => {
     executionsStore = [];
-    saveToLocalStorage();
-    setStatusUpdateCount(prev => prev + 1);
+    return saveToLocalStorage();
   }, [saveToLocalStorage]);
   
-  // Refresh executions (trigger re-render)
-  const refreshExecutions = useCallback(() => {
-    setStatusUpdateCount(prev => prev + 1);
+  // Get execution by ID
+  const getExecutionById = useCallback((executionId: string): WorkflowExecution | undefined => {
+    return executionsStore.find(e => e.id === executionId);
   }, []);
   
+  // Refresh all executions
+  const refreshExecutions = useCallback(async (): Promise<boolean> => {
+    try {
+      // Find executions that need refreshing
+      const runningExecutions = executionsStore
+        .filter(e => e.status === 'running')
+        .slice(0, 10); // Limit to 10
+      
+      // Check status for each running execution
+      for (const execution of runningExecutions) {
+        await checkExecutionStatus(execution.id);
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error refreshing executions:', error);
+      return false;
+    }
+  }, [checkExecutionStatus]);
+  
+  // Execute a batch of workflows
+  const executeBatch = useCallback(async (
+    workflows: Workflow[],
+    parameters: Record<string, Record<string, any>> = {}
+  ): Promise<{
+    success: boolean;
+    results: Array<{ workflowId: string; executionId: string; success: boolean; }>
+  }> => {
+    const results = [];
+    let overallSuccess = true;
+    
+    for (const workflow of workflows) {
+      try {
+        // Get parameters for this workflow or use empty object
+        const workflowParams = parameters[workflow.id] || {};
+        
+        // Execute workflow with the specialized method
+        const result = await executeSpecializedWorkflow(workflow, workflowParams);
+        
+        results.push({
+          workflowId: workflow.id,
+          executionId: result.executionId,
+          success: result.success
+        });
+        
+        if (!result.success) {
+          overallSuccess = false;
+        }
+      } catch (error) {
+        console.error(`Error executing workflow ${workflow.id}:`, error);
+        results.push({
+          workflowId: workflow.id,
+          executionId: '',
+          success: false
+        });
+        overallSuccess = false;
+      }
+    }
+    
+    return {
+      success: overallSuccess,
+      results
+    };
+  }, [executeSpecializedWorkflow]);
+  
   return {
-    executeWorkflow,
-    executeBatch,
+    executeWorkflow: executeSpecializedWorkflow, // Use the specialized method as the default
     checkExecutionStatus,
-    getRecentExecutions,
     getExecutionsByWorkflowId,
+    getRecentExecutions,
     clearExecutions,
+    getExecutionById,
     refreshExecutions,
+    executeBatch,
     syncWithLocalStorage,
     isPolling
   };

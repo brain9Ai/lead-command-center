@@ -23,6 +23,13 @@ const initialFeatures: FeaturesState = {
     enabled: true,
     releasePhase: ReleasePhase.INITIAL
   },
+  [FeatureID.WORKFLOW_PARAMETERIZATION]: {
+    id: FeatureID.WORKFLOW_PARAMETERIZATION,
+    name: 'Workflow Parameterization',
+    description: 'Configure workflow parameters before execution',
+    enabled: true,
+    releasePhase: ReleasePhase.INITIAL
+  },
   [FeatureID.USER_MANAGEMENT]: {
     id: FeatureID.USER_MANAGEMENT,
     name: 'User Management',

@@ -147,7 +147,22 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({ workflow }) => {
     setIsExecuting(true);
     
     try {
-      const response = await executeWorkflow(workflow, parameters);
+      // Get parameter values, ensuring they're the correct types based on parameter definitions
+      const typedParameters = workflow.parameters?.reduce((acc, param) => {
+        let value = parameters[param.name] ?? param.default;
+        
+        // Convert values to the correct type
+        if (param.type === 'number' && typeof value === 'string') {
+          value = Number(value);
+        } else if (param.type === 'boolean' && typeof value === 'string') {
+          value = value === 'true';
+        }
+        
+        return { ...acc, [param.name]: value };
+      }, {}) || {};
+      
+      // Execute the workflow
+      const response = await executeWorkflow(workflow, typedParameters);
       
       if (response.success && response.executionId) {
         // Wait a short time to let the execution register
@@ -156,6 +171,7 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({ workflow }) => {
           setIsExecuting(false);
         }, 500);
       } else {
+        console.error('Workflow execution failed:', response);
         setIsExecuting(false);
       }
     } catch (error) {
@@ -204,7 +220,7 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({ workflow }) => {
               />
             </Box>
           )}
-          
+          <FeatureGuard featureId={FeatureID.WORKFLOW_PARAMETERIZATION}>
           {hasParameters && (
             <>
               <Divider my={2} />
@@ -237,6 +253,7 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({ workflow }) => {
               </Collapse>
             </>
           )}
+          </FeatureGuard>
         </Stack>
       </CardBody>
       

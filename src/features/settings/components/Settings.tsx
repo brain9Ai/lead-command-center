@@ -12,7 +12,7 @@ import {
   useColorModeValue
 } from '@chakra-ui/react';
 import Layout from '../../../components/Layout';
-import ApiSettings from './ApiSettings';
+import { ApiSettings } from './ApiSettings';
 
 const Settings: React.FC = () => {
   const bgColor = useColorModeValue('white', 'gray.800');

@@ -4,7 +4,7 @@ import { WorkflowCategory } from '../types/workflows';
 
 // Mock workflows for development and testing
 export const mockWorkflows: Workflow[] = [
-  // LEAD GENERATION WORKFLOWS - 6 items
+  // LEAD GENERATION WORKFLOWS - 7 items
   {
     id: uuidv4(),
     name: 'Sales Navigator Lead Scraper',
@@ -19,6 +19,39 @@ export const mockWorkflows: Workflow[] = [
         required: true,
         default: '',
         description: 'Criteria to use for filtering leads (JSON)'
+      }
+    ]
+  },
+  {
+    id: uuidv4(),
+    name: 'Sales|LG| Keywords - Email',
+    description: 'Generates leads based on keywords and provides email information',
+    category: WorkflowCategory.LeadGeneration,
+    webhookUrl: '/webhook/e697d609-eca3-4822-8037-65a4eac1704f',
+    parameters: [
+      {
+        name: 'keywords',
+        type: 'string',
+        label: 'Keywords',
+        required: true,
+        default: '',
+        description: 'Keywords to search for leads'
+      },
+      {
+        name: 'companyName',
+        type: 'string',
+        label: 'Company Name',
+        required: false,
+        default: '',
+        description: 'Filter by company name'
+      },
+      {
+        name: 'includeEmail',
+        type: 'boolean',
+        label: 'Include Email',
+        required: false,
+        default: true,
+        description: 'Whether to include email addresses in results'
       }
     ]
   },

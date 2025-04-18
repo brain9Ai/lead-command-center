@@ -7,6 +7,9 @@ export enum FeatureID {
   WORKFLOW_TRIGGER = 'workflow_trigger',
   STATUS_MONITORING = 'status_monitoring',
   WEBHOOK_INTEGRATION = 'webhook_integration',
+
+  // optional features
+  WORKFLOW_PARAMETERIZATION = 'workflow_parameterization',
   
   // User Management
   USER_MANAGEMENT = 'user_management',

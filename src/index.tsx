@@ -4,12 +4,54 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { FeatureID, featureFlagsService, ReleasePhase } from './features/featureFlags';
+import { ChakraProvider, theme } from '@chakra-ui/react';
+import { apiConfig } from './config/apiConfig';
 
 // Initialize feature flags for the initial release
 // Enable core features and user management for the first release
 featureFlagsService.enableFeature(FeatureID.WORKFLOW_TRIGGER);
 featureFlagsService.enableFeature(FeatureID.STATUS_MONITORING);
 featureFlagsService.enableFeature(FeatureID.WEBHOOK_INTEGRATION);
+
+// Load API settings from localStorage if available
+const loadApiSettings = () => {
+  try {
+    const savedSettings = localStorage.getItem('apiSettings');
+    if (savedSettings) {
+      const parsedSettings = JSON.parse(savedSettings);
+      
+      // Update the apiConfig with saved values
+      if (parsedSettings.n8nBaseUrl) {
+        apiConfig.n8nBaseUrl = parsedSettings.n8nBaseUrl;
+      }
+      
+      if (parsedSettings.apiKey) {
+        apiConfig.apiKey = parsedSettings.apiKey;
+        console.log('Loaded API key from localStorage (first 10 chars):', 
+          parsedSettings.apiKey.substring(0, 10) + '...');
+      }
+      
+      if (parsedSettings.callbackEndpoint) {
+        apiConfig.webhooks.callbackEndpoint = parsedSettings.callbackEndpoint;
+      }
+      
+      if (parsedSettings.pollingEnabled !== undefined) {
+        apiConfig.polling.enabled = parsedSettings.pollingEnabled;
+      }
+      
+      if (parsedSettings.pollingInterval) {
+        apiConfig.polling.interval = parsedSettings.pollingInterval * 1000; // Convert to ms
+      }
+      
+      console.log('Loaded API settings from localStorage');
+    }
+  } catch (error) {
+    console.error('Error loading API settings:', error);
+  }
+};
+
+// Load settings before rendering
+loadApiSettings();
 
 // Create a root
 const root = ReactDOM.createRoot(
@@ -19,7 +61,9 @@ const root = ReactDOM.createRoot(
 // Render the app
 root.render(
   <React.StrictMode>
-    <App />
+    <ChakraProvider theme={theme}>
+      <App />
+    </ChakraProvider>
   </React.StrictMode>
 );
 
