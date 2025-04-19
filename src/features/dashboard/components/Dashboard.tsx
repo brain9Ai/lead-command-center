@@ -52,7 +52,7 @@ const WorkflowCardWrapper: React.FC<{ workflow: WorkflowDirect }> = ({ workflow 
     // Ensure all required properties exist and have the right format
     parameters: workflow.parameters || [],
     // Make sure webhookUrl is never undefined
-    webhookUrl: workflow.webhookUrl || `/webhook/default/${workflow.id}`
+    webhookUrl: workflow.webhookUrl || `/webhook/${workflow.id}`
   };
 
   // Pass the properly formatted workflow to the original component

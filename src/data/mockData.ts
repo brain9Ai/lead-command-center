@@ -7,127 +7,10 @@ export const mockWorkflows: Workflow[] = [
   // LEAD GENERATION WORKFLOWS - 7 items
   {
     id: uuidv4(),
-    name: 'Sales Navigator Lead Scraper',
-    description: 'Extracts leads from LinkedIn Sales Navigator using advanced filters',
-    category: WorkflowCategory.LeadGeneration,
-    webhookUrl: '/webhook/lead-generation/sales-navigator',
-    parameters: [
-      {
-        name: 'filterCriteria',
-        type: 'string',
-        label: 'Filter Criteria',
-        required: true,
-        default: '',
-        description: 'Criteria to use for filtering leads (JSON)'
-      }
-    ]
-  },
-  {
-    id: uuidv4(),
-    name: 'Sales|LG| Keywords - Email',
-    description: 'Generates leads based on keywords and provides email information',
-    category: WorkflowCategory.LeadGeneration,
-    webhookUrl: '/webhook/e697d609-eca3-4822-8037-65a4eac1704f',
-    parameters: [
-      {
-        name: 'keywords',
-        type: 'string',
-        label: 'Keywords',
-        required: true,
-        default: '',
-        description: 'Keywords to search for leads'
-      },
-      {
-        name: 'companyName',
-        type: 'string',
-        label: 'Company Name',
-        required: false,
-        default: '',
-        description: 'Filter by company name'
-      },
-      {
-        name: 'includeEmail',
-        type: 'boolean',
-        label: 'Include Email',
-        required: false,
-        default: true,
-        description: 'Whether to include email addresses in results'
-      }
-    ]
-  },
-  {
-    id: uuidv4(),
-    name: 'Lead Generation | Name Only',
-    description: 'Generates leads using only name-based search criteria',
-    category: WorkflowCategory.LeadGeneration,
-    webhookUrl: '/webhook/lead-generation/name-only',
-    parameters: [
-      {
-        name: 'names',
-        type: 'string',
-        label: 'Names',
-        required: true,
-        default: '',
-        description: 'Comma-separated list of names to search for'
-      }
-    ]
-  },
-  {
-    id: uuidv4(),
-    name: 'Lead Generation | Keywords - Email',
-    description: 'Generates leads using keyword search and returns email data',
-    category: WorkflowCategory.LeadGeneration,
-    webhookUrl: '/webhook/lead-generation/keywords-email',
-    parameters: [
-      {
-        name: 'keywords',
-        type: 'string',
-        label: 'Keywords',
-        required: true,
-        default: '',
-        description: 'Comma-separated list of keywords to search by'
-      },
-      {
-        name: 'includeEmails',
-        type: 'boolean',
-        label: 'Include Emails',
-        required: false,
-        default: true,
-        description: 'Whether to include email addresses in results'
-      }
-    ]
-  },
-  {
-    id: uuidv4(),
-    name: 'Lead Generation | Decision Makers',
-    description: 'Identifies decision makers in target companies',
-    category: WorkflowCategory.LeadGeneration,
-    webhookUrl: '/webhook/lead-generation/decision-makers',
-    parameters: [
-      {
-        name: 'companyDomains',
-        type: 'string',
-        label: 'Company Domains',
-        required: true,
-        default: '',
-        description: 'Comma-separated list of company domains to search'
-      },
-      {
-        name: 'jobTitles',
-        type: 'string',
-        label: 'Job Titles',
-        required: false,
-        default: 'CEO,CTO,Director,VP,Head',
-        description: 'Comma-separated list of job titles to filter by'
-      }
-    ]
-  },
-  {
-    id: uuidv4(),
     name: 'Automated LinkedIn Job Scraper',
     description: 'Scrapes job posts from LinkedIn to identify companies actively hiring for target roles',
     category: WorkflowCategory.LeadGeneration,
-    webhookUrl: '/webhook/lead-generation/linkedin-job',
+    webhookUrl: '/webhook/linkedin-job-scraper',
     parameters: [
       {
         name: 'searchQuery',
@@ -152,7 +35,7 @@ export const mockWorkflows: Workflow[] = [
     name: 'Apollo Lead Scrape',
     description: 'Extracts contact information using Apollo.io data source',
     category: WorkflowCategory.LeadGeneration,
-    webhookUrl: '/webhook/lead-generation/apollo',
+    webhookUrl: '/webhook/apollo-lead-scrape',
     parameters: [
       {
         name: 'domains',
@@ -168,6 +51,90 @@ export const mockWorkflows: Workflow[] = [
         label: 'Job Titles',
         required: false,
         default: '',
+        description: 'Comma-separated list of job titles to filter by'
+      }
+    ]
+  },
+  {
+    id: uuidv4(),
+    name: 'Sales Navigator Lead Scraper',
+    description: 'Extracts leads from LinkedIn Sales Navigator using advanced filters',
+    category: WorkflowCategory.LeadGeneration,
+    webhookUrl: '/webhook/sales-navigator-lead-scraper',
+    parameters: [
+      {
+        name: 'filterCriteria',
+        type: 'string',
+        label: 'Filter Criteria',
+        required: true,
+        default: '',
+        description: 'Criteria to use for filtering leads (JSON)'
+      }
+    ]
+  },
+  {
+    id: uuidv4(),
+    name: 'Lead Generation | Name Only',
+    description: 'Generates leads using only name-based search criteria',
+    category: WorkflowCategory.LeadGeneration,
+    webhookUrl: '/webhook/lead-generation-name-only',
+    parameters: [
+      {
+        name: 'names',
+        type: 'string',
+        label: 'Names',
+        required: true,
+        default: '',
+        description: 'Comma-separated list of names to search for'
+      }
+    ]
+  },
+  {
+    id: uuidv4(),
+    name: 'Lead Generation | Keywords - Email',
+    description: 'Generates leads using keyword search and returns email data',
+    category: WorkflowCategory.LeadGeneration,
+    webhookUrl: '/webhook/lead-generation-keywords-email',
+    parameters: [
+      {
+        name: 'keywords',
+        type: 'string',
+        label: 'Keywords',
+        required: true,
+        default: '',
+        description: 'Comma-separated list of keywords to search by'
+      },
+      {
+        name: 'includeEmails',
+        type: 'boolean',
+        label: 'Include Emails',
+        required: false,
+        default: true,
+        description: 'Whether to include email addresses in results'
+      }
+    ]
+  },
+  {
+    id: uuidv4(),
+    name: 'Lead Generation | Decision Makers',
+    description: 'Identifies decision makers in target companies',
+    category: WorkflowCategory.LeadGeneration,
+    webhookUrl: '/webhook/lead-generation-decision-makers',
+    parameters: [
+      {
+        name: 'companyDomains',
+        type: 'string',
+        label: 'Company Domains',
+        required: true,
+        default: '',
+        description: 'Comma-separated list of company domains to search'
+      },
+      {
+        name: 'jobTitles',
+        type: 'string',
+        label: 'Job Titles',
+        required: false,
+        default: 'CEO,CTO,Director,VP,Head',
         description: 'Comma-separated list of job titles to filter by'
       }
     ]

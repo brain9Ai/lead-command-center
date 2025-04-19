@@ -69,13 +69,13 @@ export const categoryPathMap: Record<string, string> = {
 // Mapping of workflow names to their n8n webhook IDs
 export const workflowWebhookMap: Record<string, string> = {
   // Lead Generation
+  'Automated LinkedIn Job Scraper': 'linkedin-job-scraper',
+  'Apollo Lead Scrape': 'apollo-lead-scrape',
   'Sales Navigator Lead Scraper': 'sales-navigator-lead-scraper',
   'Lead Generation | Name Only': 'lead-generation-name-only',
   'Lead Generation | Keywords - Email': 'lead-generation-keywords-email',
   'Lead Generation | Decision Makers': 'lead-generation-decision-makers',
-  'Automated LinkedIn Job Scraper': 'linkedin-job-scraper',
-  'Apollo Lead Scrape': 'apollo-lead-scrape',
-  'Sales|LG| Keywords - Email': 'e697d609-eca3-4822-8037-65a4eac1704f',
+  
   
   // Lead Qualification
   '3-Step Lead Qualification': '3-step-lead-qualification',

@@ -213,7 +213,7 @@ export const useWorkflowExecution = () => {
     // Update the update count to trigger a re-render
     setStatusUpdateCount(prev => prev + 1);
   }, [saveToLocalStorage]);
-  
+
   // Execute a workflow
   const executeWorkflow = useCallback(async (
     workflow: Workflow,
@@ -275,7 +275,7 @@ export const useWorkflowExecution = () => {
       };
     }
   }, [updateExecution]);
-  
+
   // Execute a workflow using the specialized API methods based on the workflow category and name
   const executeSpecializedWorkflow = useCallback(async (
     workflow: Workflow,
