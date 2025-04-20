@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { v4 as uuidv4 } from 'uuid';
-import { Workflow, WorkflowCategory, WorkflowExecution, WorkflowParameter } from '../types/workflows';
+import { Workflow, WorkflowCategory } from '../types/workflows';
 import { 
   N8N_BASE_URL, 
   WEBHOOK_PATHS, 
@@ -315,7 +314,6 @@ const realWorkflows: Workflow[] = [
 
 export const useWorkflows = () => {
   const [workflows, setWorkflows] = useState<Workflow[]>(realWorkflows);
-  const [executions, setExecutions] = useState<WorkflowExecution[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -325,6 +323,12 @@ export const useWorkflows = () => {
     setWorkflows(realWorkflows);
   }, []);
 
+  /**
+   * Execute a workflow via webhook
+   * @param workflowId The ID of the workflow to execute
+   * @param parameters Parameters to pass to the workflow
+   * @returns Object with success status and data from the Respond to Webhook node
+   */
   const executeWorkflow = async (workflowId: string, parameters: Record<string, any> = {}) => {
     setLoading(true);
     setError(null);
@@ -336,18 +340,6 @@ export const useWorkflows = () => {
         throw new Error(`Workflow with ID ${workflowId} not found`);
       }
       
-      // Create a new execution record
-      const executionId = uuidv4();
-      const newExecution: WorkflowExecution = {
-        id: executionId,
-        workflowId,
-        status: 'running',
-        startTime: new Date(),
-        parameters
-      };
-      
-      setExecutions(prev => [...prev, newExecution]);
-      
       try {
         // Make the actual API call to n8n webhook
         const response = await axios.post(workflow.webhookUrl, parameters, {
@@ -356,78 +348,25 @@ export const useWorkflows = () => {
         
         console.log(`Workflow ${workflowId} executed with response:`, response.data);
         
-        // Update the execution status
-        setExecutions(prev => 
-          prev.map(exec => 
-            exec.id === executionId 
-              ? { ...exec, status: 'completed', endTime: new Date() } 
-              : exec
-          )
-        );
-        
-        return { success: true, executionId, data: response.data };
+        return { 
+          success: true, 
+          message: response.data?.message || 'Workflow started successfully',
+          data: response.data 
+        };
       } catch (apiError: any) {
         console.error(`API error for workflow ${workflowId}:`, apiError);
-        
-        setExecutions(prev => 
-          prev.map(exec => 
-            exec.id === executionId 
-              ? { ...exec, status: 'failed', endTime: new Date() } 
-              : exec
-          )
-        );
         throw new Error(`API error: ${apiError.message}`);
       }
     } catch (err: any) {
       setError(err.message);
-      return { success: false, error: err.message };
+      return { 
+        success: false, 
+        message: err.message,
+        error: err.message 
+      };
     } finally {
       setLoading(false);
     }
-  };
-
-  const executeWorkflowsByCategory = async (category: WorkflowCategory) => {
-    const categoryWorkflows = workflows.filter(w => w.category === category);
-    
-    if (categoryWorkflows.length === 0) {
-      return { success: false, error: `No workflows found for category ${category}` };
-    }
-    
-    const results = [];
-    setLoading(true);
-    
-    try {
-      for (const workflow of categoryWorkflows) {
-        // Get default parameters or empty object
-        const defaultParams = DEFAULT_PARAMETERS[workflow.id as keyof typeof DEFAULT_PARAMETERS] || {};
-        
-        const result = await executeWorkflow(workflow.id, defaultParams);
-        results.push({ workflowId: workflow.id, result });
-      }
-      
-      return { success: true, results };
-    } catch (err: any) {
-      return { success: false, error: err.message, results };
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getExecutionsByWorkflowId = (workflowId: string) => {
-    return executions.filter(exec => exec.workflowId === workflowId);
-  };
-
-  const getLatestExecution = (workflowId: string) => {
-    const workflowExecutions = getExecutionsByWorkflowId(workflowId);
-    if (workflowExecutions.length === 0) return null;
-    
-    return workflowExecutions.reduce((latest, current) => {
-      return new Date(current.startTime) > new Date(latest.startTime) ? current : latest;
-    });
-  };
-
-  const clearExecutions = () => {
-    setExecutions([]);
   };
 
   const getWorkflowsByCategory = (category: WorkflowCategory | 'all') => {
@@ -439,14 +378,9 @@ export const useWorkflows = () => {
 
   return {
     workflows,
-    executions,
     loading,
     error,
     executeWorkflow,
-    executeWorkflowsByCategory,
-    getExecutionsByWorkflowId,
-    getLatestExecution,
-    getWorkflowsByCategory,
-    clearExecutions
+    getWorkflowsByCategory
   };
 }; 

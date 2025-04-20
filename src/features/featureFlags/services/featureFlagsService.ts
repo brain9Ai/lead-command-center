@@ -13,7 +13,7 @@ const initialFeatures: FeaturesState = {
     id: FeatureID.STATUS_MONITORING,
     name: 'Status Monitoring',
     description: 'View current workflow execution status',
-    enabled: true,
+    enabled: false, // Not needed as per your request
     releasePhase: ReleasePhase.INITIAL
   },
   [FeatureID.WEBHOOK_INTEGRATION]: {
@@ -41,7 +41,7 @@ const initialFeatures: FeaturesState = {
     id: FeatureID.ADVANCED_DASHBOARD,
     name: 'Advanced Dashboard',
     description: 'Detailed performance metrics and real-time system status',
-    enabled: false,
+    enabled: true,
     releasePhase: ReleasePhase.SECOND
   },
   [FeatureID.ANALYTICS_REPORTING]: {
@@ -96,14 +96,40 @@ const saveFeaturestoStorage = (features: FeaturesState): void => {
 
 // Initialize features in storage if not already there
 const initializeFeatures = (): FeaturesState => {
-  const existingFeatures = loadFeaturesFromStorage();
-  
-  // Only save to storage if we're using the initial features
-  if (existingFeatures === initialFeatures) {
+  try {
+    const storedFeatures = localStorage.getItem(FEATURES_STORAGE_KEY);
+    
+    // If we have stored features, use those
+    if (storedFeatures) {
+      const parsedFeatures = JSON.parse(storedFeatures);
+      
+      // Check if any key from initialFeatures is missing in parsedFeatures
+      // This handles the case where new features were added after user already had localStorage data
+      let needsUpdate = false;
+      Object.keys(initialFeatures).forEach(key => {
+        if (!parsedFeatures[key as keyof FeaturesState]) {
+          needsUpdate = true;
+          parsedFeatures[key as keyof FeaturesState] = initialFeatures[key as keyof FeaturesState];
+        }
+      });
+      
+      if (needsUpdate) {
+        saveFeaturestoStorage(parsedFeatures);
+        console.log('Updated stored features with new default features');
+      }
+      
+      return parsedFeatures;
+    }
+    
+    // No stored features, use initial features
+    console.log('No stored features found, using default initialFeatures');
     saveFeaturestoStorage(initialFeatures);
+    return initialFeatures;
+  } catch (error) {
+    console.error('Error in initializeFeatures:', error);
+    saveFeaturestoStorage(initialFeatures);
+    return initialFeatures;
   }
-  
-  return existingFeatures;
 };
 
 // Feature flag service
@@ -157,6 +183,16 @@ export const featureFlagsService = {
     saveFeaturestoStorage(initialFeatures);
   },
   
+  // Clear localStorage and use the initial values
+  clearStoredFeatures(): void {
+    try {
+      localStorage.removeItem(FEATURES_STORAGE_KEY);
+      console.log('Cleared stored feature flags. Using initial values.');
+    } catch (error) {
+      console.error('Failed to clear stored features:', error);
+    }
+  },
+  
   // Initialize feature flags (call this when app starts)
   initialize(): void {
     initializeFeatures();
@@ -164,4 +200,7 @@ export const featureFlagsService = {
 };
 
 // Initialize on import
-featureFlagsService.initialize(); 
+featureFlagsService.initialize();
+
+// Debug the current state of features
+console.log('Initial feature flags:', featureFlagsService.getAllFeatures()); 

@@ -11,7 +11,8 @@ import {
   Spinner,
   Tag,
   TagLeftIcon,
-  TagLabel
+  TagLabel,
+  useToast
 } from '@chakra-ui/react';
 import { 
   FiCheck, 
@@ -24,7 +25,6 @@ import {
 } from 'react-icons/fi';
 import { WorkflowExecution, WorkflowStatus } from '../types';
 import { WorkflowExecutionStatus as WorkflowExecutionStatusEnum } from '../types';
-import { useWorkflowExecution } from '../hooks/useWorkflowExecution';
 import { IconType } from 'react-icons';
 import { createChakraIcon } from '../../../utils';
 
@@ -44,7 +44,7 @@ export const WorkflowExecutionStatus: React.FC<WorkflowExecutionStatusProps> = (
   showTimestamp = true
 }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const { checkExecutionStatus } = useWorkflowExecution();
+  const toast = useToast();
   
   const RefreshIcon = createChakraIcon(FiRefreshCw);
   const CheckIcon = createChakraIcon(FiCheck);
@@ -127,8 +127,32 @@ export const WorkflowExecutionStatus: React.FC<WorkflowExecutionStatusProps> = (
   };
 
   const handleRefresh = async () => {
-    if (onRefresh) {
-      onRefresh();
+    setIsRefreshing(true);
+    
+    try {
+      if (onRefresh) {
+        onRefresh();
+      } else {
+        // Default behavior when no callback is provided
+        console.log(`Refreshing status for execution ${execution.id}`);
+        toast({
+          title: "Status refreshed",
+          status: "info",
+          duration: 2000,
+        });
+      }
+    } catch (error) {
+      console.error('Error refreshing status:', error);
+      toast({
+        title: "Refresh failed",
+        status: "error",
+        duration: 3000,
+      });
+    } finally {
+      // Add a small delay for better UX
+      setTimeout(() => {
+        setIsRefreshing(false);
+      }, 500);
     }
   };
 
@@ -169,7 +193,7 @@ export const WorkflowExecutionStatus: React.FC<WorkflowExecutionStatusProps> = (
               ml={2}
               size="xs"
               variant="ghost"
-              isLoading={execution.status === 'running'}
+              isLoading={isRefreshing}
               onClick={handleRefresh}
               aria-label="Refresh status"
             >

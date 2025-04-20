@@ -6,25 +6,16 @@ import { WorkflowCategory } from '../types/workflows';
 
 export interface ApiConfig {
   n8nBaseUrl: string;
-  corsProxy: string;
   apiKey: string;
   webhooks: {
     triggerWebhook: string;
-    callbackEndpoint: string;
-    statusUpdatePath: string;
-  };
-  polling: {
-    enabled: boolean;
-    interval: number; // in milliseconds
+    callbackEndpoint?: string;
   };
 }
 
 export const apiConfig: ApiConfig = {
   // Base URL for the n8n API
   n8nBaseUrl: 'https://brain9.app.n8n.cloud',
-  
-  // CORS proxy URL - prepend this to n8n requests to bypass CORS
-  corsProxy: 'https://cors.sh/',
   
   // n8n API key for authentication (get this from your n8n settings)
   apiKey: '', // This will be set from localStorage by the settings component
@@ -33,25 +24,8 @@ export const apiConfig: ApiConfig = {
   webhooks: {
     // Path to trigger workflows via webhook
     triggerWebhook: '/webhook',
-    
-    // Endpoint where n8n can send callbacks
-    callbackEndpoint: 'https://your-app.example.com/api/webhook-callback',
-    
-    // Path to handle status updates from n8n
-    statusUpdatePath: '/api/workflow-status-update',
-  },
-  
-  // Polling configuration for workflow status
-  polling: {
-    enabled: true,
-    interval: 30000, // 30 seconds
-  },
-};
-
-// Helper function to get URL with CORS proxy if needed
-export const getCorsProxyUrl = (url: string): string => {
-  // Disable CORS proxy completely and always return the original URL
-  return url;
+    callbackEndpoint: '/webhook-callback'
+  }
 };
 
 // Mapping of workflow categories to their n8n webhook paths
@@ -76,7 +50,6 @@ export const workflowWebhookMap: Record<string, string> = {
   'Lead Generation | Keywords - Email': 'lead-generation-keywords-email',
   'Lead Generation | Decision Makers': 'lead-generation-decision-makers',
   
-  
   // Lead Qualification
   '3-Step Lead Qualification': '3-step-lead-qualification',
   'Personalization': 'personalization-trigger',
@@ -96,24 +69,10 @@ export const workflowWebhookMap: Record<string, string> = {
   
   // Replies & Follow-ups
   'Replies | AI Personalization | Departments': 'ai-personalization-departments-followup',
-};
-
-// Helper functions for API operations
-
-/**
- * Get the complete URL for a specific n8n API endpoint
- */
-export const getN8nApiUrl = (endpoint: string): string => {
-  const baseUrl = apiConfig.n8nBaseUrl;
-  const formattedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-  return `${baseUrl}${formattedEndpoint}`;
-};
-
-/**
- * Get the complete webhook URL for a specific workflow
- */
-export const getWebhookUrl = (workflowId: string): string => {
-  return `${apiConfig.n8nBaseUrl}${apiConfig.webhooks.triggerWebhook}/${workflowId}`;
+  
+  // LinkedIn Post Enricher with UUID example
+  'LinkedIn Post Enricher': 'linkedIn-post-enricher',
+  'Company Website Analyzer': 'company-website-analyzer',
 };
 
 /**
@@ -136,13 +95,6 @@ export const getWebhookId = (workflowName: string, category: string): string => 
     .replace(/\s+/g, '-');
     
   return `${categoryPath}/${workflowPath}`;
-};
-
-/**
- * Get the status update webhook URL
- */
-export const getStatusUpdateUrl = (): string => {
-  return `${window.location.origin}${apiConfig.webhooks.statusUpdatePath}`;
 };
 
 /**

@@ -16,9 +16,17 @@ export const mockWorkflows: Workflow[] = [
         name: 'searchQuery',
         type: 'string',
         label: 'Job Title or Keyword',
-        required: true,
+        required: false,
         default: '',
         description: 'Job title or keyword to search for'
+      },
+      {
+        name: 'location',
+        type: 'string',
+        label: 'Job Location',
+        required: false,
+        default: '',
+        description: 'Job Location (e.g., city, state, country)'
       },
       {
         name: 'maxResults',
@@ -36,24 +44,24 @@ export const mockWorkflows: Workflow[] = [
     description: 'Extracts contact information using Apollo.io data source',
     category: WorkflowCategory.LeadGeneration,
     webhookUrl: '/webhook/apollo-lead-scrape',
-    parameters: [
-      {
-        name: 'domains',
-        type: 'string',
-        label: 'Company Domains',
-        required: true,
-        default: '',
-        description: 'Comma-separated list of company domains'
-      },
-      {
-        name: 'jobTitles',
-        type: 'string',
-        label: 'Job Titles',
-        required: false,
-        default: '',
-        description: 'Comma-separated list of job titles to filter by'
-      }
-    ]
+    // parameters: [
+    //   {
+    //     name: 'domains',
+    //     type: 'string',
+    //     label: 'Company Domains',
+    //     required: true,
+    //     default: '',
+    //     description: 'Comma-separated list of company domains'
+    //   },
+    //   {
+    //     name: 'jobTitles',
+    //     type: 'string',
+    //     label: 'Job Titles',
+    //     required: false,
+    //     default: '',
+    //     description: 'Comma-separated list of job titles to filter by'
+    //   }
+    // ]
   },
   {
     id: uuidv4(),
@@ -94,7 +102,7 @@ export const mockWorkflows: Workflow[] = [
     name: 'Lead Generation | Keywords - Email',
     description: 'Generates leads using keyword search and returns email data',
     category: WorkflowCategory.LeadGeneration,
-    webhookUrl: '/webhook/lead-generation-keywords-email',
+    webhookUrl: '/webhook-test/lead-generation-keywords-email',
     parameters: [
       {
         name: 'keywords',
