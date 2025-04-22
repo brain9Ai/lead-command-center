@@ -38,11 +38,12 @@ export const ExecutionStatusMap: Record<string, WorkflowExecutionStatus> = {
 export interface WorkflowParameter {
   name: string;
   label: string;
-  type: 'string' | 'number' | 'boolean';
+  type: 'string' | 'number' | 'boolean' | 'object' | 'array' | 'apikey';
   default: any;
   required: boolean;
   description?: string;
   options?: Array<{ label: string; value: any }>;
+  format?: string; // Optional format hint (e.g., 'date', 'email', 'url', 'json', etc.)
 }
 
 export interface Workflow {

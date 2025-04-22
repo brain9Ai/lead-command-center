@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import { Button, Tooltip } from '@chakra-ui/react';
+import { Button, Tooltip, useToast } from '@chakra-ui/react';
 import { FiRefreshCw } from 'react-icons/fi';
-import { IconType } from 'react-icons';
-import { useWorkflowExecution } from '../hooks/useWorkflowExecution';
 import { createChakraIcon } from '../../../utils';
 
 interface RefreshButtonProps {
@@ -10,27 +8,49 @@ interface RefreshButtonProps {
   colorScheme?: string;
   variant?: string;
   tooltipLabel?: string;
+  onRefresh?: () => Promise<void>;
 }
 
 export const RefreshButton: React.FC<RefreshButtonProps> = ({
   size = 'sm',
   colorScheme = 'gray',
   variant = 'ghost',
-  tooltipLabel = 'Refresh status'
+  tooltipLabel = 'Refresh status',
+  onRefresh
 }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const { syncWithLocalStorage } = useWorkflowExecution();
+  const toast = useToast();
   
   const RefreshIcon = createChakraIcon(FiRefreshCw);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    await syncWithLocalStorage();
     
-    // Add a small delay for better UX
-    setTimeout(() => {
-      setIsRefreshing(false);
-    }, 500);
+    try {
+      if (onRefresh) {
+        await onRefresh();
+      } else {
+        // Default refresh behavior if no callback provided
+        console.log('Refresh triggered');
+        toast({
+          title: "Refreshed",
+          status: "success",
+          duration: 2000,
+        });
+      }
+    } catch (error) {
+      console.error('Error during refresh:', error);
+      toast({
+        title: "Refresh failed",
+        status: "error",
+        duration: 3000,
+      });
+    } finally {
+      // Add a small delay for better UX
+      setTimeout(() => {
+        setIsRefreshing(false);
+      }, 500);
+    }
   };
 
   return (

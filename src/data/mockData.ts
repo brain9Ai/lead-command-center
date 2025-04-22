@@ -10,7 +10,7 @@ export const mockWorkflows: Workflow[] = [
     name: 'Automated LinkedIn Job Scraper',
     description: 'Scrapes job posts from LinkedIn to identify companies actively hiring for target roles',
     category: WorkflowCategory.LeadGeneration,
-    webhookUrl: '/webhook/linkedin-job-scraper',
+    webhookUrl: '/webhook-test/linkedin-job-scraper',
     parameters: [
       {
         name: 'searchQuery',
@@ -21,12 +21,28 @@ export const mockWorkflows: Workflow[] = [
         description: 'Job title or keyword to search for'
       },
       {
+        name: 'location',
+        type: 'string',
+        label: 'Job Location',
+        required: true,
+        default: '',
+        description: 'Job Location (e.g., city, state, country)'
+      },
+      {
         name: 'maxResults',
         type: 'number',
         label: 'Maximum Results',
         required: false,
         default: 50,
         description: 'Maximum number of results to return'
+      },
+      {
+        name: 'apifyApiKey',
+        type: 'apikey',
+        label: 'Apify API Key',
+        required: true,
+        default: '',
+        description: 'Your Apify API key for higher rate limits'
       }
     ]
   },
@@ -35,23 +51,56 @@ export const mockWorkflows: Workflow[] = [
     name: 'Apollo Lead Scrape',
     description: 'Extracts contact information using Apollo.io data source',
     category: WorkflowCategory.LeadGeneration,
-    webhookUrl: '/webhook/apollo-lead-scrape',
+    webhookUrl: '/webhook-test/apollo-lead-scrape',
     parameters: [
       {
-        name: 'domains',
-        type: 'string',
-        label: 'Company Domains',
-        required: true,
-        default: '',
-        description: 'Comma-separated list of company domains'
+        name: 'getEmails',
+        type: 'boolean',
+        label: 'Get Emails',
+        required: false,
+        default: false,
+        description: 'Whether to include email addresses in the results'
       },
       {
-        name: 'jobTitles',
+        name: 'waitForEmailVerification',
+        type: 'boolean',
+        label: 'Wait for Email Verification',
+        required: false,
+        default: false,
+        description: 'Whether to wait for email verification before returning results'
+      },
+      {
+        name: 'apolloCookie',
         type: 'string',
-        label: 'Job Titles',
+        label: 'Apollo Cookie',
+        required: true,
+        default: '',
+        description: 'Apollo.io cookie for authentication'
+      },
+      {
+        name: 'apolloSearchUrl',
+        type: 'string',
+        label: 'Apollo Search URL',
+        required: true,
+        default: '',
+        description: 'Apollo.io search URL to scrape leads from'
+        
+      },
+      {
+        name: 'apifyKey',
+        type: 'apikey',
+        label: 'Apify API Key',
         required: false,
         default: '',
-        description: 'Comma-separated list of job titles to filter by'
+        description: 'Your Apify API key for higher rate limits'
+      },
+      {
+        name: 'maxResults',
+        type: 'number',
+        label: 'Maximum Results',
+        required: false,
+        default: 50,
+        description: 'Maximum number of results to return'
       }
     ]
   },
@@ -94,7 +143,7 @@ export const mockWorkflows: Workflow[] = [
     name: 'Lead Generation | Keywords - Email',
     description: 'Generates leads using keyword search and returns email data',
     category: WorkflowCategory.LeadGeneration,
-    webhookUrl: '/webhook/lead-generation-keywords-email',
+    webhookUrl: '/webhook-test/lead-generation-keywords-email',
     parameters: [
       {
         name: 'keywords',
@@ -116,10 +165,10 @@ export const mockWorkflows: Workflow[] = [
   },
   {
     id: uuidv4(),
-    name: 'Lead Generation | Decision Makers',
+    name: 'Clutch Lead Generation | Decision Makers',
     description: 'Identifies decision makers in target companies',
     category: WorkflowCategory.LeadGeneration,
-    webhookUrl: '/webhook/lead-generation-decision-makers',
+    webhookUrl: '/webhook/lead-generation-decision-makers-clutch',
     parameters: [
       {
         name: 'companyDomains',

@@ -5,10 +5,10 @@ import {
   Tooltip,
   Button,
   Spinner,
+  useToast,
 } from '@chakra-ui/react';
 import { FiRefreshCw } from 'react-icons/fi';
 import { WorkflowStatus } from '../types';
-import { useWorkflowExecution } from '../hooks/useWorkflowExecution';
 import { createChakraIcon } from '../../../utils';
 
 interface WorkflowStatusBadgeProps {
@@ -27,7 +27,7 @@ export const WorkflowStatusBadge: React.FC<WorkflowStatusBadgeProps> = ({
   onRefresh
 }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const { checkExecutionStatus } = useWorkflowExecution();
+  const toast = useToast();
   
   const RefreshIcon = createChakraIcon(FiRefreshCw);
 
@@ -83,19 +83,29 @@ export const WorkflowStatusBadge: React.FC<WorkflowStatusBadgeProps> = ({
   const handleRefresh = async () => {
     setIsRefreshing(true);
     
-    if (onRefresh) {
-      // Use the custom onRefresh handler if provided
-      onRefresh();
-      setTimeout(() => setIsRefreshing(false), 500);
-    } else {
-      // Otherwise check the execution status directly
-      try {
-        await checkExecutionStatus(executionId);
-      } catch (error) {
-        console.error('Error refreshing status:', error);
-      } finally {
-        setIsRefreshing(false);
+    try {
+      if (onRefresh) {
+        // Use the custom onRefresh handler if provided
+        onRefresh();
+      } else {
+        // Simple feedback when no handler is provided
+        console.log(`Refreshing status for execution ${executionId}`);
+        toast({
+          title: "Status refreshed",
+          status: "info",
+          duration: 2000,
+        });
       }
+    } catch (error) {
+      console.error('Error refreshing status:', error);
+      toast({
+        title: "Refresh failed",
+        status: "error",
+        duration: 3000,
+      });
+    } finally {
+      // Add a small delay for better UX
+      setTimeout(() => setIsRefreshing(false), 500);
     }
   };
 

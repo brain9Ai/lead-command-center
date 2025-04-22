@@ -1,6 +1,6 @@
 # Lead Command Center
 
-A React application for managing and executing n8n workflows focused on lead generation, qualification, enrichment, and AI-powered personalization.
+A React application for triggering n8n workflows focused on lead generation, qualification, enrichment, and AI-powered personalization.
 
 ![Lead Command Center Dashboard](docs/dashboard-screenshot.png)
 
@@ -8,8 +8,7 @@ A React application for managing and executing n8n workflows focused on lead gen
 
 - **Seamless n8n Integration**: Execute workflows directly from a user-friendly interface
 - **Categorized Workflows**: Organized by business function (lead generation, qualification, etc.)
-- **Real-time Status Updates**: Track workflow execution progress via webhooks
-- **Execution History**: View past workflow runs with results and timestamps
+- **Immediate Response**: Get instant feedback from n8n's Respond to Webhook node
 - **Parameter Management**: Dynamic form generation based on workflow requirements
 - **Feature Flag System**: Enable/disable features based on configuration
 - **Responsive Design**: Works on desktop and mobile devices
@@ -75,16 +74,11 @@ The n8n connection is configured in `src/config/apiConfig.ts`:
 ```typescript
 export const apiConfig = {
   n8nBaseUrl: process.env.REACT_APP_N8N_URL || 'https://n8n-cloud.example.com',
-  webhookPaths: {
-    triggerWorkflow: '/webhook/',
-    callback: '/webhook-callback/',
-    statusUpdate: '/status-update/',
-  },
-  polling: {
-    enabled: true,
-    intervalMs: 3000,
-  },
-  // Other API configuration options
+  apiKey: '', // Will be set from localStorage by the settings component
+  webhooks: {
+    triggerWebhook: '/webhook',
+    callbackEndpoint: '/webhook-callback'
+  }
 };
 ```
 
@@ -101,18 +95,38 @@ export const workflowWebhookMap: Record<string, string> = {
 };
 ```
 
-### Feature Flags
+### Feature Flags Configuration
 
-Feature flags are configured in `src/features/featureFlags/config/featureFlags.ts`:
+The application uses feature flags to enable/disable specific functionality. These are defined in `src/features/featureFlags/index.ts`:
 
-```typescript
-export const featureFlags: FeatureFlagsConfig = {
-  enablePolling: true,
-  enableWebhookCallbacks: true,
-  enableBatchExecution: false,
-  showRefreshButton: true,
-  // Add new feature flags here
-};
+```javascript
+// Available feature IDs
+export enum FeatureID {
+  WORKFLOW_TRIGGER = 'workflow-trigger',
+  WEBHOOK_INTEGRATION = 'webhook-integration',
+  USER_MANAGEMENT = 'user-management',
+  MULTI_ACCOUNT = 'multi-account',
+}
+```
+
+Feature flags are enabled in `src/index.tsx`:
+
+```javascript
+// Enable features for the application
+featureFlagsService.enableFeature(FeatureID.WORKFLOW_TRIGGER);
+featureFlagsService.enableFeature(FeatureID.WEBHOOK_INTEGRATION);
+```
+
+To enable or disable a feature:
+```javascript
+// To enable a feature
+featureFlagsService.enableFeature(FeatureID.FEATURE_NAME);
+
+// To disable a feature
+featureFlagsService.disableFeature(FeatureID.FEATURE_NAME);
+
+// To check if a feature is enabled
+featureFlagsService.isFeatureEnabled(FeatureID.FEATURE_NAME);
 ```
 
 ## 🎮 Usage
@@ -125,55 +139,63 @@ The dashboard displays all available workflows organized by category:
 2. Browse workflows by category using the tabs
 3. Click on a workflow card to expand and view parameters
 4. Fill in required parameters and click "Execute"
-5. View execution status and results in real-time
+5. View the immediate response from the n8n workflow
 
 ### Executing Workflows
 
-#### Single Workflow Execution
+#### Using Webhook Nodes in n8n
+
+The Lead Command Center is designed to trigger n8n workflows that have a Webhook node as the starting point. To get immediate feedback to the user, you should also include a "Respond to Webhook" node in your workflow:
+
+1. Start your n8n workflow with a Webhook node
+2. Configure the authentication method if needed (API Key)
+3. In the "Response Mode" dropdown, select "On Received"
+4. Configure the workflow logic as needed
+5. Add a "Respond to Webhook" node before the workflow's main processing happens
+6. Configure the "Respond to Webhook" node to return a JSON object like:
+   ```json
+   {
+     "success": true,
+     "message": "Workflow started successfully"
+   }
+   ```
+7. Connect this node to your Webhook trigger node
+
+This approach allows the Lead Command Center to receive an immediate response that the workflow has started, while the actual processing continues in n8n.
+
+#### Example Workflow Implementation
 
 ```typescript
 // Example from useWorkflowExecution.ts
 const executeWorkflow = async (
-  id: string, 
-  name: string, 
-  category: WorkflowCategory,
+  workflow: Workflow,
   parameters: Record<string, any> = {}
 ) => {
   try {
     setExecuting(true);
-    const result = await executeSpecializedWorkflow(name, category, parameters);
+    // Get the webhook ID for this workflow
+    const webhookId = getWebhookId(workflow.name, workflow.category);
     
-    if (result.success) {
-      addExecution({
-        id: result.executionId,
-        workflowId: id,
-        workflowName: name,
-        status: 'running',
-        parameters,
-        startTime: new Date().toISOString(),
-      });
-      setMessage({ type: 'success', text: `Workflow "${name}" started successfully` });
-    } else {
-      setMessage({ type: 'error', text: result.message || `Failed to start workflow "${name}"` });
-    }
+    // Call the n8n webhook
+    const result = await workflowApi.triggerWorkflow(webhookId, parameters);
+    
+    // Display the response from the Respond to Webhook node
+    setMessage({ 
+      type: result.success ? 'success' : 'error', 
+      text: result.message || (result.success ? 
+        `${workflow.name} started successfully` : 
+        `Failed to start ${workflow.name}`)
+    });
+    
     return result;
   } catch (error) {
     setMessage({ type: 'error', text: `Error: ${error.message}` });
-    return { success: false, executionId: '', message: error.message };
+    return { success: false, message: error.message };
   } finally {
     setExecuting(false);
   }
 };
 ```
-
-#### Batch Execution
-
-To execute all workflows in a category:
-
-1. Navigate to the category tab
-2. Click the "Execute All" button
-3. Fill in required parameters for all workflows
-4. Click "Start Execution"
 
 ## 🏗️ Architecture
 
@@ -253,7 +275,7 @@ export const workflowApi = {
     success: boolean;
     message?: string;
   }> => {
-    const url = `${apiConfig.n8nBaseUrl}${apiConfig.webhookPaths.triggerWorkflow}${webhookId}`;
+    const url = `${apiConfig.n8nBaseUrl}${apiConfig.webhooks.triggerWebhook}${webhookId}`;
     
     try {
       const response = await fetch(url, {
@@ -263,7 +285,7 @@ export const workflowApi = {
         },
         body: JSON.stringify({
           ...params,
-          callbackUrl: `${window.location.origin}${apiConfig.webhookPaths.callback}`,
+          callbackUrl: `${window.location.origin}${apiConfig.webhooks.callbackEndpoint}`,
         }),
       });
       
@@ -356,196 +378,58 @@ const startPolling = () => {
 };
 ```
 
-## 🔌 Detailed Integration Guide
+## 🔄 Simplified Workflow Integration
 
-### Setting Up API Keys
+The Lead Command Center has been simplified to focus solely on workflow triggering without execution tracking:
 
-1. **Obtain n8n API Key**:
-   - Go to your n8n instance
-   - Navigate to Settings > API Keys
-   - Create a new API Key or use an existing one
-   - Copy the JWT token (looks like: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`)
+### Workflow Execution Model
 
-2. **Configure in the Application**:
-   - In the Lead Command Center, go to Settings > API & Webhook Settings
-   - Enter your n8n Base URL (e.g., `https://brain9.app.n8n.cloud`)
-   - Paste your API Key in the API Key field
-   - Set other configuration options like polling interval
-   - Click "Save Settings"
+1. **Trigger-Only Design**:
+   - The system is designed to trigger workflows via n8n webhooks and display immediate success/failure messages
+   - No execution tracking or status polling is performed
+   - No workflow execution history is stored in localStorage
 
-3. **Test the Connection**:
-   - **Important:** Enable a CORS extension in your browser first (see [CORS Settings](#cors-settings))
-   - Click "Test n8n Connection" to verify connectivity
-
-### Adding Webhook IDs to Workflows
-
-1. **Finding a Workflow's Webhook ID in n8n**:
-   - In n8n, open your workflow
-   - Look for the "Webhook" node (usually the first node)
-   - The webhook URL will be shown in the node details
-   - Extract the ID from the URL (the part after `/webhook/`)
-   - Example: `https://brain9.app.n8n.cloud/webhook/e697d609-eca3-4822-8037-65a4eac1704f`
-   - The webhook ID is: `e697d609-eca3-4822-8037-65a4eac1704f`
-
-2. **Update the Webhook Mapping in `src/config/apiConfig.ts`**:
-   ```javascript
-   export const workflowWebhookMap: Record<string, string> = {
-     'LinkedIn Post Enricher': 'e697d609-eca3-4822-8037-65a4eac1704f',
-     'Company Website Analyzer': '7fa8c625-bdf3-4437-92c1-2eed7aa13170',
-     // Add your new workflow here with its webhook ID
-     'New Workflow Name': 'paste-webhook-id-here',
-   };
-   ```
-
-3. **Adding a New Workflow to `src/data/mockData.ts`**:
-   ```javascript
-   const aiPersonalizationWorkflows: Workflow[] = [
-     // Existing workflows...
+2. **n8n Webhook Response**:
+   - Each n8n workflow should include a "Respond to Webhook" node early in the workflow
+   - This node should return an immediate success response to the caller
+   - Example response format:
+     ```json
      {
-       id: uuidv4(),
-       name: "New AI Workflow",
-       description: "Description of what this workflow does.",
-       category: "AI Personalization", // Use existing category
-       webhookUrl: "/webhook/paste-webhook-id-here",
-       parameters: [
-         {
-           name: "inputParam1",
-           label: "Input Parameter 1",
-           type: "string",
-           required: true,
-           placeholder: "Enter parameter 1"
-         },
-         {
-           name: "inputParam2",
-           label: "Input Parameter 2",
-           type: "number",
-           required: false,
-           defaultValue: 5
-         }
-       ]
+       "success": true,
+       "message": "Workflow started successfully"
      }
-   ];
+     ```
+
+3. **Benefits of This Approach**:
+   - Simplified architecture: focus only on launching workflows
+   - Reduced browser resource consumption: no polling or tracking
+   - Less complex state management: no execution history to maintain
+   - Better reliability: each workflow operates independently
+
+### Implementing in n8n
+
+1. **Workflow Structure**:
+   ```
+   Webhook Node → Respond to Webhook → Rest of Workflow
    ```
 
-4. **Update Export in `mockData.ts`**:
-   Ensure your new workflow is included in the category array and exported:
-   ```javascript
-   export const workflowsData: Workflow[] = [
-     ...leadGenerationWorkflows,
-     ...leadQualificationWorkflows,
-     ...leadEnrichmentWorkflows,
-     ...aiPersonalizationWorkflows, // Make sure this includes your new workflow
-     ...repliesFollowUpsWorkflows,
-   ];
-   ```
+2. **Respond to Webhook Node Configuration**:
+   - Response Code: 200
+   - Response Mode: "Last Node"
+   - Response Format: "JSON"
+   - Response Body:
+     ```json
+     {
+       "success": true,
+       "message": "Workflow started successfully",
+       "workflowName": "{{$node.Webhook.json.body.workflowName}}",
+       "estimatedTime": "3-5 minutes"
+     }
+     ```
 
-### Feature Flags Configuration
-
-The application uses feature flags to enable/disable specific functionality. These are defined in `src/features/featureFlags/index.ts`:
-
-```javascript
-// Available feature IDs
-export enum FeatureID {
-  WORKFLOW_TRIGGER = 'workflow-trigger',
-  STATUS_MONITORING = 'status-monitoring',
-  WEBHOOK_INTEGRATION = 'webhook-integration',
-  USER_MANAGEMENT = 'user-management',
-  MULTI_ACCOUNT = 'multi-account',
-}
-```
-
-Feature flags are enabled in `src/index.tsx`:
-
-```javascript
-// Enable features for the application
-featureFlagsService.enableFeature(FeatureID.WORKFLOW_TRIGGER);
-featureFlagsService.enableFeature(FeatureID.STATUS_MONITORING);
-featureFlagsService.enableFeature(FeatureID.WEBHOOK_INTEGRATION);
-```
-
-To enable or disable a feature:
-```javascript
-// To enable a feature
-featureFlagsService.enableFeature(FeatureID.FEATURE_NAME);
-
-// To disable a feature
-featureFlagsService.disableFeature(FeatureID.FEATURE_NAME);
-
-// To check if a feature is enabled
-featureFlagsService.isFeatureEnabled(FeatureID.FEATURE_NAME);
-```
-
-### Environment Setup for Development
-
-#### CORS Settings for Browser
-
-Since the application makes direct API calls to n8n from the browser, you'll need to address CORS (Cross-Origin Resource Sharing) restrictions:
-
-1. **Use a CORS Browser Extension (Recommended)**:
-   - For Chrome: [Allow CORS: Access-Control-Allow-Origin](https://chrome.google.com/webstore/detail/allow-cors-access-control/lhobafahddgcelffkeicbaginigeejlf)
-   - For Firefox: [CORS Everywhere](https://addons.mozilla.org/en-US/firefox/addon/cors-everywhere/)
-   - Install and enable the extension before making API calls
-
-2. **Disable Web Security in Chrome (For Development Only)**:
-   ```bash
-   # Close all existing Chrome instances first, then:
-   chrome --disable-web-security --user-data-dir="./temp"
-   ```
-
-3. **Configure n8n to Allow CORS** (if you have admin access):
-   - Add your application domain to the allowed origins list in n8n
-   - Consult n8n documentation for specific instructions
-
-#### Alternative Port Configuration
-
-If port 3000 is already in use (common when running multiple development servers), the application will prompt you to use an alternative port:
-
-```
-? Something is already running on port 3000. Probably:
-  node /path/to/some/other/app (pid XXXXX)
-Would you like to run the app on another port instead? › (Y/n)
-```
-
-Type `Y` to start the app on an alternative port (typically 3001).
-
-#### Development Mode Health Checks
-
-By default, health checks to n8n are disabled when the application starts. This is controlled in the `useWorkflowExecution.ts` file:
-
-```javascript
-// On initialization, setup event sources if polling is disabled
-useEffect(() => {
-  console.log('useWorkflowExecution hook initialized');
-  
-  // Automatic health check is disabled by default
-  // testN8nConnectivity();
-  
-  // Rest of initialization
-}, []);
-```
-
-If you want to enable automatic health checks, uncomment the `testN8nConnectivity()` line, but be aware this will cause CORS errors if you don't have a CORS extension enabled.
-
-### Troubleshooting Integration Issues
-
-1. **API Key Format**:
-   - Ensure your API key is a valid JWT token (contains periods)
-   - It should look like: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwYmE2...`
-
-2. **Webhook URL Format**:
-   - The n8n webhook URL should include the base URL, webhook path, and ID
-   - Example: `https://brain9.app.n8n.cloud/webhook/e697d609-eca3-4822-8037-65a4eac1704f`
-
-3. **CORS Integration Tests**:
-   - If using a browser extension, ensure it's active before testing
-   - Look for specific error messages in the browser console (F12)
-   - If you see "strict-origin-when-cross-origin, cors error", activate your CORS extension
-
-4. **Authentication Flow**:
-   - The app sends the API key in two ways:
-     - As a query parameter: `?apiKey=your-jwt-token`
-     - As a header: `X-N8N-API-KEY: your-jwt-token`
-   - This ensures compatibility with various n8n setups
+3. **Error Handling**:
+   - Add error handling in n8n workflows to ensure proper responses
+   - Use "Error Trigger" nodes where appropriate
 
 ## 🧪 Testing
 

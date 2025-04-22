@@ -32,8 +32,6 @@ import { TestConnection } from './TestConnection';
 interface ApiSettingsState {
   n8nBaseUrl: string;
   callbackEndpoint: string;
-  pollingEnabled: boolean;
-  pollingInterval: number;
   lastConnectionTest: string | null;
   lastSaved?: string;
   apiKey: string;
@@ -52,9 +50,7 @@ const loadSettings = (): ApiSettingsState => {
   }
   return {
     n8nBaseUrl: apiConfig.n8nBaseUrl,
-    callbackEndpoint: apiConfig.webhooks.callbackEndpoint,
-    pollingEnabled: apiConfig.polling.enabled,
-    pollingInterval: apiConfig.polling.interval / 1000, // Convert to seconds for display
+    callbackEndpoint: apiConfig.webhooks?.callbackEndpoint || '',
     lastConnectionTest: null,
     apiKey: apiConfig.apiKey,
     showApiKey: false
@@ -78,9 +74,7 @@ export const ApiSettings: React.FC = () => {
         setSettings((prev: ApiSettingsState) => ({
           ...prev,
           n8nBaseUrl: parsedSettings.n8nBaseUrl || apiConfig.n8nBaseUrl,
-          callbackEndpoint: parsedSettings.callbackEndpoint || apiConfig.webhooks.callbackEndpoint,
-          pollingEnabled: parsedSettings.pollingEnabled !== undefined ? parsedSettings.pollingEnabled : apiConfig.polling.enabled,
-          pollingInterval: parsedSettings.pollingInterval || apiConfig.polling.interval / 1000,
+          callbackEndpoint: parsedSettings.callbackEndpoint || apiConfig.webhooks?.callbackEndpoint || '',
           apiKey: parsedSettings.apiKey || apiConfig.apiKey,
           showApiKey: parsedSettings.showApiKey || false
         }));
@@ -110,8 +104,6 @@ export const ApiSettings: React.FC = () => {
         n8nBaseUrl: settings.n8nBaseUrl,
         apiKey: settings.apiKey,
         callbackEndpoint: settings.callbackEndpoint,
-        pollingEnabled: settings.pollingEnabled,
-        pollingInterval: settings.pollingInterval,
       };
       
       localStorage.setItem('apiSettings', JSON.stringify(settingsToSave));
@@ -120,8 +112,6 @@ export const ApiSettings: React.FC = () => {
       (apiConfig as any).n8nBaseUrl = settings.n8nBaseUrl;
       (apiConfig as any).apiKey = settings.apiKey;
       (apiConfig.webhooks as any).callbackEndpoint = settings.callbackEndpoint;
-      (apiConfig.polling as any).enabled = settings.pollingEnabled;
-      (apiConfig.polling as any).interval = settings.pollingInterval * 1000;
       
       toast({
         title: "Settings saved",
@@ -235,47 +225,9 @@ export const ApiSettings: React.FC = () => {
                 placeholder="https://your-app.example.com/api/webhook-callback" 
               />
               <FormHelperText>
-                The endpoint where n8n can send callbacks (optional)
+                The endpoint where n8n can send callbacks using the 'Respond to Webhook' node
               </FormHelperText>
             </FormControl>
-            
-            <FormControl display="flex" alignItems="center">
-              <Switch 
-                id="pollingEnabled" 
-                isChecked={settings.pollingEnabled} 
-                onChange={handleChange}
-                mr={2}
-              />
-              <FormLabel htmlFor="pollingEnabled" mb={0}>
-                Enable Polling
-              </FormLabel>
-            </FormControl>
-            
-            {settings.pollingEnabled && (
-              <FormControl id="pollingInterval">
-                <FormLabel>Polling Interval (seconds)</FormLabel>
-                <NumberInput 
-                  min={1} 
-                  max={60} 
-                  value={settings.pollingInterval}
-                  onChange={(value) => {
-                    setSettings(prev => ({
-                      ...prev,
-                      pollingInterval: Number(value)
-                    }));
-                  }}
-                >
-                  <NumberInputField id="pollingInterval" />
-                  <NumberInputStepper>
-                    <NumberIncrementStepper />
-                    <NumberDecrementStepper />
-                  </NumberInputStepper>
-                </NumberInput>
-                <FormHelperText>
-                  How often to check for workflow status updates
-                </FormHelperText>
-              </FormControl>
-            )}
             
             <Button 
               mt={4} 

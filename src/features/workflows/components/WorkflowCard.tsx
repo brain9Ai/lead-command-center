@@ -4,7 +4,6 @@ import {
   Button,
   Card,
   CardBody,
-  CardFooter,
   FormControl,
   FormLabel,
   Heading,
@@ -18,16 +17,24 @@ import {
   useColorModeValue,
   Collapse,
   Divider,
-  Flex
+  Flex,
+  useToast,
+  Alert,
+  AlertIcon,
+  Textarea,
+  Grid,
+  Badge,
+  InputGroup,
+  InputRightElement
 } from '@chakra-ui/react';
-import { FiPlay, FiChevronDown, FiChevronUp, FiRefreshCw } from 'react-icons/fi';
-import { IconType } from 'react-icons';
-import { Workflow, WorkflowParameter, WorkflowExecution } from '../types';
-import { WorkflowExecutionStatus } from './WorkflowExecutionStatus';
+import { FiPlay, FiChevronDown, FiChevronUp } from 'react-icons/fi';
+import { Workflow, WorkflowParameter } from '../types';
 import { useWorkflowExecution } from '../hooks/useWorkflowExecution';
-import { FeatureGuard } from '../../../features/featureFlags';
-import { FeatureID } from '../../../features/featureFlags/types';
+import { FeatureGuard, FeatureID } from '../../../features/featureFlags';
 import { createChakraIcon } from '../../../utils';
+
+// Extended parameter type to support more parameter types
+type ExtendedParameterType = WorkflowParameter['type'] | 'array';
 
 interface WorkflowCardProps {
   workflow: Workflow;
@@ -36,44 +43,35 @@ interface WorkflowCardProps {
 export const WorkflowCard: React.FC<WorkflowCardProps> = ({ workflow }) => {
   const [parameters, setParameters] = useState<Record<string, any>>({});
   const [showParameters, setShowParameters] = useState(false);
-  const [isExecuting, setIsExecuting] = useState(false);
-  const [latestExecution, setLatestExecution] = useState<WorkflowExecution | null>(null);
+  const toast = useToast();
   
   const PlayIcon = createChakraIcon(FiPlay);
   const ChevronUpIcon = createChakraIcon(FiChevronUp);
   const ChevronDownIcon = createChakraIcon(FiChevronDown);
   
   const { 
-    executeWorkflow, 
-    getExecutionsByWorkflowId, 
-    checkExecutionStatus,
-    syncWithLocalStorage
+    executeWorkflow,
+    executing,
+    lastWorkflowMessage
   } = useWorkflowExecution();
   
-  // Load latest execution
-  const loadLatestExecution = useCallback(() => {
-    const executions = getExecutionsByWorkflowId(workflow.id);
-    if (executions.length > 0) {
-      setLatestExecution(executions[0]);
-    }
-  }, [workflow.id, getExecutionsByWorkflowId]);
-  
-  // Get initial execution status on component mount
+  // Initialize parameters with default values from workflow definition
   useEffect(() => {
-    // Sync with local storage first to ensure we have the latest status
-    syncWithLocalStorage();
-    loadLatestExecution();
-    
-    // Set up an interval to refresh the status periodically for running executions
-    const intervalId = setInterval(() => {
-      if (latestExecution && latestExecution.status === 'running') {
-        checkExecutionStatus(latestExecution.id)
-          .then(() => loadLatestExecution());
-      }
-    }, 5000); // Check every 5 seconds
-    
-    return () => clearInterval(intervalId);
-  }, [workflow.id, loadLatestExecution, latestExecution, checkExecutionStatus, syncWithLocalStorage]);
+    if (workflow.parameters && workflow.parameters.length > 0) {
+      const defaultParams = workflow.parameters.reduce((acc, param) => {
+        // Only set default if it exists
+        if (param.default !== undefined) {
+          acc[param.name] = param.default;
+        }
+        return acc;
+      }, {} as Record<string, any>);
+      
+      setParameters(prevParams => ({
+        ...defaultParams,
+        ...prevParams // Keep any user-entered values
+      }));
+    }
+  }, [workflow.parameters]);
   
   const handleParameterChange = useCallback((name: string, value: any) => {
     setParameters(prev => ({
@@ -84,8 +82,9 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({ workflow }) => {
   
   const renderParameterInput = useCallback((param: WorkflowParameter) => {
     const value = parameters[param.name] ?? param.default;
+    const paramType = param.type as string; // Use type assertion
     
-    switch (param.type) {
+    switch (paramType) {
       case 'boolean':
         return (
           <FormControl key={param.name}>
@@ -124,13 +123,104 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({ workflow }) => {
           </FormControl>
         );
         
-      default: // string
+      case 'apikey':
+        // API Key input with special handling for sensitive data
+        return (
+          <FormControl key={param.name} isRequired={param.required}>
+            <FormLabel htmlFor={param.name}>{param.label}</FormLabel>
+            <InputGroup>
+              <Input
+                id={param.name}
+                type="password"
+                value={value}
+                onChange={e => handleParameterChange(param.name, e.target.value)}
+                placeholder="Enter API Key"
+                autoComplete="off"
+              />
+              <InputRightElement>
+                <Button
+                  size="sm"
+                  h="1.75rem"
+                  onClick={() => {
+                    // Toggle between password and text type temporarily
+                    const input = document.getElementById(param.name) as HTMLInputElement;
+                    if (input) {
+                      input.type = input.type === 'password' ? 'text' : 'password';
+                      setTimeout(() => {
+                        if (input && input.type === 'text') {
+                          input.type = 'password';
+                        }
+                      }, 1500); // Show plaintext for 1.5 seconds
+                    }
+                  }}
+                >
+                  Show
+                </Button>
+              </InputRightElement>
+            </InputGroup>
+            {param.description && (
+              <Text fontSize="xs" color="gray.500" mt={1}>
+                {param.description}
+              </Text>
+            )}
+            {value && (
+              <Text fontSize="xs" color="green.500" mt={1}>
+                API Key set {value.length > 0 ? `(${value.substring(0, 3)}${'•'.repeat(6)})` : ''}
+              </Text>
+            )}
+          </FormControl>
+        );
+        
+      case 'object':
+      case 'array':
+        // For objects and arrays, use a textarea with JSON formatting
         return (
           <FormControl key={param.name} isRequired={param.required}>
             <FormLabel htmlFor={param.name}>{param.label}</FormLabel>
             <Input
               id={param.name}
+              as="textarea"
+              resize="vertical"
+              minHeight="100px"
+              maxHeight="300px"
+              rows={4}
+              value={typeof value === 'string' ? value : JSON.stringify(value, null, 2)}
+              onChange={e => {
+                // Try to parse as JSON, but keep as string if invalid
+                try {
+                  const parsed = JSON.parse(e.target.value);
+                  handleParameterChange(param.name, parsed);
+                } catch (err) {
+                  // If not valid JSON, keep as string
+                  handleParameterChange(param.name, e.target.value);
+                }
+              }}
+              placeholder={`Enter ${paramType === 'array' ? 'comma-separated values or JSON array' : 'JSON object'}`}
+              fontFamily="monospace"
+            />
+            <Text fontSize="xs" color="gray.500" mt={1}>
+              {paramType === 'array' 
+                ? 'Enter items as comma-separated values or as JSON array (e.g., "item1, item2" or ["item1", "item2"])' 
+                : 'Enter as valid JSON object (e.g., {"key": "value"})'}
+            </Text>
+            {param.description && (
+              <Text fontSize="xs" color="gray.500" mt={1}>
+                {param.description}
+              </Text>
+            )}
+          </FormControl>
+        );
+        
+      default: // string or other types
+        return (
+          <FormControl key={param.name} isRequired={param.required}>
+            <FormLabel htmlFor={param.name}>{param.label}</FormLabel>
+            <Textarea
+              id={param.name}
               value={value}
+              resize="vertical"
+              minHeight="80px"
+              overflowWrap='break-word'
               onChange={e => handleParameterChange(param.name, e.target.value)}
             />
             {param.description && (
@@ -144,48 +234,136 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({ workflow }) => {
   }, [parameters, handleParameterChange]);
   
   const handleExecute = useCallback(async () => {
-    setIsExecuting(true);
-    
     try {
-      // Get parameter values, ensuring they're the correct types based on parameter definitions
+      console.log('Workflow parameters definition:', workflow.parameters);
+      console.log('Current parameters state:', parameters);
+      
+      // Get parameter values, ensuring they're the correct types
       const typedParameters = workflow.parameters?.reduce((acc, param) => {
-        let value = parameters[param.name] ?? param.default;
+        // Get the parameter value, falling back to default if not set
+        let value = parameters[param.name] !== undefined ? parameters[param.name] : param.default;
+        const paramType = param.type as string; // Use type assertion
         
         // Convert values to the correct type
-        if (param.type === 'number' && typeof value === 'string') {
-          value = Number(value);
-        } else if (param.type === 'boolean' && typeof value === 'string') {
-          value = value === 'true';
+        switch (paramType) {
+          case 'number':
+            // Convert string to number
+            if (typeof value === 'string') {
+              value = value === '' ? 0 : Number(value);
+            }
+            break;
+            
+          case 'boolean':
+            // Convert string to boolean
+            if (typeof value === 'string') {
+              value = value === 'true';
+            }
+            break;
+            
+          case 'apikey':
+            // Handle API key - ensure it's a string and securely store if needed
+            if (value && typeof value !== 'string') {
+              value = String(value);
+            }
+            
+            // Log that we're using an API key parameter (but don't log the actual key)
+            console.log(`Using API Key parameter for "${param.name}" (masked for security)`);
+            break;
+            
+          case 'object':
+            // Handle object parameters
+            if (typeof value === 'string') {
+              try {
+                value = JSON.parse(value);
+              } catch (e) {
+                // If not valid JSON, keep as string
+                console.warn(`Failed to parse object parameter "${param.name}":`, e);
+              }
+            }
+            break;
+            
+          case 'array':
+            // Handle array parameters
+            if (typeof value === 'string') {
+              // Handle comma-separated values
+              if (value.includes(',')) {
+                value = value.split(',').map(item => item.trim());
+              } else {
+                try {
+                  // Try parsing as JSON array
+                  value = JSON.parse(value);
+                } catch (e) {
+                  // If not valid JSON, convert to single-item array
+                  value = value ? [value] : [];
+                }
+              }
+            }
+            break;
+            
+          default: // string or other types
+            // Ensure it's a string
+            if (value !== undefined && value !== null && typeof value !== 'string') {
+              value = String(value);
+            }
         }
         
-        return { ...acc, [param.name]: value };
-      }, {}) || {};
+        console.log(`Processing parameter "${param.name}" (${paramType}):`, { 
+          originalValue: parameters[param.name], 
+          defaultValue: param.default, 
+          finalValue: value 
+        });
+        
+        // Only include the parameter if it has a value or is explicitly set to null/false/0
+        if (value !== undefined) {
+          return { ...acc, [param.name]: value };
+        }
+        return acc;
+      }, {} as Record<string, any>) || {};
+      
+      console.log('Final typedParameters:', typedParameters);
+      
+      // Validate required parameters
+      const missingParams = workflow.parameters?.filter(param => {
+        if (!param.required) return false;
+        
+        const paramValue = typedParameters[param.name];
+        return paramValue === undefined || 
+              (typeof paramValue === 'string' && paramValue === '');
+      });
+      
+      if (missingParams && missingParams.length > 0) {
+        toast({
+          title: "Missing parameters",
+          description: `Please fill in required parameters: ${missingParams.map(p => p.label).join(", ")}`,
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+        return;
+      }
       
       // Execute the workflow
-      const response = await executeWorkflow(workflow, typedParameters);
+      const response = await executeWorkflow(workflow as any, typedParameters);
       
-      if (response.success && response.executionId) {
-        // Wait a short time to let the execution register
-        setTimeout(() => {
-          loadLatestExecution();
-          setIsExecuting(false);
-        }, 500);
-      } else {
-        console.error('Workflow execution failed:', response);
-        setIsExecuting(false);
-      }
+      // Display toast with the execution result
+      toast({
+        title: response.success ? "Workflow Started" : "Workflow Failed",
+        description: response.message,
+        status: response.success ? "success" : "error",
+        duration: 5000,
+        isClosable: true,
+      });
     } catch (error) {
       console.error('Error executing workflow:', error);
-      setIsExecuting(false);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Unknown error occurred",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     }
-  }, [workflow, parameters, executeWorkflow, loadLatestExecution]);
-  
-  const handleRefreshStatus = useCallback(async () => {
-    if (latestExecution) {
-      await checkExecutionStatus(latestExecution.id);
-      loadLatestExecution();
-    }
-  }, [latestExecution, checkExecutionStatus, loadLatestExecution]);
+  }, [workflow, parameters, executeWorkflow, toast]);
   
   const bg = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
@@ -199,78 +377,86 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({ workflow }) => {
       boxShadow="sm"
       borderWidth="1px"
       borderColor={borderColor}
-      borderRadius="lg"
+      borderRadius="md"
       overflow="hidden"
+      width="100%"
+      _hover={{ borderColor: 'blue.300', boxShadow: 'md' }}
       transition="all 0.2s"
-      _hover={{ boxShadow: 'md', borderColor: 'gray.300' }}
     >
       <CardBody>
-        <Stack spacing={3}>
-          <Heading size="md">{workflow.name}</Heading>
-          <Text fontSize="sm">{workflow.description}</Text>
-          
-          {latestExecution && (
-            <Box mt={2}>
-              <Text fontSize="sm" fontWeight="medium" mb={1}>
-                Latest Execution:
-              </Text>
-              <WorkflowExecutionStatus 
-                execution={latestExecution} 
-                onRefresh={handleRefreshStatus}
-              />
+        <Stack spacing={4}>
+          {/* Row 1: Heading & Notification */}
+          <Flex justifyContent="space-between" alignItems="flex-start">
+            <Box>
+              <Heading size="md" fontWeight="semibold">{workflow.name}</Heading>
+              <HStack mt={1}>
+                <Badge colorScheme="blue">{workflow.category}</Badge>
+              </HStack>
             </Box>
-          )}
-          <FeatureGuard featureId={FeatureID.WORKFLOW_PARAMETERIZATION}>
+            
+            {lastWorkflowMessage && (
+              <Alert status={lastWorkflowMessage.type === 'success' ? 'success' : 'error'} size="sm" borderRadius="md" maxW="50%">
+                <AlertIcon />
+                {lastWorkflowMessage.text}
+              </Alert>
+            )}
+          </Flex>
+          
+          <Divider />
+          
+          {/* Row 2: Parameters */}
           {hasParameters && (
-            <>
-              <Divider my={2} />
-              
-              <Flex
-                alignItems="center"
-                justifyContent="space-between"
-                cursor="pointer"
+            <Box>
+              <Flex 
+                justify="space-between" 
+                align="center" 
                 onClick={() => setShowParameters(!showParameters)}
-                py={1}
+                cursor="pointer"
+                py={2}
                 _hover={{ bg: hoverBg }}
                 borderRadius="md"
                 px={2}
               >
-                <Text fontSize="sm" fontWeight="medium">
-                  Parameters
+                <Text fontWeight="medium" fontSize="sm">
+                  {showParameters ? 'Hide Parameters' : 'Show Parameters'}
                 </Text>
-                {showParameters ? 
-                  <ChevronUpIcon boxSize={4} /> : 
-                  <ChevronDownIcon boxSize={4} />
-                }
+                {showParameters ? <ChevronUpIcon /> : <ChevronDownIcon />}
               </Flex>
               
-              <Collapse in={showParameters} animateOpacity>
-                <Box pt={2} pb={1}>
-                  <Stack spacing={4}>
-                    {workflow.parameters?.map(renderParameterInput)}
-                  </Stack>
+              <Collapse in={showParameters}>
+                <Box mt={3}>
+                  <Grid templateColumns={{ base: "1fr", lg: "repeat(2, 1fr)" }} gap={4}>
+                    {workflow.parameters?.map(param => renderParameterInput(param))}
+                  </Grid>
                 </Box>
               </Collapse>
-            </>
+            </Box>
           )}
-          </FeatureGuard>
+
+          <Divider />
+          
+          {/* Row 2: Workflow Details */}
+          <Box>
+            <Text fontSize="sm" color="gray.600">{workflow.description}</Text>
+            <HStack mt={2} justifyContent="flex-end">
+              <FeatureGuard featureId={FeatureID.WORKFLOW_TRIGGER}>
+                <Button
+                  leftIcon={<PlayIcon />}
+                  colorScheme="blue"
+                  onClick={handleExecute}
+                  isLoading={executing}
+                  loadingText="Starting"
+                  size="sm"
+                >
+                  Execute
+                </Button>
+              </FeatureGuard>
+            </HStack>
+          </Box>
+
+          {/* Future rows can be added here */}
         </Stack>
       </CardBody>
-      
-      <CardFooter pt={0}>
-        <FeatureGuard featureId={FeatureID.WORKFLOW_TRIGGER}>
-          <Button
-            leftIcon={<PlayIcon />}
-            colorScheme="brand"
-            onClick={handleExecute}
-            isLoading={isExecuting}
-            loadingText="Executing"
-            width="100%"
-          >
-            Execute Workflow
-          </Button>
-        </FeatureGuard>
-      </CardFooter>
     </Card>
   );
 };
