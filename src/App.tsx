@@ -38,7 +38,9 @@ const App: React.FC = () => {
             <Dashboard />
           </Route>
           <Route path="/executions">
+            <FeatureGuard featureId={FeatureID.STATUS_MONITORING}>
               <WorkflowExecutionManager />
+            </FeatureGuard>
           </Route>
           <Route path="/settings">
             <Settings />

@@ -38,7 +38,7 @@ export const ExecutionStatusMap: Record<string, WorkflowExecutionStatus> = {
 export interface WorkflowParameter {
   name: string;
   label: string;
-  type: 'string' | 'number' | 'boolean' | 'object' | 'array';
+  type: 'string' | 'number' | 'boolean' | 'object' | 'array' | 'apikey';
   default: any;
   required: boolean;
   description?: string;

@@ -10,13 +10,13 @@ export const mockWorkflows: Workflow[] = [
     name: 'Automated LinkedIn Job Scraper',
     description: 'Scrapes job posts from LinkedIn to identify companies actively hiring for target roles',
     category: WorkflowCategory.LeadGeneration,
-    webhookUrl: '/webhook/linkedin-job-scraper',
+    webhookUrl: '/webhook-test/linkedin-job-scraper',
     parameters: [
       {
         name: 'searchQuery',
         type: 'string',
         label: 'Job Title or Keyword',
-        required: false,
+        required: true,
         default: '',
         description: 'Job title or keyword to search for'
       },
@@ -24,7 +24,7 @@ export const mockWorkflows: Workflow[] = [
         name: 'location',
         type: 'string',
         label: 'Job Location',
-        required: false,
+        required: true,
         default: '',
         description: 'Job Location (e.g., city, state, country)'
       },
@@ -35,6 +35,14 @@ export const mockWorkflows: Workflow[] = [
         required: false,
         default: 50,
         description: 'Maximum number of results to return'
+      },
+      {
+        name: 'apifyApiKey',
+        type: 'apikey',
+        label: 'Apify API Key',
+        required: false,
+        default: '',
+        description: 'Your Apify API key for higher rate limits'
       }
     ]
   },
@@ -43,25 +51,58 @@ export const mockWorkflows: Workflow[] = [
     name: 'Apollo Lead Scrape',
     description: 'Extracts contact information using Apollo.io data source',
     category: WorkflowCategory.LeadGeneration,
-    webhookUrl: '/webhook/apollo-lead-scrape',
-    // parameters: [
-    //   {
-    //     name: 'domains',
-    //     type: 'string',
-    //     label: 'Company Domains',
-    //     required: true,
-    //     default: '',
-    //     description: 'Comma-separated list of company domains'
-    //   },
-    //   {
-    //     name: 'jobTitles',
-    //     type: 'string',
-    //     label: 'Job Titles',
-    //     required: false,
-    //     default: '',
-    //     description: 'Comma-separated list of job titles to filter by'
-    //   }
-    // ]
+    webhookUrl: '/webhook-test/apollo-lead-scrape',
+    parameters: [
+      {
+        name: 'getEmails',
+        type: 'boolean',
+        label: 'Get Emails',
+        required: false,
+        default: false,
+        description: 'Whether to include email addresses in the results'
+      },
+      {
+        name: 'waitForEmailVerification',
+        type: 'boolean',
+        label: 'Wait for Email Verification',
+        required: false,
+        default: false,
+        description: 'Whether to wait for email verification before returning results'
+      },
+      {
+        name: 'apolloCookie',
+        type: 'string',
+        label: 'Apollo Cookie',
+        required: true,
+        default: '',
+        description: 'Apollo.io cookie for authentication'
+      },
+      {
+        name: 'apolloSearchUrl',
+        type: 'string',
+        label: 'Apollo Search URL',
+        required: true,
+        default: '',
+        description: 'Apollo.io search URL to scrape leads from'
+        
+      },
+      {
+        name: 'apifyKey',
+        type: 'apikey',
+        label: 'Apify API Key',
+        required: false,
+        default: '',
+        description: 'Your Apify API key for higher rate limits'
+      },
+      {
+        name: 'maxResults',
+        type: 'number',
+        label: 'Maximum Results',
+        required: false,
+        default: 50,
+        description: 'Maximum number of results to return'
+      }
+    ]
   },
   {
     id: uuidv4(),

@@ -4,7 +4,6 @@ import {
   Button,
   Card,
   CardBody,
-  CardFooter,
   FormControl,
   FormLabel,
   Heading,
@@ -22,7 +21,11 @@ import {
   useToast,
   Alert,
   AlertIcon,
-  Textarea
+  Textarea,
+  Grid,
+  Badge,
+  InputGroup,
+  InputRightElement
 } from '@chakra-ui/react';
 import { FiPlay, FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import { Workflow, WorkflowParameter } from '../types';
@@ -120,6 +123,54 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({ workflow }) => {
           </FormControl>
         );
         
+      case 'apikey':
+        // API Key input with special handling for sensitive data
+        return (
+          <FormControl key={param.name} isRequired={param.required}>
+            <FormLabel htmlFor={param.name}>{param.label}</FormLabel>
+            <InputGroup>
+              <Input
+                id={param.name}
+                type="password"
+                value={value}
+                onChange={e => handleParameterChange(param.name, e.target.value)}
+                placeholder="Enter API Key"
+                autoComplete="off"
+              />
+              <InputRightElement>
+                <Button
+                  size="sm"
+                  h="1.75rem"
+                  onClick={() => {
+                    // Toggle between password and text type temporarily
+                    const input = document.getElementById(param.name) as HTMLInputElement;
+                    if (input) {
+                      input.type = input.type === 'password' ? 'text' : 'password';
+                      setTimeout(() => {
+                        if (input && input.type === 'text') {
+                          input.type = 'password';
+                        }
+                      }, 1500); // Show plaintext for 1.5 seconds
+                    }
+                  }}
+                >
+                  Show
+                </Button>
+              </InputRightElement>
+            </InputGroup>
+            {param.description && (
+              <Text fontSize="xs" color="gray.500" mt={1}>
+                {param.description}
+              </Text>
+            )}
+            {value && (
+              <Text fontSize="xs" color="green.500" mt={1}>
+                API Key set {value.length > 0 ? `(${value.substring(0, 3)}${'•'.repeat(6)})` : ''}
+              </Text>
+            )}
+          </FormControl>
+        );
+        
       case 'object':
       case 'array':
         // For objects and arrays, use a textarea with JSON formatting
@@ -129,6 +180,9 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({ workflow }) => {
             <Input
               id={param.name}
               as="textarea"
+              resize="vertical"
+              minHeight="100px"
+              maxHeight="300px"
               rows={4}
               value={typeof value === 'string' ? value : JSON.stringify(value, null, 2)}
               onChange={e => {
@@ -161,9 +215,12 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({ workflow }) => {
         return (
           <FormControl key={param.name} isRequired={param.required}>
             <FormLabel htmlFor={param.name}>{param.label}</FormLabel>
-            <Input
+            <Textarea
               id={param.name}
               value={value}
+              resize="vertical"
+              minHeight="80px"
+              overflowWrap='break-word'
               onChange={e => handleParameterChange(param.name, e.target.value)}
             />
             {param.description && (
@@ -201,6 +258,16 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({ workflow }) => {
             if (typeof value === 'string') {
               value = value === 'true';
             }
+            break;
+            
+          case 'apikey':
+            // Handle API key - ensure it's a string and securely store if needed
+            if (value && typeof value !== 'string') {
+              value = String(value);
+            }
+            
+            // Log that we're using an API key parameter (but don't log the actual key)
+            console.log(`Using API Key parameter for "${param.name}" (masked for security)`);
             break;
             
           case 'object':
@@ -312,69 +379,84 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({ workflow }) => {
       borderColor={borderColor}
       borderRadius="md"
       overflow="hidden"
+      width="100%"
       _hover={{ borderColor: 'blue.300', boxShadow: 'md' }}
       transition="all 0.2s"
     >
       <CardBody>
-        <Stack spacing={3}>
-          <Heading size="md" fontWeight="semibold">{workflow.name}</Heading>
-          <Text fontSize="sm" color="gray.600">{workflow.description}</Text>
-          
-          {lastWorkflowMessage && (
-            <Alert status={lastWorkflowMessage.type === 'success' ? 'success' : 'error'} size="sm" borderRadius="md">
-              <AlertIcon />
-              {lastWorkflowMessage.text}
-            </Alert>
-          )}
-          
-            {hasParameters && (
-              <Box>
-                <Flex 
-                  justify="space-between" 
-                  align="center" 
-                  onClick={() => setShowParameters(!showParameters)}
-                  cursor="pointer"
-                  py={2}
-                  _hover={{ bg: hoverBg }}
-                  borderRadius="md"
-                  px={2}
-                >
-                  <Text fontWeight="medium" fontSize="sm">
-                    {showParameters ? 'Hide Parameters' : 'Show Parameters'}
-                  </Text>
-                  {showParameters ? <ChevronUpIcon /> : <ChevronDownIcon />}
-                </Flex>
-                
-                <Collapse in={showParameters}>
-                  <Box mt={3}>
-                    <Stack spacing={4}>
-                      {workflow.parameters?.map(param => renderParameterInput(param))}
-                    </Stack>
-                  </Box>
-                </Collapse>
-              </Box>
+        <Stack spacing={4}>
+          {/* Row 1: Heading & Notification */}
+          <Flex justifyContent="space-between" alignItems="flex-start">
+            <Box>
+              <Heading size="md" fontWeight="semibold">{workflow.name}</Heading>
+              <HStack mt={1}>
+                <Badge colorScheme="blue">{workflow.category}</Badge>
+              </HStack>
+            </Box>
+            
+            {lastWorkflowMessage && (
+              <Alert status={lastWorkflowMessage.type === 'success' ? 'success' : 'error'} size="sm" borderRadius="md" maxW="50%">
+                <AlertIcon />
+                {lastWorkflowMessage.text}
+              </Alert>
             )}
+          </Flex>
           
+          <Divider />
+          
+          {/* Row 2: Parameters */}
+          {hasParameters && (
+            <Box>
+              <Flex 
+                justify="space-between" 
+                align="center" 
+                onClick={() => setShowParameters(!showParameters)}
+                cursor="pointer"
+                py={2}
+                _hover={{ bg: hoverBg }}
+                borderRadius="md"
+                px={2}
+              >
+                <Text fontWeight="medium" fontSize="sm">
+                  {showParameters ? 'Hide Parameters' : 'Show Parameters'}
+                </Text>
+                {showParameters ? <ChevronUpIcon /> : <ChevronDownIcon />}
+              </Flex>
+              
+              <Collapse in={showParameters}>
+                <Box mt={3}>
+                  <Grid templateColumns={{ base: "1fr", lg: "repeat(2, 1fr)" }} gap={4}>
+                    {workflow.parameters?.map(param => renderParameterInput(param))}
+                  </Grid>
+                </Box>
+              </Collapse>
+            </Box>
+          )}
+
+          <Divider />
+          
+          {/* Row 2: Workflow Details */}
+          <Box>
+            <Text fontSize="sm" color="gray.600">{workflow.description}</Text>
+            <HStack mt={2} justifyContent="flex-end">
+              <FeatureGuard featureId={FeatureID.WORKFLOW_TRIGGER}>
+                <Button
+                  leftIcon={<PlayIcon />}
+                  colorScheme="blue"
+                  onClick={handleExecute}
+                  isLoading={executing}
+                  loadingText="Starting"
+                  size="sm"
+                >
+                  Execute
+                </Button>
+              </FeatureGuard>
+            </HStack>
+          </Box>
+
+          {/* Future rows can be added here */}
         </Stack>
       </CardBody>
-      
-      <Divider borderColor={borderColor} />
-      
-      <CardFooter>
-        <FeatureGuard featureId={FeatureID.WORKFLOW_TRIGGER}>
-          <Button
-            leftIcon={<PlayIcon />}
-            colorScheme="blue"
-            onClick={handleExecute}
-            isLoading={executing}
-            loadingText="Starting"
-            size="sm"
-            ml="auto"
-          >
-            Execute
-          </Button>
-        </FeatureGuard>
-      </CardFooter>
     </Card>
   );
 };

@@ -52,6 +52,7 @@ const Dashboard: React.FC = () => {
   
   const bgColor = useColorModeValue('gray.50', 'gray.900');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
+  const hoverBgColor = useColorModeValue('gray.50', 'gray.700');
   
   return (
     <Layout activeCategory={activeCategory} onCategoryChange={handleCategoryChange}>
@@ -94,14 +95,22 @@ const Dashboard: React.FC = () => {
         
         <Divider />
         
-        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
+        <VStack spacing={4} align="stretch">
           {filteredWorkflows.map(workflow => (
-            <WorkflowCard 
+            <Box 
               key={workflow.id} 
-              workflow={workflow}
-            />
+              w="100%" 
+              p={2} 
+              borderRadius="md"
+              _hover={{ 
+                bg: hoverBgColor,
+                transition: "all 0.2s" 
+              }}
+            >
+              <WorkflowCard workflow={workflow} />
+            </Box>
           ))}
-        </SimpleGrid>
+        </VStack>
         
         {filteredWorkflows.length === 0 && (
           <Flex justify="center" p={8}>
