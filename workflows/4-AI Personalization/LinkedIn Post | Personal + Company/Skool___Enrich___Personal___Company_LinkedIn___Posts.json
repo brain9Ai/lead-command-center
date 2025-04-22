@@ -1,0 +1,703 @@
+{
+  "name": "Skool | Enrich | Personal + Company LinkedIn | Posts",
+  "nodes": [
+    {
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "value": "appJhNlGK8yWq6XQr",
+          "mode": "list",
+          "cachedResultName": "EffiSys | Leads",
+          "cachedResultUrl": "https://airtable.com/appJhNlGK8yWq6XQr"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblFJtYun0KM3Pq1r",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://airtable.com/appJhNlGK8yWq6XQr/tblFJtYun0KM3Pq1r"
+        },
+        "id": "={{ $json.query.recordId }}",
+        "options": {}
+      },
+      "id": "81f071e2-4a5d-47dd-ae2d-70ba07ff0f59",
+      "name": "Pull Lead From Airtable",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -260,
+        -40
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "JtCSqEgmEXLGgj8l",
+          "name": "Clarence | Airtable Personal Access Token"
+        }
+      },
+      "notes": "{{ $json.query.recordId }}"
+    },
+    {
+      "parameters": {
+        "content": "LinkedIn Post Scraper: https://console.apify.com/actors/Wpp1BZ6yGWjySadk3/input",
+        "height": 80,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -200,
+        -180
+      ],
+      "id": "aae83995-2c7e-4242-b626-7c1705c1ea70",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\n// Filter out reposts and combine text from remaining posts\nconst combinedText = items\n  .filter(item => item.json.isRepost === false) // Filter out reposts\n  .map(item => item.json.text)                  // Extract \"text\" field\n  .filter(text => text)                         // Remove any undefined/null\n  .map(text => `--- NEW POST ---\\n${text}`)     // Separator for readability\n  .join(\"\\n\\n\");                                // Combine into single string\n\n// Return single combined item\nreturn [{\n  json: {\n    combinedText\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        600,
+        -160
+      ],
+      "id": "7848f737-37c6-4aac-8385-e019d172eb62",
+      "name": "Filter Text & Turn Into One"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You're an expert in personalized B2B cold email outreach. Given the LinkedIn posts provided separately, identify the most relevant one (focusing on mentions of the prospect's name, company, or noteworthy achievements) and complete the following sentence in a concise, engaging, and conversational tone to use as an email opener:\n\n**\"Came across your post on LinkedIn - \"**  \n\nProvide **only** the completed sentence and no other explanation."
+            },
+            {
+              "content": "=LinkedIn Posts: {{ $json.combinedText }}\nCompany Name: {{ $('Pull Lead From Airtable').first().json[\"Company Name\"] }}\nLead's Name: {{ $('Pull Lead From Airtable').first().json[\"First Name\"] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        820,
+        -160
+      ],
+      "id": "8c51af01-1b3f-42ae-ab56-faa2ef454b8c",
+      "name": "Write Personalisation",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "if (Object.keys($json).length === 0) {\n  // If the current item's JSON is empty, return a single object with \"no posts\" status.\n  return { json: { status: \"not posts\" } };\n} else {\n  // Otherwise, simply return the current item unchanged.\n  return { json: $json };\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        180,
+        -40
+      ],
+      "id": "8919aa0e-6d7e-4f82-82d4-713fd39daf4f",
+      "name": "Verify Post Availability"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "96d9bcc1-0166-4d98-8ce0-4d5af6f96766",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "no posts",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        400,
+        -40
+      ],
+      "id": "3599513b-78e8-4916-a8bd-9eeb9ca0af6d",
+      "name": "Posts Available?"
+    },
+    {
+      "parameters": {
+        "url": "https://api.apify.com/v2/acts/supreme_coder~linkedin-post/run-sync-get-dataset-items?token=[INPUT YOUR API KEY HERE]",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"deepScrape\": false,\n    \"limitPerSource\": 5,\n    \"rawData\":false,\n    \"urls\": [\n        \"[CHANGE THIS TO THE EXPRESSION OF PERSONAL LINKEDIN URL OF LEAD]\"\n    ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -40,
+        -40
+      ],
+      "id": "63f6ff25-36af-4463-8c56-314b383dfa93",
+      "name": "Scrape Personal Posts",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://api.apify.com/v2/acts/supreme_coder~linkedin-post/run-sync-get-dataset-items?token=[INPUT YOUR API KEY HERE]",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"deepScrape\": false,\n    \"limitPerSource\": 5,\n    \"rawData\":false,\n    \"urls\": [\n        \"{{ $('Pull Lead From Airtable').first().json[\"LinkedIn Organization URL\"] }}\"\n    ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        600,
+        80
+      ],
+      "id": "08f35882-35d5-4e47-9fc3-3b5cafd39208",
+      "name": "Scrape Company Posts",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "if (Object.keys($json).length === 0) {\n  // If the current item's JSON is empty, return a single object with \"no posts\" status.\n  return { json: { status: \"not posts\" } };\n} else {\n  // Otherwise, simply return the current item unchanged.\n  return { json: $json };\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        820,
+        80
+      ],
+      "id": "e41465a9-8f3e-4285-be78-1900ae8261a1",
+      "name": "Check Post Availability"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "96d9bcc1-0166-4d98-8ce0-4d5af6f96766",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1040,
+        80
+      ],
+      "id": "848f484b-8533-4bfa-91b1-dc8825cb93a2",
+      "name": "Posts Available?."
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You're an expert in personalized B2B cold email outreach. Given the LinkedIn posts provided separately, identify the most relevant post from the company (prioritize major announcements, recent achievements, or important updates) and complete the following sentence in a conversational and engaging way to open a cold email:\n\n**\"Came across {{ $('Pull Lead From Airtable').first().json[\"Company Name\"] }}'s post on LinkedIn - \"**  \n\nOutput **only** the completed sentence, nothing else."
+            },
+            {
+              "content": "=LinkedIn Posts: {{ $json.combinedText }}\nCompany Name: {{ $('Pull Lead From Airtable').first().json[\"Company Name\"] }}\nLead's Name: {{ $('Pull Lead From Airtable').first().json[\"First Name\"] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1240,
+        0
+      ],
+      "id": "886b659b-1284-4f62-bae4-74889db89cc2",
+      "name": "Write Personalisation.",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appJhNlGK8yWq6XQr",
+          "mode": "list",
+          "cachedResultName": "EffiSys | Recruiting & Staffing",
+          "cachedResultUrl": "https://airtable.com/appJhNlGK8yWq6XQr"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblFJtYun0KM3Pq1r",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://airtable.com/appJhNlGK8yWq6XQr/tblFJtYun0KM3Pq1r"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Start Lead Enrichment": false
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Start Lead Enrichment",
+              "displayName": "Start Lead Enrichment",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Lead Status",
+              "displayName": "Lead Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Not Contacted",
+                  "value": "Not Contacted"
+                },
+                {
+                  "name": "Cold",
+                  "value": "Cold"
+                },
+                {
+                  "name": "Not Qualified",
+                  "value": "Not Qualified"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email Address",
+              "displayName": "Email Address",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Time At Company",
+              "displayName": "Time At Company",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Industry",
+              "displayName": "Industry",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Location",
+              "displayName": "Location",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn URL",
+              "displayName": "LinkedIn URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn Organization URL",
+              "displayName": "LinkedIn Organization URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company Website",
+              "displayName": "Company Website",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company Overview",
+              "displayName": "Company Overview",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Summary",
+              "displayName": "Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Posts",
+              "displayName": "Posts",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Personalization",
+              "displayName": "Personalization",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Instantly Camp. ID",
+              "displayName": "Instantly Camp. ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Date Lead Enriched",
+              "displayName": "Date Lead Enriched",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1240,
+        160
+      ],
+      "id": "8bc0f9c8-d2f7-4f0d-9219-3602b3a0c7d1",
+      "name": "Update Record - No Posts",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "JtCSqEgmEXLGgj8l",
+          "name": "Clarence | Airtable Personal Access Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "e697d609-eca3-4822-8037-65a4eac1704f",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        -40
+      ],
+      "id": "b06224d9-9325-4b55-badc-196ed244c739",
+      "name": "Receive RecordID From Airtable",
+      "webhookId": "e697d609-eca3-4822-8037-65a4eac1704f"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Pull Lead From Airtable": {
+      "main": [
+        [
+          {
+            "node": "Scrape Personal Posts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Text & Turn Into One": {
+      "main": [
+        [
+          {
+            "node": "Write Personalisation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Post Availability": {
+      "main": [
+        [
+          {
+            "node": "Posts Available?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Posts Available?": {
+      "main": [
+        [
+          {
+            "node": "Filter Text & Turn Into One",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Scrape Company Posts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scrape Personal Posts": {
+      "main": [
+        [
+          {
+            "node": "Verify Post Availability",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scrape Company Posts": {
+      "main": [
+        [
+          {
+            "node": "Check Post Availability",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Post Availability": {
+      "main": [
+        [
+          {
+            "node": "Posts Available?.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Posts Available?.": {
+      "main": [
+        [
+          {
+            "node": "Write Personalisation.",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Record - No Posts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Receive RecordID From Airtable": {
+      "main": [
+        [
+          {
+            "node": "Pull Lead From Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e28c236f-2a67-461f-908d-cd9c496e9f12",
+  "meta": {
+    "instanceId": "be9861782fae15eac6af5bd3da39e0377359813f71b0e0ed19ed3a98eb035f79"
+  },
+  "id": "g848cGDguD2tkCu8",
+  "tags": []
+}

@@ -1,0 +1,624 @@
+{
+  "name": "Skool | Enrichment | Website Sections",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "df4ee13b-44da-4748-9e3b-5f8a027ef954",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -840,
+        260
+      ],
+      "id": "f76f7afe-bda9-472d-9421-cd87548feae6",
+      "name": "Webhook",
+      "webhookId": "df4ee13b-44da-4748-9e3b-5f8a027ef954",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputData = $node[\"Header Links Scraper\"].json.data; // Reference the correct node\n\nfunction extractHeaderLinks(htmlString) {\n    const headerLinks = htmlString.match(/<a[^>]+href=[\"'](.*?)[\"'][^>]*>(.*?)<\\/a>/g);\n    \n    if (!headerLinks) return [];\n\n    return headerLinks.map(link => {\n        const urlMatch = link.match(/href=[\"'](.*?)[\"']/);\n        const textMatch = link.match(/>(.*?)<\\/a>/);\n        return {\n            text: textMatch ? textMatch[1].trim() : '',\n            url: urlMatch ? urlMatch[1] : ''\n        };\n    }).filter(item => item.url); // Remove any empty URLs\n}\n\nreturn extractHeaderLinks(inputData);\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        40,
+        260
+      ],
+      "id": "a6db450e-919d-4658-9c76-cd0680568366",
+      "name": "Filter HTML",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "url": "={{(() => {\n  const website = $('Pull Lead From Airtable').item.json['Website URL'];\n  const email = $('Pull Lead From Airtable').item.json['Email'];\n  // If 'Company Website' is empty, derive from 'Email'\n  return website || `https://${email.split('@')[1]}`;\n})()}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "id": "2d6d6894-8c4e-47fa-a46d-1b8dc99686e6",
+      "name": "Header Links Scraper",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -400,
+        260
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  mergedData: items.map(item => item.json.url) // Extract only the URLs, removing unnecessary objects\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        260
+      ],
+      "id": "ba472994-612e-4c90-928e-3604cf6aab88",
+      "name": "Turn X Items Into 1"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are given a **list of URLs extracted from a company’s website**. Your task is to **identify and categorize the most relevant URLs** to help enrich lead data.  \n\nEach URL should be classified into **one of four key categories** that provide meaningful insights into the company’s operations. If a category **does not have a matching URL**, return `\"no relevant URL\"` instead.  \n\n## **Selection Criteria & Context**  \n\n### **1. Company & Mission (About the Business & People Behind It)**  \n- **Purpose:** Find a page that explains **who the company is, what they stand for, and who runs it**.  \n- **Look for:** Company history, mission, vision, leadership, team, and core values.  \n- **Example matches:**  \n  - `/about`, `/company`, `/who-we-are`, `/our-story`, `/overview`, `/leadership`, `/team`, `/mission`, `/vision`  \n- **Avoid:** Generic pages like `/home`, contact pages, and customer support sections.  \n\n### **2. Offerings & Positioning (What They Sell & Their Market Fit)**  \n- **Purpose:** Identify a page that describes the company’s **products, services, industries served, or unique differentiators**.  \n- **Look for:** Offerings, solutions, industry focus, and use cases.  \n- **Example matches:**  \n  - `/services`, `/what-we-do`, `/solutions`, `/products`, `/industries`, `/use-cases`, `/capabilities`  \n- **Avoid:** Pages that **only mention** clients but do not describe the company’s services.  \n\n### **3. Process & Differentiation (How They Deliver Value)**  \n- **Purpose:** Identify a page that explains **how** the company operates and what makes them unique.  \n- **Look for:** Methodologies, workflows, onboarding process, value proposition, or unique technology/frameworks.  \n- **Example matches:**  \n  - `/how-it-works`, `/our-process`, `/methodology`, `/why-us`, `/why-choose-us`, `/approach`  \n- **Avoid:** Basic service descriptions without any details on processes or methodologies.  \n\n### **4. Proof of Success (Social Proof & Track Record)**  \n- **Purpose:** Find a page that demonstrates **the company’s credibility through client results, testimonials, or case studies**.  \n- **Look for:** Success stories, partnerships, and testimonials.  \n- **Example matches:**  \n  - `/case-studies`, `/testimonials`, `/success-stories`, `/clients`, `/portfolio`  \n- **Avoid:** Generic client lists that do not contain results or success metrics.  \n\n## **Output Requirements**  \n- **Return exactly one URL per category** (or `\"no relevant URL\"` if none exist).  \n- **Output must be in JSON format** as shown below.  \n- **Only return the path (e.g., `/about` instead of `https://example.com/about`).**  \n- **Strictly follow the structured format—no extra explanations or additional text.**  \n\n### **Expected Output Format**  \n```json\n{\n  \"selected_urls\": {\n    \"company_mission\": \"/about\",\n    \"offerings_positioning\": \"/solutions\",\n    \"process_differentiation\": \"/our-process\",\n    \"proof_of_success\": \"no relevant URL\"\n  }\n}\n```\n\n## **Additional Guidelines**  \n- **Prioritize broader coverage:** If multiple URLs match a category, choose the **most comprehensive one** (e.g., `/about` over `/company-overview`).  \n- **Handle duplicates:** If a URL appears more than once, select only one.  \n- **Exclude irrelevant pages:** Ignore contact pages, blog articles, FAQs, legal pages, or careers pages.  \n- **Do NOT infer missing information:** If no clear match exists, return `\"no relevant URL\"`.  "
+            },
+            {
+              "content": "={{ $json.mergedData }}\n"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        480,
+        260
+      ],
+      "id": "e533caea-e37b-4955-9f1e-b13acba75510",
+      "name": "Determine Valuable URLs",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "message.content.selected_urls",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -840,
+        520
+      ],
+      "id": "0e60000d-7380-4e11-b32f-e091caa5920a",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Pull Lead From Airtable').first().json['Website URL'] }}{{ $json['message.content.selected_urls'] === 'no relevant url' ? '' : $json['message.content.selected_urls'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -620,
+        520
+      ],
+      "id": "dfc83d10-07fe-4b28-81c7-65234f508f0e",
+      "name": "HTTP Request",
+      "alwaysOutputData": false,
+      "onError": "continueRegularOutput",
+      "notes": "{{ $('Pull Lead From Airtable,').first().json['Company Website'] }}{{ $json['message.content.selected_urls'] }}"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        520
+      ],
+      "id": "dfd58777-9962-4e62-9cee-04f51bea9e7e",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const htmlContent = $node[\"Header Links Scraper\"].json[\"data\"]; // Replace this with the field containing your HTML content\n\n// Function to strip HTML tags and clean the text\nconst extractPlainText = (html) => {\n    if (!html) return \"\";\n\n    // Remove script and style tags along with their content\n    const withoutScriptsAndStyles = html.replace(/<script[\\s\\S]*?>[\\s\\S]*?<\\/script>/gi, \"\")\n                                        .replace(/<style[\\s\\S]*?>[\\s\\S]*?<\\/style>/gi, \"\");\n\n    // Remove all remaining HTML tags\n    const strippedText = withoutScriptsAndStyles.replace(/<\\/?[^>]+(>|$)/g, \"\");\n\n    // Replace HTML entities with their plain-text equivalents\n    const decodedText = strippedText.replace(/&nbsp;/gi, \" \")\n                                    .replace(/&amp;/gi, \"&\")\n                                    .replace(/&lt;/gi, \"<\")\n                                    .replace(/&gt;/gi, \">\")\n                                    .replace(/&quot;/gi, \"\\\"\")\n                                    .replace(/&#39;/gi, \"'\");\n\n    // Replace multiple spaces, tabs, and newlines with a single space\n    const cleanedText = decodedText.replace(/\\s+/g, \" \").trim();\n\n    return cleanedText;\n};\n\n// Call the function to process the HTML content\nconst plainText = extractPlainText(htmlContent);\n\n// Return the plain text as the output of this node\nreturn {\n    plainText: plainText,\n};"
+      },
+      "id": "1216f903-8fdc-4ca0-9d38-4ad7a9e643ab",
+      "name": "Remove HTML Homepage",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -180,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nconst cleanText = (html) => {\n    return html\n        .replace(/<script[\\s\\S]*?>[\\s\\S]*?<\\/script>/gi, '')  // Remove scripts\n        .replace(/<style[\\s\\S]*?>[\\s\\S]*?<\\/style>/gi, '')    // Remove styles\n        .replace(/<!--[\\s\\S]*?-->/g, '')                     // Remove comments\n        .replace(/<\\/?[^>]+(>|$)/g, '')                      // Remove HTML tags\n        .replace(/&nbsp;/gi, \" \")                           // Decode HTML entities\n        .replace(/&amp;/gi, \"&\")\n        .replace(/&lt;/gi, \"<\")\n        .replace(/&gt;/gi, \">\")\n        .replace(/&quot;/gi, \"\\\"\")\n        .replace(/&#39;/gi, \"'\")\n        .replace(/\\s+/g, ' ')                                // Normalize whitespace\n        .trim();\n};\n\nconst updatedItems = items.map((item) => {\n    const data = item.json.data.map(cleanText);\n    return { ...item.json, data };\n});\n\nreturn updatedItems;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -180,
+        520
+      ],
+      "id": "04bdda8a-f5f2-4889-8684-d101ec75408f",
+      "name": "Remove HTML Webpages"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=**Prompt:**  \n\nAnalyze the following company data and extract **only verifiable information** from the text. The output should be written as a **cohesive business overview** without unnecessary repetition or conclusions. **Do not fabricate or infer missing details**—only include what is explicitly stated.  \n\nThe analysis should cover:  \n\n1. **Company Name & Branding** – Full company name, abbreviations used, slogans, and branding statements.  \n2. **Company History & Founders** – Who founded it, when (if stated), and any background on why it was established.  \n3. **Mission Statement & Core Values** – The company’s core purpose, guiding principles, and approach to business.  \n4. **Vision Statement & Future Goals** – Any stated long-term objectives or future aspirations.  \n5. **Industries Served & Target Audience** – Broad industry classification and specific client types served.  \n6. **Services & Specialties** – The exact services offered and any notable areas of specialization.  \n7. **Company Achievements & Recognition** – Any awards, recognitions, partnerships, or milestones mentioned.  \n\n**Output Format:**  \n\nWrite the response as a **well-structured business overview** in clear paragraphs. **Do not include bullet points, lists, or conclusions.** Keep the tone **neutral, factual, and concise** while ensuring clarity. If specific details (e.g., founding year, awards) are not mentioned, **state that they are not provided** instead of assuming.  \n\n### **Additional Instruction:**  \nFor any detail that is not explicitly provided in the text, simply state \"Not mentioned in the text.\" Do not add extra commentary, qualifiers like \"However,\" or any inferred information. Keep your response strictly factual and concise.",
+              "role": "system"
+            },
+            {
+              "content": "=Input: {{ $json.finalText }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        240,
+        520
+      ],
+      "id": "2528e550-8260-460b-b9e9-444d945879f9",
+      "name": "Analyze Company/Mission",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=### **Prompt:**  \n\nAnalyze the following company data and extract **only verifiable information** from the text. The output should be written as a **cohesive business overview** without unnecessary repetition or conclusions. **Do not fabricate or infer missing details**—only include what is explicitly stated.  \n\nThe analysis should cover:  \n\n1. **Core Products & Services** – The exact products or services the company offers, how they function, and their benefits to customers.  \n2. **Feature Lists & Differentiators** – What makes the company’s offerings unique compared to competitors (e.g., superior technology, customization, industry expertise).  \n3. **Pricing Models** – If mentioned, describe the company's pricing approach (e.g., subscription-based, enterprise-level, one-time fee). If pricing is not provided, state that it is not mentioned.  \n4. **Industries Served** – A more detailed look at niche verticals or specialized markets the company caters to.  \n5. **Use Cases & Applications** – Real-world applications of the company’s solutions, who benefits from them, and how they solve specific problems.  \n6. **Target Customers** – Whether the company serves SMBs, enterprises, B2B, B2C, or a specific customer segment.  \n7. **Service & Support Approach** – If mentioned, describe how the company supports its customers (e.g., dedicated account management, 24/7 support, implementation services).  \n8. **Geographical Reach** – If applicable, mention whether the company operates locally, nationally, or globally.  \n\n### **Output Format:**  \nWrite the response as a **well-structured business overview** in clear paragraphs. **Do not use bullet points, lists, or conclusions.** Keep the tone **neutral, factual, and concise** while ensuring clarity. If specific details (e.g., pricing, support) are not mentioned, **state that they are not provided** instead of assuming.  \n\n### **Additional Instruction:**  \nFor any detail that is not explicitly provided in the text, simply state \"Not mentioned in the text.\" Do not add extra commentary, qualifiers like \"However,\" or any inferred information. Keep your response strictly factual and concise.",
+              "role": "system"
+            },
+            {
+              "content": "=Input: {{ $json.finalText }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -860,
+        780
+      ],
+      "id": "2f3c6e0e-1aad-48ce-a226-8c3cd687b397",
+      "name": "Analyze Offerings & Positioning",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=### **Prompt:**  \n\nAnalyze the following company data and extract **only verifiable information** from the text. The output should be written as a **cohesive business overview** without unnecessary repetition or conclusions. **Do not fabricate or infer missing details**—only include what is explicitly stated.  \n\nThe analysis should cover:  \n\n1. **Company Methodology** – How the company delivers its services (e.g., agile, data-driven, consultative, customer-centric). If specific methodologies or approaches are mentioned, describe them.  \n2. **Step-by-Step Process** – If outlined, explain how the company operates from client onboarding to delivering results. Include any structured workflows or frameworks.  \n3. **Proprietary Tech or Frameworks** – Mention any unique models, software, patents, or proprietary methodologies that differentiate the company.  \n4. **Value Proposition** – What makes this company stand out? Identify key selling points compared to competitors, such as efficiency, customization, cost-effectiveness, or expertise.  \n5. **Onboarding Experience** – How the company interacts with new clients, including the initial consultation, setup, or integration process.  \n6. **Key Metrics & Focus Areas** – Identify any performance indicators they highlight, such as cost reduction, ROI, revenue impact, speed, or efficiency.  \n7. **Customer Engagement & Communication** – If mentioned, describe how the company interacts with clients (e.g., regular reporting, dedicated account managers, transparent feedback loops).  \n8. **Scalability & Adaptability** – If relevant, include how the company adapts to different client needs, business sizes, or industries.  \n\n### **Output Format:**  \nWrite the response as a **well-structured business overview** in clear paragraphs. **Do not use bullet points, lists, or conclusions.** Keep the tone **neutral, factual, and concise** while ensuring clarity. If specific details (e.g., proprietary tech, onboarding steps) are not mentioned, **state that they are not provided** instead of assuming.  \n\n### **Additional Instruction:**  \nFor any detail that is not explicitly provided in the text, simply state \"Not mentioned in the text.\" Do not add extra commentary, qualifiers like \"However,\" or any inferred information. Keep your response strictly factual and concise.",
+              "role": "system"
+            },
+            {
+              "content": "=Input: {{ $json.finalText }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -300,
+        780
+      ],
+      "id": "69f65776-a0d5-46b3-a302-9c63959d087f",
+      "name": "Analyze Process & Differentiation",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=### **Prompt:**  \n\nAnalyze the following company data and extract **only verifiable proof of success** from the text. The output should be written as a **detailed, fact-based summary** without unnecessary repetition, speculation, or conclusions. **Do not fabricate or infer missing details—only include what is explicitly stated.**  \n\nThe analysis should cover:  \n\n1. **Case Studies & Real-World Success** – Extract any case studies, including company names, industries, and specific outcomes achieved. Summarize the challenge, the company’s solution, and the measurable results. If numerical improvements (e.g., increased revenue, cost reduction, hiring efficiency) are provided, include them.  \n2. **Testimonials & Client Feedback** – Identify any direct client quotes, including who provided them (e.g., job title, company). If a testimonial includes specific praise (e.g., speed, expertise, impact), highlight the most compelling details.  \n3. **Notable Clients & Partnerships** – If company names are mentioned, extract them accurately. If industries or company sizes are referenced, include them.  \n4. **Key Results & Metrics** – If quantifiable outcomes are stated (e.g., \"helped hire 500+ executives,\" \"reduced time-to-hire by 40%\"), extract these with precise figures.  \n5. **Awards & Recognition** – If industry awards, certifications, or high-profile partnerships are mentioned, list them with dates where available.  \n6. **Long-Term Impact & Reputation** – If there are statements about repeat clients, high retention rates, or ongoing relationships, include them.  \n7. **Third-Party Validation** – If the company’s success has been referenced in media, research reports, or by industry experts, extract relevant mentions.  \n\n### **Output Format:**  \nWrite the response as a **detailed business overview** in **clear, structured paragraphs**. **Do not use bullet points, lists, or conclusions.** Maintain a **neutral, factual, and concise tone** while ensuring clarity. If no case studies, testimonials, or quantifiable proof are found, **state that the text does not contain this information** instead of assuming.  \n\n### **Additional Instruction:**  \nFor any detail that is not explicitly provided in the text, simply state \"Not mentioned in the text.\" Do not add extra commentary, qualifiers like \"However,\" or any inferred information. Keep your response strictly factual and concise.",
+              "role": "system"
+            },
+            {
+              "content": "=Input: {{ $json.finalText }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        260,
+        780
+      ],
+      "id": "dc7123c9-e908-4749-a08d-9daa48920725",
+      "name": "Analyze Proof Of Success",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const homepageText = $('Remove HTML Homepage').first()?.json?.plainText || \"\";\nconst sectionText = $('Remove HTML Webpages').first()?.json?.data?.[0] || \"\";\n\n// Normalize text by replacing multiple whitespace characters with a single space and trimming.\nconst normalizeText = text => (text ? text.replace(/\\s+/g, ' ').trim() : \"\");\n\nconst normalizedHomepageText = normalizeText(homepageText);\nconst normalizedSectionText = normalizeText(sectionText);\n\nconst finalText = normalizedHomepageText === normalizedSectionText\n  ? homepageText\n  : (homepageText && sectionText) \n    ? homepageText + \"\\n\" + sectionText\n    : homepageText || sectionText; // Return whichever one is available\n\nreturn [{ json: { finalText } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        40,
+        520
+      ],
+      "id": "4c2ccdc4-4750-4893-817a-3241c1a7b0c4",
+      "name": "Remove Duplicates Texts C/M"
+    },
+    {
+      "parameters": {
+        "jsCode": "const homepageText = $('Remove HTML Homepage').first()?.json?.plainText || \"\";\nconst sectionText = $('Remove HTML Webpages').first()?.json?.data?.[1] || \"\";\n\n// Normalize text by replacing multiple whitespace characters with a single space and trimming.\nconst normalizeText = text => (text ? text.replace(/\\s+/g, ' ').trim() : \"\");\n\nconst normalizedHomepageText = normalizeText(homepageText);\nconst normalizedSectionText = normalizeText(sectionText);\n\nconst finalText = normalizedHomepageText === normalizedSectionText\n  ? homepageText\n  : (homepageText && sectionText) \n    ? homepageText + \"\\n\" + sectionText\n    : homepageText || sectionText; // Return whichever one is available\n\nreturn [{ json: { finalText } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        600,
+        520
+      ],
+      "id": "c0121ec1-4211-457d-ba18-fbc9d8dc6eaa",
+      "name": "Remove Duplicates Texts O/P"
+    },
+    {
+      "parameters": {
+        "jsCode": "const homepageText = $('Remove HTML Homepage').first()?.json?.plainText || \"\";\nconst sectionText = $('Remove HTML Webpages').first()?.json?.data?.[2] || \"\";\n\n// Normalize text by replacing multiple whitespace characters with a single space and trimming.\nconst normalizeText = text => (text ? text.replace(/\\s+/g, ' ').trim() : \"\");\n\nconst normalizedHomepageText = normalizeText(homepageText);\nconst normalizedSectionText = normalizeText(sectionText);\n\nconst finalText = normalizedHomepageText === normalizedSectionText\n  ? homepageText\n  : (homepageText && sectionText) \n    ? homepageText + \"\\n\" + sectionText\n    : homepageText || sectionText; // Return whichever one is available\n\nreturn [{ json: { finalText } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -500,
+        780
+      ],
+      "id": "37a0030e-b263-4cdd-9bbe-12b0f4e44120",
+      "name": "Remove Duplicates Texts P/D"
+    },
+    {
+      "parameters": {
+        "jsCode": "const homepageText = $('Remove HTML Homepage').first()?.json?.plainText || \"\";\nconst sectionText = $('Remove HTML Webpages').first()?.json?.data?.[3] || \"\";\n\n// Normalize text by replacing multiple whitespace characters with a single space and trimming.\nconst normalizeText = text => (text ? text.replace(/\\s+/g, ' ').trim() : \"\");\n\nconst normalizedHomepageText = normalizeText(homepageText);\nconst normalizedSectionText = normalizeText(sectionText);\n\nconst finalText = normalizedHomepageText === normalizedSectionText\n  ? homepageText\n  : (homepageText && sectionText) \n    ? homepageText + \"\\n\" + sectionText\n    : homepageText || sectionText; // Return whichever one is available\n\nreturn [{ json: { finalText } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        60,
+        780
+      ],
+      "id": "339ab08d-2e37-41d3-9574-c025f250f761",
+      "name": "Remove Duplicates Texts PoS"
+    },
+    {
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "value": "appi67VB8WjcMhmGk",
+          "mode": "list",
+          "cachedResultName": "NIELSEN_2024_SELECTION_20250310.xlsx",
+          "cachedResultUrl": "https://airtable.com/appi67VB8WjcMhmGk"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbliGSLW2G0xFlBKx",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://airtable.com/appi67VB8WjcMhmGk/tbliGSLW2G0xFlBKx"
+        },
+        "id": "rec9zdwgQ1CYU6V2U",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -620,
+        260
+      ],
+      "id": "4b4a15a9-d192-4273-8472-83bd61ec85cc",
+      "name": "Pull Lead From Airtable",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "JtCSqEgmEXLGgj8l",
+          "name": "Clarence | Airtable Personal Access Token"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Filter HTML": {
+      "main": [
+        [
+          {
+            "node": "Turn X Items Into 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Header Links Scraper": {
+      "main": [
+        [
+          {
+            "node": "Remove HTML Homepage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Turn X Items Into 1": {
+      "main": [
+        [
+          {
+            "node": "Determine Valuable URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Determine Valuable URLs": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Remove HTML Webpages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove HTML Homepage": {
+      "main": [
+        [
+          {
+            "node": "Filter HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove HTML Webpages": {
+      "main": [
+        [
+          {
+            "node": "Remove Duplicates Texts C/M",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Company/Mission": {
+      "main": [
+        [
+          {
+            "node": "Remove Duplicates Texts O/P",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Offerings & Positioning": {
+      "main": [
+        [
+          {
+            "node": "Remove Duplicates Texts P/D",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Process & Differentiation": {
+      "main": [
+        [
+          {
+            "node": "Remove Duplicates Texts PoS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicates Texts C/M": {
+      "main": [
+        [
+          {
+            "node": "Analyze Company/Mission",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicates Texts O/P": {
+      "main": [
+        [
+          {
+            "node": "Analyze Offerings & Positioning",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicates Texts P/D": {
+      "main": [
+        [
+          {
+            "node": "Analyze Process & Differentiation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicates Texts PoS": {
+      "main": [
+        [
+          {
+            "node": "Analyze Proof Of Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pull Lead From Airtable": {
+      "main": [
+        [
+          {
+            "node": "Header Links Scraper",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Pull Lead From Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "faff83e0-fcab-47a1-813e-ec85d624635f",
+  "meta": {
+    "instanceId": "be9861782fae15eac6af5bd3da39e0377359813f71b0e0ed19ed3a98eb035f79"
+  },
+  "id": "xMM0RuSZPPLIzehz",
+  "tags": []
+}
