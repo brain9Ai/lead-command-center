@@ -40,7 +40,7 @@ export const mockWorkflows: Workflow[] = [
         name: 'apifyApiKey',
         type: 'apikey',
         label: 'Apify API Key',
-        required: false,
+        required: true,
         default: '',
         description: 'Your Apify API key for higher rate limits'
       }
@@ -165,10 +165,10 @@ export const mockWorkflows: Workflow[] = [
   },
   {
     id: uuidv4(),
-    name: 'Lead Generation | Decision Makers',
+    name: 'Clutch Lead Generation | Decision Makers',
     description: 'Identifies decision makers in target companies',
     category: WorkflowCategory.LeadGeneration,
-    webhookUrl: '/webhook/lead-generation-decision-makers',
+    webhookUrl: '/webhook/lead-generation-decision-makers-clutch',
     parameters: [
       {
         name: 'companyDomains',

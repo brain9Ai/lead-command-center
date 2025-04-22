@@ -46,9 +46,9 @@ export const workflowWebhookMap: Record<string, string> = {
   'Automated LinkedIn Job Scraper': 'linkedin-job-scraper',
   'Apollo Lead Scrape': 'apollo-lead-scrape',
   'Sales Navigator Lead Scraper': 'sales-navigator-lead-scraper',
+  'Clutch Lead Generation | Decision Makers': 'lead-generation-decision-makers-clutch',
   'Lead Generation | Name Only': 'lead-generation-name-only',
   'Lead Generation | Keywords - Email': 'lead-generation-keywords-email',
-  'Lead Generation | Decision Makers': 'lead-generation-decision-makers',
   
   // Lead Qualification
   '3-Step Lead Qualification': '3-step-lead-qualification',
