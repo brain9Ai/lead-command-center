@@ -1,0 +1,3181 @@
+{
+  "name": "Skool | Lead Generation | Keywords - Decision Makers",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "6c892f00-691e-441c-8d54-72baad49791d",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -2420,
+        740
+      ],
+      "id": "c20c27b3-79a5-4ddc-aab6-9fe853056b88",
+      "name": "Webhook",
+      "webhookId": "6c892f00-691e-441c-8d54-72baad49791d"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Reference the input data from the \"Get Company From Airtable\" node\nconst inputData = $node[\"Get Company From Airtable\"].json;\nconst employees = inputData[\"Employees\"] || 0; // Default to 0 if missing\n\n// Determine category based on number of employees\nlet category = employees < 50 ? \"Small\" : \"Large\";\n\n// Output the category\nreturn [{ json: { category } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -580,
+        640
+      ],
+      "id": "2696b332-5a29-4d3a-9e25-65a2b6e62ed8",
+      "name": "Define Company Size"
+    },
+    {
+      "parameters": {
+        "jsCode": "const htmlContent = $node[\"Comp. LinkedIn\"].json[\"data\"]; // Replace this with the field containing your HTML content\n\n// Function to strip HTML tags and clean the text\nconst extractPlainText = (html) => {\n    if (!html) return \"\";\n\n    // Remove script and style tags along with their content\n    const withoutScriptsAndStyles = html.replace(/<script[\\s\\S]*?>[\\s\\S]*?<\\/script>/gi, \"\")\n                                        .replace(/<style[\\s\\S]*?>[\\s\\S]*?<\\/style>/gi, \"\");\n\n    // Remove all remaining HTML tags\n    const strippedText = withoutScriptsAndStyles.replace(/<\\/?[^>]+(>|$)/g, \"\");\n\n    // Replace HTML entities with their plain-text equivalents\n    const decodedText = strippedText.replace(/&nbsp;/gi, \" \")\n                                    .replace(/&amp;/gi, \"&\")\n                                    .replace(/&lt;/gi, \"<\")\n                                    .replace(/&gt;/gi, \">\")\n                                    .replace(/&quot;/gi, \"\\\"\")\n                                    .replace(/&#39;/gi, \"'\");\n\n    // Replace multiple spaces, tabs, and newlines with a single space\n    const cleanedText = decodedText.replace(/\\s+/g, \" \").trim();\n\n    return cleanedText;\n};\n\n// Call the function to process the HTML content\nconst plainText = extractPlainText(htmlContent);\n\n// Return the plain text as the output of this node\nreturn {\n    plainText: plainText,\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1760,
+        740
+      ],
+      "id": "4d0a7a8b-898f-4491-994c-535d95adf3af",
+      "name": "Filter HTML LinkedIn"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Define Company Size').first().json.category }}",
+                    "rightValue": "Small",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "466ebe31-7ada-4c23-bb1d-66a007608ad7"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Small"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b4421095-d1da-4ca2-a496-0f8fb52dffe9",
+                    "leftValue": "={{ $('Define Company Size').first().json.category }}",
+                    "rightValue": "Large",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Large"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -360,
+        640
+      ],
+      "id": "233b9a69-dda4-47cf-a329-f4eee6e93591",
+      "name": "Company Size Range"
+    },
+    {
+      "parameters": {
+        "url": "https://api.apify.com/v2/acts/curious_coder~linkedin-sales-navigator-search-scraper/run-sync-get-dataset-items?token=[YOUR API KEY HERE]",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "=[INPUT JSON BODY FROM APIFY SCRAPER HERE]\n\nUSE THIS URL AS EXAMPLE TO AUTOMATICALLY INSERT VARIABLES\nhttps://www.linkedin.com/sales/search/people?query=(recentSearchParam%3A(id%3A4276001370%2CdoLogHistory%3Atrue)%2Cfilters%3AList((type%3ASENIORITY_LEVEL%2Cvalues%3AList((id%3A310%2Ctext%3ACXO%2CselectionType%3AINCLUDED)%2C(id%3A220%2Ctext%3ADirector%2CselectionType%3AINCLUDED)%2C(id%3A300%2Ctext%3AVice%2520President%2CselectionType%3AINCLUDED)%2C(id%3A130%2Ctext%3AStrategic%2CselectionType%3AINCLUDED)))%2C(type%3ACURRENT_COMPANY%2Cvalues%3AList((id%3Aurn%253Ali%253Aorganization%253A{{ $('Get Company From Airtable').item.json['LinkedIn UID'] }}%2Ctext%3A{{ $('Identify Exact Company Name + Company Website').item.json.message.content.company_name_encoded }}%2CselectionType%3AINCLUDED%2Cparent%3A(id%3A0))))))&sessionId=O0MemKAEQripZ%2BLerpqbLg%3D%3D&viewAllFilters=true\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -160,
+        420
+      ],
+      "id": "3c2e4167-03f1-4266-8d46-e809172db3af",
+      "name": "Scrape Sales Nav. Employees"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "### **Prompt**  \n\nYou will receive a **list of employees** at a company, each with a **first name, last name, job title, location, and LinkedIn profile URL**. Job titles may be in **various languages**.  \n\n#### **Your Task:**  \n1. **Filter the employees to include only those based in the USA or Canada.**  \n2. **Identify the top 5 most relevant decision-makers** for True Terpenes based on their role.  \n3. **Classify each decision-maker into one of the following departments:**  \n   - **Marketing & Brand** (e.g., CMO, VP of Marketing, Director of Brand, Head of Brand)  \n   - **Product & Innovation** (e.g., VP of Product Development, Director of Innovation, Head of R&D)  \n   - **Executive Leadership** (e.g., CEO, Founder, COO, CPO, CRO)  \n   - **Sales & Revenue** (Only **Directors or above**, e.g., VP of Sales, Director of Sales, Head of Business Development)  \n   - **Quality, Purchasing & Compliance** (Only **Directors or above**, e.g., Director of Quality Assurance, VP of Regulatory Affairs, Director of Procurement, Chief Legal Officer)  \n4. **Recognize leadership titles in multiple languages** (e.g., “Directeur” in French, “Leiter” in German, “Gerente” in Spanish).  \n5. **Rank decision-makers by seniority** in the following order:  \n   - C-Level (CEO > CMO > CRO > COO > CPO > CLO)  \n   - VP-Level  \n   - Director-Level  \n   - Head of Department  \n6. **If more than 5 decision-makers match, return the highest-ranking ones.**  \n7. **If no decision-makers are found**, return the following JSON response instead:  \n   ```json\n   {\n     \"decision_makers\": \"No decision makers available\"\n   }\n   ```\n\n---\n\n### **Expected JSON Output:**\n#### **Case 1: Decision-Makers Found**\n```json\n{\n  \"decision_makers\": [\n    {\n      \"first_name\": \"John\",\n      \"last_name\": \"Smith\",\n      \"job_title\": \"Chief Marketing Officer\",\n      \"department\": \"Marketing & Brand\",\n      \"location\": \"USA\",\n      \"profile_url\": \"https://www.linkedin.com/in/example1\"\n    },\n    {\n      \"first_name\": \"Jane\",\n      \"last_name\": \"Doe\",\n      \"job_title\": \"Director of Innovation\",\n      \"department\": \"Product & Innovation\",\n      \"location\": \"Canada\",\n      \"profile_url\": \"https://www.linkedin.com/in/example2\"\n    },\n    {\n      \"first_name\": \"Mike\",\n      \"last_name\": \"Johnson\",\n      \"job_title\": \"VP of Sales\",\n      \"department\": \"Sales & Revenue\",\n      \"location\": \"USA\",\n      \"profile_url\": \"https://www.linkedin.com/in/example3\"\n    },\n    {\n      \"first_name\": \"Sarah\",\n      \"last_name\": \"Lee\",\n      \"job_title\": \"Director of Regulatory Affairs\",\n      \"department\": \"Quality, Purchasing & Compliance\",\n      \"location\": \"USA\",\n      \"profile_url\": \"https://www.linkedin.com/in/example4\"\n    }\n  ]\n}\n```\n\n#### **Case 2: No Decision-Makers Found**\n```json\n{\n  \"decision_makers\": \"No decision makers available\"\n}\n```"
+            },
+            {
+              "content": "={{ $json.mergedData }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        280,
+        420
+      ],
+      "id": "580a0381-e68b-4339-9355-1d7d650076ad",
+      "name": "Determine Decision Makers",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=### **Prompt**  \n\nExtract the following structured lead variables from the **CSV data only**. **The verification status should be determined solely from the CSV file.** Any mention of verification in the **LinkedIn reference data should be disregarded**. Only include leads that **have both a valid email and are marked as `\"verified\": \"yes\"` in the CSV**.\n\n### **Guidelines for Extraction & Data Structuring:**  \n1. **Ensure correct data mapping.** Match each verified lead’s **email** with their **LinkedIn URL and job title** using the reference data.  \n2. **Only leads with a verified email should be included.** A lead must have both `\"verified\": \"yes\"` **AND** a valid email in the CSV data.  \n3. **Ignore verification status from LinkedIn reference data.** The CSV is the only source that determines verification.  \n4. **Ensure JSON consistency.** The output must always follow the same structure to avoid workflow errors.  \n5. **Handle missing data properly.** If a LinkedIn URL or job title is missing, set the value to `null` instead of `\"not listed\"`.  \n6. **Exclude entries with missing emails.** If an email is not found, exclude the person entirely.  \n7. **If no verified emails are found, return the following JSON output instead:**  \n   ```json\n   {\n     \"verified_leads\": \"No verified emails found\"\n   }\n   ```\n\n### **Updated Variables to Extract & Formatting Rules:**  \n\n#### **1. first_name**  \n- Extracted from the **CSV data**.  \n- Must be **only the first word** from the full name.  \n\n#### **2. last_name**  \n- Extracted from the **CSV data**.  \n- Must be **only the last word** from the full name.  \n\n#### **3. email**  \n- The **verified email address** of the lead.  \n- Must exactly match the email in the CSV data.  \n- If no valid email is found, **exclude the person** from the output.  \n\n#### **4. domain**  \n- The **company domain**, extracted from the email or provided in the CSV.  \n- Keep **everything after the first `.`** (e.g., `\"neuelane.com\"` from `\"www.neuelane.com\"`).  \n\n#### **5. verified**  \n- The lead must have `\"verified\": \"yes\"` in the CSV data.  \n- **If the lead does not have `\"verified\": \"yes\"` in the CSV, exclude them from the output.**  \n- **Verification status from LinkedIn reference data should be ignored.**  \n\n#### **6. linkedin_url**  \n- The **LinkedIn profile URL**, mapped from the reference data based on the lead’s name.  \n- If unavailable, set value to `null`.  \n\n#### **7. designation**  \n- The **lead’s job title**, mapped from the reference data.  \n- If unavailable, set value to `null`.  \n\n---\n\n### **Final JSON Output Example:**  \n#### **Case 1: Verified Leads Found**  \n```json\n{\n  \"verified_leads\": [\n    {\n      \"first_name\": \"John\",\n      \"last_name\": \"Doe\",\n      \"email\": \"jdoe@example.com\",\n      \"domain\": \"example.com\",\n      \"verified\": \"yes\",\n      \"linkedin_url\": \"https://www.linkedin.com/in/johndoe\",\n      \"designation\": \"Marketing Director\"\n    },\n    {\n      \"first_name\": \"Jane\",\n      \"last_name\": \"Smith\",\n      \"email\": \"jsmith@company.com\",\n      \"domain\": \"company.com\",\n      \"verified\": \"yes\",\n      \"linkedin_url\": \"https://www.linkedin.com/in/janesmith\",\n      \"designation\": \"Sales Manager\"\n    }\n  ]\n}\n```\n\n#### **Case 2: No Verified Emails Found**  \n```json\n{\n  \"verified_leads\": \"No verified emails found\"\n}\n```\n\n### **Edge Case Handling:**  \n| Case | Output |\n|------|--------|\n| **No verified leads?** | `{ \"verified_leads\": \"No verified emails found\" }` |\n| **Lead is verified but no email?** | **Excluded** from the output. |\n| **Lead is verified but missing LinkedIn URL or designation?** | `\"linkedin_url\": null, \"designation\": null` |\n| **Verification status is mentioned in LinkedIn reference data but not CSV?** | **Excluded from the output.** |\n| **All leads are valid and have LinkedIn info?** | Full JSON with all fields populated. |"
+            },
+            {
+              "content": "=CSV: {{ $json.data }}\nAdditional Reference Data: {{ $('Turn JSON Into String').item.json.result }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1760,
+        520
+      ],
+      "id": "e4be30ff-c117-4d65-8295-8c0534436f5d",
+      "name": "CSV To List - Verified Only",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1320,
+        520
+      ],
+      "id": "fabf4911-dacb-4113-b94a-0b7d93b6d718",
+      "name": "Wait",
+      "webhookId": "f0210b9e-9278-4877-93ea-543134e6468f"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anymailfinder.com/v5.0/bulk/json",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [YOUR API KEY HERE]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"data\": [\n    [\n      \"domain\",\n      \"first\",\n      \"last\"\n    ],\n    [\n      \"{{ $('Identify Exact Company Name + Company Website').first().json.message.content.company_website.split('.').slice(1).join('.') }}\",\n      \"{{ $('Determine Decision Makers').first().json.message.content.decision_makers[0].first_name }}\",\n      \"{{ $('Determine Decision Makers').first().json.message.content.decision_makers[0].last_name }}\"\n    ],\n    [\n      \"{{ $('Identify Exact Company Name + Company Website').first().json.message.content.company_website.split('.').slice(1).join('.') }}\",\n      \"{{ $('Determine Decision Makers').first().json.message.content.decision_makers[1].first_name }}\",\n      \"{{ $('Determine Decision Makers').first().json.message.content.decision_makers[1].last_name }}\"\n    ],\n    [\n      \"{{ $('Identify Exact Company Name + Company Website').first().json.message.content.company_website.split('.').slice(1).join('.') }}\",\n      \"{{ $('Determine Decision Makers').first().json.message.content.decision_makers[2].first_name }}\",\n      \"{{ $('Determine Decision Makers').first().json.message.content.decision_makers[2].last_name }}\"\n    ],\n    [\n      \"{{ $('Identify Exact Company Name + Company Website').first().json.message.content.company_website.split('.').slice(1).join('.') }}\",\n      \"{{ $('Determine Decision Makers').first().json.message.content.decision_makers[3].first_name }}\",\n      \"{{ $('Determine Decision Makers').first().json.message.content.decision_makers[3].last_name }}\"\n    ],\n    [\n      \"{{ $('Identify Exact Company Name + Company Website').first().json.message.content.company_website.split('.').slice(1).join('.') }}\",\n      \"{{ $('Determine Decision Makers').first().json.message.content.decision_makers[4].first_name }}\",\n      \"{{ $('Determine Decision Makers').first().json.message.content.decision_makers[4].last_name }}\"\n    ]\n  ],\n  \"domain_field_index\": 0,\n  \"first_name_field_index\": 1,\n  \"last_name_field_index\": 2\n}",
+        "options": {}
+      },
+      "id": "a1fbc845-7007-4773-ab2f-b1f7d1f231fe",
+      "name": "Bulk Email Finder",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        520
+      ],
+      "alwaysOutputData": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.anymailfinder.com/v5.0/bulk/{{ $json.bulkSearch.id }}/download",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [YOUR API KEY HERE]"
+            },
+            {
+              "name": "format",
+              "value": "default"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1540,
+        520
+      ],
+      "id": "89451e9b-c45e-4af6-ba4f-8f31630d2ce9",
+      "name": "Download Emails CSV"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.all().map((item) => item.json);\nconst result = data.map((item) => JSON.stringify(item)).join(\"\");\nreturn { result };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        420
+      ],
+      "id": "e4ac6adb-7866-46ed-a690-029aa6f9a068",
+      "name": "Turn JSON Into String"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "app8hDZP4kaxoTxJy",
+          "mode": "list",
+          "cachedResultName": "True Terpenes | Lead Database",
+          "cachedResultUrl": "https://airtable.com/app8hDZP4kaxoTxJy"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl3xX0a2fn5meX3I",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://airtable.com/app8hDZP4kaxoTxJy/tbl3xX0a2fn5meX3I"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "First Name": "={{ $json.first_name }}",
+            "Full Name": "={{ $json.first_name }} {{ $json.last_name }}",
+            "Lead Enrichment Start": false,
+            "Lead Status": "Todo",
+            "Email": "={{ $json.email }}",
+            "Title": "={{ $json.designation }}",
+            "LinkedIn URL": "={{ $json.linkedin_url }}",
+            "Location": "={{ $('Get Company From Airtable').first().json.Location }}",
+            "Website URL": "={{ $('Get Company From Airtable').first().json.Website }}",
+            "LinkedIn Org. URL": "={{ $('Get Company From Airtable').first().json[\"Company LinkedIn URL\"] }}",
+            "Company Name": "={{ $('Get Company From Airtable').item.json[\"Company Name\"] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Lead Enrichment Start",
+              "displayName": "Lead Enrichment Start",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Lead Status",
+              "displayName": "Lead Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Todo",
+                  "value": "Todo"
+                },
+                {
+                  "name": "In progress",
+                  "value": "In progress"
+                },
+                {
+                  "name": "Done",
+                  "value": "Done"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Time At Company",
+              "displayName": "Time At Company",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Industry",
+              "displayName": "Industry",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Location",
+              "displayName": "Location",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn URL",
+              "displayName": "LinkedIn URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn Org. URL",
+              "displayName": "LinkedIn Org. URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Website URL",
+              "displayName": "Website URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Summary",
+              "displayName": "Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Personalization",
+              "displayName": "Personalization",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Instantly Camp. ID",
+              "displayName": "Instantly Camp. ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        2560,
+        640
+      ],
+      "id": "4d3091e8-09f3-4bd5-adf5-0ee3f31dcc05",
+      "name": "Create Record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "JtCSqEgmEXLGgj8l",
+          "name": "Clarence | Airtable Personal Access Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "message.content.verified_leads",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        2340,
+        640
+      ],
+      "id": "7e693075-fed6-47e2-a0f1-141615b79f60",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  mergedData: items.map(item => {\n    const data = item.json;\n    return `First Name: ${data.firstName}\nLast Name: ${data.lastName}\nJob Title: ${data.jobTitle}\nProfile URL: ${data.profileUrl}\nLocation: ${data.location}\n----------------------------------`; // Separator for readability\n  }).join(\"\\n\") // Convert array into a single formatted string\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        60,
+        420
+      ],
+      "id": "8c597fd4-ae9d-42ce-849e-718af31a9d79",
+      "name": "Merge Employees"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json[\"Company LinkedIn URL\"] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1980,
+        740
+      ],
+      "id": "5ad1b06b-922c-4acc-8031-b136ff6ce1eb",
+      "name": "Comp. LinkedIn"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "if (Object.keys($json).length === 0) {\n  // If the current item's JSON is empty, return a single object with \"not ready\" status.\n  return { json: { status: \"not ready\" } };\n} else {\n  // Otherwise, simply return the current item unchanged.\n  return { json: $json };\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -960,
+        -80
+      ],
+      "id": "8d0b7b7b-c9f3-4e44-ad52-32a62e0a5232",
+      "name": "Verify Dataset Availability"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.apify.com/v2/datasets/{{ $('Apollo Lead Scraper').item.json.data.defaultDatasetId }}/items?format=json",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer  [INPUT YOUR API HERE]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d4c00b8d-d6b4-412b-a6d6-9412bf1d5c94",
+      "name": "Retrieve Dataset",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1180,
+        -80
+      ],
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.apify.com/v2/acts/curious_coder~apollo-company-scraper/runs?token=[YOUR API KEY HERE]",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "=[INPUT JSON BODY FROM APIFY SCRAPER HERE]\n\nUSE THIS URL AS EXAMPLE TO AUTOMATICALLY INSERT VARIABLES\nhttps://app.apollo.io/#/companies?page=1&sortAscending=false&sortByField=%5Bnone%5D&qOrganizationKeywordTags[]={{ $json.message.content.encoded_keywords }}&includedOrganizationKeywordFields[]=tags&includedOrganizationKeywordFields[]=name&organizationLocations[]={{ $json.message.content.encoded_location }}&organizationNumEmployeesRanges[]=5%2C\n}",
+        "options": {}
+      },
+      "id": "f179b0f8-e99d-45d4-9dc5-29f0f6e69511",
+      "name": "Apollo Lead Scraper",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1620,
+        -80
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "content": "Link to Apify scraper: Apollo\n\nhttps://console.apify.com/actors/patXsmIVzLafH9GKD/input",
+        "height": 80,
+        "width": 420
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1620,
+        -200
+      ],
+      "id": "b108e609-2a62-46e5-bbd9-d79476a6d7f7",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "app8hDZP4kaxoTxJy",
+          "mode": "list",
+          "cachedResultName": "True Terpenes | Lead Database",
+          "cachedResultUrl": "https://airtable.com/app8hDZP4kaxoTxJy"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblh48PVC2VnHqKlL",
+          "mode": "list",
+          "cachedResultName": "Companies",
+          "cachedResultUrl": "https://airtable.com/app8hDZP4kaxoTxJy/tblh48PVC2VnHqKlL"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Start Enrichment": false,
+            "Company Name": "={{ $json.name }}",
+            "Website": "={{ $json.website_url }}",
+            "Company LinkedIn URL": "={{ $json.linkedin_url }}",
+            "LinkedIn UID": "={{ $json.linkedin_uid }}",
+            "Location": "={{ $json.city }}, {{ $json.state }}, {{ $json.country }}",
+            "Employees": "={{ $json.estimated_num_employees }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Start Enrichment",
+              "displayName": "Start Enrichment",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Enrichment Status",
+              "displayName": "Enrichment Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Website",
+              "displayName": "Website",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company LinkedIn URL",
+              "displayName": "Company LinkedIn URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Location",
+              "displayName": "Location",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Employees",
+              "displayName": "Employees",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn UID",
+              "displayName": "LinkedIn UID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -280,
+        -260
+      ],
+      "id": "634b71fb-b78a-4ee5-8494-1d0f0dd42cdb",
+      "name": "Add Leads to CRM",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "JtCSqEgmEXLGgj8l",
+          "name": "Clarence | Airtable Personal Access Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "removeItemsSeenInPreviousExecutions",
+        "dedupeValue": "={{ $json.name }}",
+        "options": {}
+      },
+      "id": "326914a7-4e52-4e4c-ad55-9fc71d51bf28",
+      "name": "Remove Duplicates",
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        -500,
+        -260
+      ]
+    },
+    {
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "value": "app8hDZP4kaxoTxJy",
+          "mode": "list",
+          "cachedResultName": "True Terpenes | Lead Database",
+          "cachedResultUrl": "https://airtable.com/app8hDZP4kaxoTxJy"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblh48PVC2VnHqKlL",
+          "mode": "list",
+          "cachedResultName": "Companies",
+          "cachedResultUrl": "https://airtable.com/app8hDZP4kaxoTxJy/tblh48PVC2VnHqKlL"
+        },
+        "id": "={{ $json.query.recordId }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -2200,
+        740
+      ],
+      "id": "da1822a4-db48-4368-a88d-70cd947f56d8",
+      "name": "Get Company From Airtable",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "JtCSqEgmEXLGgj8l",
+          "name": "Clarence | Airtable Personal Access Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "### **Prompt:**  \nYou are an expert data extraction assistant. You will receive the full text from a LinkedIn company page. Your task is to:  \n1. **Extract** the **exact company name**, which is always found before the first `|` in the LinkedIn title.  \n2. **Extract** the **company website**, which is always found after the keyword **\"Website\"** in the company profile.  \n3. **Encode** the **company name** so that it can be safely used inside a URL (i.e., replacing spaces with `%20`, special characters with URL-safe encoding).  \n4. **Return** a JSON response with the extracted and encoded fields.\n\n### **Process:**  \n1. **Extract Company Name:**  \n   - The company name is always **before the first `|`** in the page title.  \n   - Example: `\"CBD Packaging Store | LinkedIn\"` → Extract `\"CBD Packaging Store\"`.  \n\n2. **Encode the Company Name for URL Usage:**  \n   - Convert spaces to `%20`.  \n   - Ensure special characters are properly URL-encoded using standard encoding rules.  \n   - Example:  \n     - `\"CBD Packaging Store\"` → `\"CBD%20Packaging%20Store\"`  \n     - `\"O'Brien & Co.\"` → `\"O%27Brien%20%26%20Co.\"`  \n\n3. **Extract Company Website:**  \n   - Locate the word `\"Website\"`, then extract the **URL that follows**.  \n   - If no website is found, return `null`.  \n\n### **Output Format (JSON)**  \n```json\n{\n  \"company_name\": \"EXACT COMPANY NAME\",\n  \"company_name_encoded\": \"URL_ENCODED_COMPANY_NAME\",\n  \"company_website\": \"https://companywebsite.com\" or null\n}\n```\n\n### **Example**  \n\n#### **Input:** *(Full LinkedIn company page text)*  \n```\nCBD Packaging Store | LinkedIn ...  \nAbout us CBD Packaging Store, a well known name in the Industry is providing custom packaging solutions for CBD Wholesalers and Retailers. With us, you can get market competitive prices with assurance of high quality. #cbdpackaging #packagingboxes #packagingsolution  \nWebsite https://cbdpackagingstore.com  \nIndustry Packaging and Containers Manufacturing  \n```\n\n#### **Extracted Values:**  \n- **Company Name:** `\"CBD Packaging Store\"`  \n- **Encoded Name:** `\"CBD%20Packaging%20Store\"`  \n- **Company Website:** `\"https://cbdpackagingstore.com\"`  \n\n#### **Output:**  \n```json\n{\n  \"company_name\": \"CBD Packaging Store\",\n  \"company_name_encoded\": \"CBD%20Packaging%20Store\",\n  \"company_website\": \"https://cbdpackagingstore.com\"\n}\n```"
+            },
+            {
+              "content": "={{ $('Filter HTML LinkedIn').item.json.plainText }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -940,
+        640
+      ],
+      "id": "b0037797-e4a2-4b59-bbcb-f876a00cd3fc",
+      "name": "Identify Exact Company Name + Company Website",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "### **Prompt:**\nYou are an expert lead qualification assistant. You will receive the full text from a LinkedIn company page. Your task is to:\n1. **Extract** the \"About Us\" section, which is always preceded by the phrase \"**About us**.\"\n2. **Analyze** this section to determine if the company is a relevant prospect for True Terpenes.\n3. **Return** a JSON output with a simple `\"Yes\"` or `\"No\"` answer.\n\n### **Company Background & Qualification Criteria**\nTrue Terpenes is a B2B wholesale supplier specializing in terpene formulations for the cannabis and hemp industries. Their primary customers include:\n- **Cannabis product brands**\n- **Cannabis manufacturers**\n- **Co-packers**\n- **Distributors** involved in creating the following product categories:\n  - Vapes  \n  - Pre-rolls  \n  - Concentrates (distillates, oils, extracts)  \n  - Edibles (infused food products)  \n  - Beverages (cannabis-infused drinks)  \n  - Flower (terpene-infused cannabis flower)  \n\n### **Companies suitable for outreach:**\n- **Directly manufacture or sell cannabis consumer products** listed above.  \n- **Are involved in cannabis extraction, product formulation, or manufacturing.**  \n- **Operate in regulated cannabis or hemp industries** or explicitly mention developing cannabis or hemp consumer products.  \n\n### **Companies NOT suitable include:**\n- **Media outlets or magazines.**  \n- **Marketplaces, online retail platforms, or direct-to-consumer stores** not involved in manufacturing or branding their own cannabis products.  \n- **Companies unrelated to cannabis or hemp products.**  \n\n### **Process**\n1. **Extract** the “About Us” section from the input text.\n   - Locate the section by finding the phrase **\"About us\"** and extracting the text that follows.\n   - Stop extracting at the next major section heading (e.g., \"Website,\" \"Industry,\" \"Company size\").\n2. **Analyze** the extracted section based on the qualification criteria.\n3. **Return** a JSON response in the following format:\n\n```json\n{\n  \"qualified\": \"Yes\" or \"No\"\n}\n```\n\n### **Example**\n#### **Input:** *(Full LinkedIn company page text)*\n```\n... CBD Packaging Store ... About us CBD Packaging Store, a well known name in the Industry is providing custom packaging solutions for CBD Wholesalers and Retailers. With us, you can get market competitive prices with assurance of high quality. #cbdpackaging #packagingboxes #packagingsolution ...\n```\n\n#### **Extracted \"About Us\" Section:**\n```\nCBD Packaging Store, a well known name in the Industry is providing custom packaging solutions for CBD Wholesalers and Retailers. With us, you can get market competitive prices with assurance of high quality.\n```\n\n#### **Output:**\n```json\n{\n  \"qualified\": \"No\"\n}\n```"
+            },
+            {
+              "content": "={{ $json.plainText }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -1540,
+        740
+      ],
+      "id": "7e3bd4a9-da56-46c2-a31f-2f17639b888a",
+      "name": "Match For TrueTerpenes",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "app8hDZP4kaxoTxJy",
+          "mode": "list",
+          "cachedResultName": "True Terpenes | Lead Database",
+          "cachedResultUrl": "https://airtable.com/app8hDZP4kaxoTxJy"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblh48PVC2VnHqKlL",
+          "mode": "list",
+          "cachedResultName": "Companies",
+          "cachedResultUrl": "https://airtable.com/app8hDZP4kaxoTxJy/tblh48PVC2VnHqKlL"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Start Enrichment": false,
+            "Enrichment Status": "Not Qualified",
+            "id": "={{ $('Get Company From Airtable').item.json.id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Start Enrichment",
+              "displayName": "Start Enrichment",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Enrichment Status",
+              "displayName": "Enrichment Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "To Do",
+                  "value": "To Do"
+                },
+                {
+                  "name": "Enriched",
+                  "value": "Enriched"
+                },
+                {
+                  "name": "Not Qualified",
+                  "value": "Not Qualified"
+                },
+                {
+                  "name": "No Decision Makers",
+                  "value": "No Decision Makers"
+                },
+                {
+                  "name": "No Verified Emails",
+                  "value": "No Verified Emails"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Website",
+              "displayName": "Website",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company LinkedIn URL",
+              "displayName": "Company LinkedIn URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Location",
+              "displayName": "Location",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Employees",
+              "displayName": "Employees",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn UID",
+              "displayName": "LinkedIn UID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -940,
+        860
+      ],
+      "id": "a31f2f3e-b7af-428a-86e8-ca30f548750f",
+      "name": "Update Company - No Match",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "JtCSqEgmEXLGgj8l",
+          "name": "Clarence | Airtable Personal Access Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Link to Apify Scraper: Sales Nav.\n\nhttps://console.apify.com/actors/7Q2x4Chr5xNR5s4dP/input",
+        "height": 80,
+        "width": 460
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        300
+      ],
+      "id": "2d735708-9590-4909-812b-1af0c905f8b3",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "app8hDZP4kaxoTxJy",
+          "mode": "list",
+          "cachedResultName": "True Terpenes | Lead Database",
+          "cachedResultUrl": "https://airtable.com/app8hDZP4kaxoTxJy"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblh48PVC2VnHqKlL",
+          "mode": "list",
+          "cachedResultName": "Companies",
+          "cachedResultUrl": "https://airtable.com/app8hDZP4kaxoTxJy/tblh48PVC2VnHqKlL"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Start Enrichment": false,
+            "Enrichment Status": "No Decision Makers",
+            "id": "={{ $('Get Company From Airtable').item.json.id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Start Enrichment",
+              "displayName": "Start Enrichment",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Enrichment Status",
+              "displayName": "Enrichment Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "To Do",
+                  "value": "To Do"
+                },
+                {
+                  "name": "Enriched",
+                  "value": "Enriched"
+                },
+                {
+                  "name": "Not Qualified",
+                  "value": "Not Qualified"
+                },
+                {
+                  "name": "No Decision Makers",
+                  "value": "No Decision Makers"
+                },
+                {
+                  "name": "No Verified Emails",
+                  "value": "No Verified Emails"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Website",
+              "displayName": "Website",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company LinkedIn URL",
+              "displayName": "Company LinkedIn URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Location",
+              "displayName": "Location",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Employees",
+              "displayName": "Employees",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn UID",
+              "displayName": "LinkedIn UID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1100,
+        320
+      ],
+      "id": "8efaf29e-666e-4597-b7f5-5d57fffe24cf",
+      "name": "Update Company - No Decision Makers",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "JtCSqEgmEXLGgj8l",
+          "name": "Clarence | Airtable Personal Access Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8251ee3e-9a78-4a3e-8074-68ab5a2b6758",
+              "leftValue": "={{ $json.message.content.qualified }}",
+              "rightValue": "Yes",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1180,
+        740
+      ],
+      "id": "815024cf-0fc1-4671-8e08-6788ad437b89",
+      "name": "TT Match?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "91302a2a-03a9-4fdb-9e52-77dc8c24d891",
+              "leftValue": "={{ $('Determine Decision Makers').first().json.message.content.decision_makers }}",
+              "rightValue": "No decision makers available",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        880,
+        420
+      ],
+      "id": "a6910f63-c96d-4672-9577-7d61ac1090ba",
+      "name": "DM Available?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8434ea18-5129-4dac-98ef-fdfd57736b7b",
+              "leftValue": "={{ $('CSV To List - Verified Only').first().json.message.content.verified_leads }}",
+              "rightValue": "No verified emails found",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2140,
+        520
+      ],
+      "id": "d947858f-e96f-411a-9387-a36c77aea63d",
+      "name": "Verified Emails?"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "app8hDZP4kaxoTxJy",
+          "mode": "list",
+          "cachedResultName": "True Terpenes | Lead Database",
+          "cachedResultUrl": "https://airtable.com/app8hDZP4kaxoTxJy"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblh48PVC2VnHqKlL",
+          "mode": "list",
+          "cachedResultName": "Companies",
+          "cachedResultUrl": "https://airtable.com/app8hDZP4kaxoTxJy/tblh48PVC2VnHqKlL"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Start Enrichment": false,
+            "id": "={{ $('Get Company From Airtable').item.json.id }}",
+            "Enrichment Status": "No Verified Emails"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Start Enrichment",
+              "displayName": "Start Enrichment",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Enrichment Status",
+              "displayName": "Enrichment Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "To Do",
+                  "value": "To Do"
+                },
+                {
+                  "name": "Enriched",
+                  "value": "Enriched"
+                },
+                {
+                  "name": "Not Qualified",
+                  "value": "Not Qualified"
+                },
+                {
+                  "name": "No Decision Makers",
+                  "value": "No Decision Makers"
+                },
+                {
+                  "name": "No Verified Emails",
+                  "value": "No Verified Emails"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Website",
+              "displayName": "Website",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company LinkedIn URL",
+              "displayName": "Company LinkedIn URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Location",
+              "displayName": "Location",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Employees",
+              "displayName": "Employees",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn UID",
+              "displayName": "LinkedIn UID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        2340,
+        400
+      ],
+      "id": "3fb0f587-f323-4f31-beda-f6ad71b78803",
+      "name": "Update Company - No Verified Emails",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "JtCSqEgmEXLGgj8l",
+          "name": "Clarence | Airtable Personal Access Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1320,
+        960
+      ],
+      "id": "6ebd0f3a-0d32-4d4a-bec2-fc42d6bdb15a",
+      "name": "Wait2",
+      "webhookId": "f0210b9e-9278-4877-93ea-543134e6468f"
+    },
+    {
+      "parameters": {
+        "url": "https://api.apify.com/v2/acts/curious_coder~linkedin-sales-navigator-search-scraper/run-sync-get-dataset-items?token=[YOUR API KEY HERE]",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "=[INPUT JSON BODY FROM APIFY SCRAPER HERE]\n\nUSE THIS URL AS EXAMPLE TO AUTOMATICALLY INSERT VARIABLES\nhttps://www.linkedin.com/sales/search/people?query=(recentSearchParam%3A(id%3A4276336282%2CdoLogHistory%3Atrue)%2Cfilters%3AList((type%3ACURRENT_COMPANY%2Cvalues%3AList((id%3Aurn%253Ali%253Aorganization%253A{{ $('Find Best Match').first().json.message.content.linkedin_uid }}%2Ctext%3A{{ $('Identify Exact Company Name').first().json.message.content.company_name_encoded }}%2CselectionType%3AINCLUDED%2Cparent%3A(id%3A0))))%2C(type%3ASENIORITY_LEVEL%2Cvalues%3AList((id%3A220%2Ctext%3ADirector%2CselectionType%3AINCLUDED)%2C(id%3A310%2Ctext%3ACXO%2CselectionType%3AINCLUDED)%2C(id%3A300%2Ctext%3AVice%2520President%2CselectionType%3AINCLUDED)%2C(id%3A130%2Ctext%3AStrategic%2CselectionType%3AINCLUDED)))))&sessionId=QdP7jY8zTLSw3SL7F%2F8qfg%3D%3D&viewAllFilters=true",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -160,
+        860
+      ],
+      "id": "ced55903-af35-4f5b-9e41-85385d6a9bab",
+      "name": "Scrape Sales Nav. Employees."
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  mergedData: items.map(item => {\n    const data = item.json;\n    return `First Name: ${data.firstName}\nLast Name: ${data.lastName}\nJob Title: ${data.jobTitle}\nProfile URL: ${data.profileUrl}\nLocation: ${data.location}\n----------------------------------`; // Separator for readability\n  }).join(\"\\n\") // Convert array into a single formatted string\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        60,
+        860
+      ],
+      "id": "14b18482-6edc-4186-b7b6-cb83e20a8676",
+      "name": "Merge Employees."
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "### **Prompt**  \n\nYou will receive a **list of employees** at a company, each with a **first name, last name, job title, location, and LinkedIn profile URL**. Job titles may be in **various languages**.  \n\n#### **Your Task:**  \n1. **Filter the employees to include only those based in the USA or Canada.**  \n2. **Identify the top 10 most relevant decision-makers** for the company based on their role.  \n3. **Select 2 decision-makers for each of the following 5 departments:**  \n   - **Marketing & Brand** (e.g., CMO, VP of Marketing, Director of Brand, Head of Brand)  \n   - **Product & Innovation** (e.g., VP of Product Development, Director of Innovation, Head of R&D)  \n   - **Executive Leadership** (e.g., CEO, Founder, COO, CPO, CRO)  \n   - **Sales & Revenue** (Only **Directors or above**, e.g., VP of Sales, Director of Sales, Head of Business Development)  \n   - **Quality, Purchasing & Compliance** (Only **Directors or above**, e.g., Director of Quality Assurance, VP of Regulatory Affairs, Director of Procurement, Chief Legal Officer)  \n4. **If a department has fewer than 2 decision-makers available, return as many as possible.**  \n5. **Recognize leadership titles in multiple languages** (e.g., “Directeur” in French, “Leiter” in German, “Gerente” in Spanish).  \n6. **Rank decision-makers by seniority** in the following order:  \n   - C-Level (CEO > CMO > CRO > COO > CPO > CLO)  \n   - VP-Level  \n   - Director-Level  \n   - Head of Department  \n7. **If fewer than 10 total decision-makers exist, return all available.**  \n8. **If no decision-makers are found**, return the following JSON response instead:  \n   ```json\n   {\n     \"decision_makers\": \"No decision makers available\"\n   }\n   ```\n\n---\n\n### **Expected JSON Output:**\n#### **Case 1: Decision-Makers Found**\n```json\n{\n  \"decision_makers\": [\n    {\n      \"first_name\": \"John\",\n      \"last_name\": \"Smith\",\n      \"job_title\": \"Chief Marketing Officer\",\n      \"department\": \"Marketing & Brand\",\n      \"location\": \"USA\",\n      \"profile_url\": \"https://www.linkedin.com/in/example1\"\n    },\n    {\n      \"first_name\": \"Emily\",\n      \"last_name\": \"Taylor\",\n      \"job_title\": \"VP of Marketing\",\n      \"department\": \"Marketing & Brand\",\n      \"location\": \"Canada\",\n      \"profile_url\": \"https://www.linkedin.com/in/example2\"\n    },\n    {\n      \"first_name\": \"Jane\",\n      \"last_name\": \"Doe\",\n      \"job_title\": \"Director of Innovation\",\n      \"department\": \"Product & Innovation\",\n      \"location\": \"USA\",\n      \"profile_url\": \"https://www.linkedin.com/in/example3\"\n    },\n    {\n      \"first_name\": \"Michael\",\n      \"last_name\": \"Brown\",\n      \"job_title\": \"Head of R&D\",\n      \"department\": \"Product & Innovation\",\n      \"location\": \"USA\",\n      \"profile_url\": \"https://www.linkedin.com/in/example4\"\n    },\n    {\n      \"first_name\": \"James\",\n      \"last_name\": \"Anderson\",\n      \"job_title\": \"CEO\",\n      \"department\": \"Executive Leadership\",\n      \"location\": \"USA\",\n      \"profile_url\": \"https://www.linkedin.com/in/example5\"\n    },\n    {\n      \"first_name\": \"Rebecca\",\n      \"last_name\": \"Lee\",\n      \"job_title\": \"COO\",\n      \"department\": \"Executive Leadership\",\n      \"location\": \"Canada\",\n      \"profile_url\": \"https://www.linkedin.com/in/example6\"\n    },\n    {\n      \"first_name\": \"David\",\n      \"last_name\": \"Martinez\",\n      \"job_title\": \"VP of Sales\",\n      \"department\": \"Sales & Revenue\",\n      \"location\": \"USA\",\n      \"profile_url\": \"https://www.linkedin.com/in/example7\"\n    },\n    {\n      \"first_name\": \"Samantha\",\n      \"last_name\": \"White\",\n      \"job_title\": \"Director of Business Development\",\n      \"department\": \"Sales & Revenue\",\n      \"location\": \"Canada\",\n      \"profile_url\": \"https://www.linkedin.com/in/example8\"\n    },\n    {\n      \"first_name\": \"Chris\",\n      \"last_name\": \"Harris\",\n      \"job_title\": \"Director of Procurement\",\n      \"department\": \"Quality, Purchasing & Compliance\",\n      \"location\": \"USA\",\n      \"profile_url\": \"https://www.linkedin.com/in/example9\"\n    },\n    {\n      \"first_name\": \"Lauren\",\n      \"last_name\": \"Scott\",\n      \"job_title\": \"VP of Regulatory Affairs\",\n      \"department\": \"Quality, Purchasing & Compliance\",\n      \"location\": \"Canada\",\n      \"profile_url\": \"https://www.linkedin.com/in/example10\"\n    }\n  ]\n}\n```\n\n#### **Case 2: No Decision-Makers Found**\n```json\n{\n  \"decision_makers\": \"No decision makers available\"\n}\n```"
+            },
+            {
+              "content": "={{ $json.mergedData }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        280,
+        860
+      ],
+      "id": "9fc34c09-bdb4-47c0-a9f6-b4838a5aaaca",
+      "name": "Determine Decision Makers.",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.all().map((item) => item.json);\nconst result = data.map((item) => JSON.stringify(item)).join(\"\");\nreturn { result };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        860
+      ],
+      "id": "e56d971e-3f66-4bc5-b29a-8fec206c763c",
+      "name": "Turn JSON Into String."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "91302a2a-03a9-4fdb-9e52-77dc8c24d891",
+              "leftValue": "={{ $('Determine Decision Makers.').first().json.message.content.decision_makers }}",
+              "rightValue": "No decision makers available",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        880,
+        860
+      ],
+      "id": "390966ad-19ec-4f7e-a8ab-3f5c32f4ee71",
+      "name": "DM Available?."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anymailfinder.com/v5.0/bulk/json",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [YOUR API KEY HERE]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"data\": [\n    [\n      \"domain\",\n      \"first\",\n      \"last\"\n    ],\n    [\n      \"{{ $('Find Best Match').first().json.message.content.website_url.split('.').slice(1).join('.') }}\",\n      \"{{ $('Determine Decision Makers').first().json.message.content.decision_makers[0].first_name }}\",\n      \"{{ $('Determine Decision Makers').first().json.message.content.decision_makers[0].last_name }}\"\n    ],\n    [\n      \"{{ $('Find Best Match').first().json.message.content.website_url.split('.').slice(1).join('.') }}\",\n      \"{{ $('Determine Decision Makers').first().json.message.content.decision_makers[1].first_name }}\",\n      \"{{ $('Determine Decision Makers').first().json.message.content.decision_makers[1].last_name }}\"\n    ],\n    [\n      \"{{ $('Find Best Match').first().json.message.content.website_url.split('.').slice(1).join('.') }}\",\n      \"{{ $('Determine Decision Makers').first().json.message.content.decision_makers[2].first_name }}\",\n      \"{{ $('Determine Decision Makers').first().json.message.content.decision_makers[2].last_name }}\"\n    ],\n    [\n      \"{{ $('Find Best Match').first().json.message.content.website_url.split('.').slice(1).join('.') }}\",\n      \"{{ $('Determine Decision Makers').first().json.message.content.decision_makers[3].first_name }}\",\n      \"{{ $('Determine Decision Makers').first().json.message.content.decision_makers[3].last_name }}\"\n    ],\n    [\n      \"{{ $('Find Best Match').first().json.message.content.website_url.split('.').slice(1).join('.') }}\",\n      \"{{ $('Determine Decision Makers').first().json.message.content.decision_makers[4].first_name }}\",\n      \"{{ $('Determine Decision Makers').first().json.message.content.decision_makers[4].last_name }}\"\n    ],\n    [\n      \"{{ $('Find Best Match').first().json.message.content.website_url.split('.').slice(1).join('.') }}\",\n      \"{{ $('Determine Decision Makers').first().json.message.content.decision_makers[5].first_name }}\",\n      \"{{ $('Determine Decision Makers').first().json.message.content.decision_makers[5].last_name }}\"\n    ],\n    [\n      \"{{ $('Find Best Match').first().json.message.content.website_url.split('.').slice(1).join('.') }}\",\n      \"{{ $('Determine Decision Makers').first().json.message.content.decision_makers[6].first_name }}\",\n      \"{{ $('Determine Decision Makers').first().json.message.content.decision_makers[6].last_name }}\"\n    ],\n    [\n      \"{{ $('Find Best Match').first().json.message.content.website_url.split('.').slice(1).join('.') }}\",\n      \"{{ $('Determine Decision Makers').first().json.message.content.decision_makers[7].first_name }}\",\n      \"{{ $('Determine Decision Makers').first().json.message.content.decision_makers[7].last_name }}\"\n    ],\n    [\n      \"{{ $('Find Best Match').first().json.message.content.website_url.split('.').slice(1).join('.') }}\",\n      \"{{ $('Determine Decision Makers').first().json.message.content.decision_makers[8].first_name }}\",\n      \"{{ $('Determine Decision Makers').first().json.message.content.decision_makers[8].last_name }}\"\n    ],\n    [\n      \"{{ $('Find Best Match').first().json.message.content.website_url.split('.').slice(1).join('.') }}\",\n      \"{{ $('Determine Decision Makers').first().json.message.content.decision_makers[9].first_name }}\",\n      \"{{ $('Determine Decision Makers').first().json.message.content.decision_makers[9].last_name }}\"\n    ],\n    [\n      \"{{ $('Find Best Match').first().json.message.content.website_url.split('.').slice(1).join('.') }}\",\n      \"{{ $('Determine Decision Makers').first().json.message.content.decision_makers[10].first_name }}\",\n      \"{{ $('Determine Decision Makers').first().json.message.content.decision_makers[10].last_name }}\"\n    ],\n    [\n      \"{{ $('Find Best Match').first().json.message.content.website_url.split('.').slice(1).join('.') }}\",\n      \"{{ $('Determine Decision Makers').first().json.message.content.decision_makers[11].first_name }}\",\n      \"{{ $('Determine Decision Makers').first().json.message.content.decision_makers[11].last_name }}\"\n    ],\n    [\n      \"{{ $('Find Best Match').first().json.message.content.website_url.split('.').slice(1).join('.') }}\",\n      \"{{ $('Determine Decision Makers').first().json.message.content.decision_makers[12].first_name }}\",\n      \"{{ $('Determine Decision Makers').first().json.message.content.decision_makers[12].last_name }}\"\n    ],\n    [\n      \"{{ $('Find Best Match').first().json.message.content.website_url.split('.').slice(1).join('.') }}\",\n      \"{{ $('Determine Decision Makers').first().json.message.content.decision_makers[13].first_name }}\",\n      \"{{ $('Determine Decision Makers').first().json.message.content.decision_makers[13].last_name }}\"\n    ],\n    [\n      \"{{ $('Find Best Match').first().json.message.content.website_url.split('.').slice(1).join('.') }}\",\n      \"{{ $('Determine Decision Makers').first().json.message.content.decision_makers[14].first_name }}\",\n      \"{{ $('Determine Decision Makers').first().json.message.content.decision_makers[14].last_name }}\"\n    ]\n  ],\n  \"domain_field_index\": 0,\n  \"first_name_field_index\": 1,\n  \"last_name_field_index\": 2\n}",
+        "options": {}
+      },
+      "id": "ee350d80-6117-4386-aa86-c220e815f3e1",
+      "name": "Bulk Email Finder.",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        960
+      ],
+      "alwaysOutputData": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "app8hDZP4kaxoTxJy",
+          "mode": "list",
+          "cachedResultName": "True Terpenes | Lead Database",
+          "cachedResultUrl": "https://airtable.com/app8hDZP4kaxoTxJy"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblh48PVC2VnHqKlL",
+          "mode": "list",
+          "cachedResultName": "Companies",
+          "cachedResultUrl": "https://airtable.com/app8hDZP4kaxoTxJy/tblh48PVC2VnHqKlL"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Start Enrichment": false,
+            "id": "={{ $('Get Company From Airtable').item.json.id }}",
+            "Enrichment Status": "No Decision Makers"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Start Enrichment",
+              "displayName": "Start Enrichment",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Enrichment Status",
+              "displayName": "Enrichment Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "To Do",
+                  "value": "To Do"
+                },
+                {
+                  "name": "Enriched",
+                  "value": "Enriched"
+                },
+                {
+                  "name": "Not Qualified",
+                  "value": "Not Qualified"
+                },
+                {
+                  "name": "No Decision Makers",
+                  "value": "No Decision Makers"
+                },
+                {
+                  "name": "No Verified Emails",
+                  "value": "No Verified Emails"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Website",
+              "displayName": "Website",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company LinkedIn URL",
+              "displayName": "Company LinkedIn URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Location",
+              "displayName": "Location",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Employees",
+              "displayName": "Employees",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn UID",
+              "displayName": "LinkedIn UID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1100,
+        760
+      ],
+      "id": "438a0b0d-d643-4d1d-b07c-004e48b32c1e",
+      "name": "Update Company - No Decision Makers.",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "JtCSqEgmEXLGgj8l",
+          "name": "Clarence | Airtable Personal Access Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.anymailfinder.com/v5.0/bulk/{{ $json.bulkSearch.id }}/download",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [YOUR API KEY HERE]"
+            },
+            {
+              "name": "format",
+              "value": "default"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1540,
+        960
+      ],
+      "id": "fd60f214-0402-4860-8262-b1c46652e17d",
+      "name": "Download Emails CSV."
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=### **Prompt**  \n\nExtract the following structured lead variables from the **CSV data only**. **The verification status should be determined solely from the CSV file.** Any mention of verification in the **LinkedIn reference data should be disregarded**. Only include leads that **have both a valid email and are marked as `\"verified\": \"yes\"` in the CSV**.\n\n### **Guidelines for Extraction & Data Structuring:**  \n1. **Ensure correct data mapping.** Match each verified lead’s **email** with their **LinkedIn URL and job title** using the reference data.  \n2. **Only leads with a verified email should be included.** A lead must have both `\"verified\": \"yes\"` **AND** a valid email in the CSV data.  \n3. **Ignore verification status from LinkedIn reference data.** The CSV is the only source that determines verification.  \n4. **Ensure JSON consistency.** The output must always follow the same structure to avoid workflow errors.  \n5. **Handle missing data properly.** If a LinkedIn URL or job title is missing, set the value to `null` instead of `\"not listed\"`.  \n6. **Exclude entries with missing emails.** If an email is not found, exclude the person entirely.  \n7. **If no verified emails are found, return the following JSON output instead:**  \n   ```json\n   {\n     \"verified_leads\": \"No verified emails found\"\n   }\n   ```\n\n### **Updated Variables to Extract & Formatting Rules:**  \n\n#### **1. first_name**  \n- Extracted from the **CSV data**.  \n- Must be **only the first word** from the full name.  \n\n#### **2. last_name**  \n- Extracted from the **CSV data**.  \n- Must be **only the last word** from the full name.  \n\n#### **3. email**  \n- The **verified email address** of the lead.  \n- Must exactly match the email in the CSV data.  \n- If no valid email is found, **exclude the person** from the output.  \n\n#### **4. domain**  \n- The **company domain**, extracted from the email or provided in the CSV.  \n- Keep **everything after the first `.`** (e.g., `\"neuelane.com\"` from `\"www.neuelane.com\"`).  \n\n#### **5. verified**  \n- The lead must have `\"verified\": \"yes\"` in the CSV data.  \n- **If the lead does not have `\"verified\": \"yes\"` in the CSV, exclude them from the output.**  \n- **Verification status from LinkedIn reference data should be ignored.**  \n\n#### **6. linkedin_url**  \n- The **LinkedIn profile URL**, mapped from the reference data based on the lead’s name.  \n- If unavailable, set value to `null`.  \n\n#### **7. designation**  \n- The **lead’s job title**, mapped from the reference data.  \n- If unavailable, set value to `null`.  \n\n---\n\n### **Final JSON Output Example:**  \n#### **Case 1: Verified Leads Found**  \n```json\n{\n  \"verified_leads\": [\n    {\n      \"first_name\": \"John\",\n      \"last_name\": \"Doe\",\n      \"email\": \"jdoe@example.com\",\n      \"domain\": \"example.com\",\n      \"verified\": \"yes\",\n      \"linkedin_url\": \"https://www.linkedin.com/in/johndoe\",\n      \"designation\": \"Marketing Director\"\n    },\n    {\n      \"first_name\": \"Jane\",\n      \"last_name\": \"Smith\",\n      \"email\": \"jsmith@company.com\",\n      \"domain\": \"company.com\",\n      \"verified\": \"yes\",\n      \"linkedin_url\": \"https://www.linkedin.com/in/janesmith\",\n      \"designation\": \"Sales Manager\"\n    }\n  ]\n}\n```\n\n#### **Case 2: No Verified Emails Found**  \n```json\n{\n  \"verified_leads\": \"No verified emails found\"\n}\n```\n\n### **Edge Case Handling:**  \n| Case | Output |\n|------|--------|\n| **No verified leads?** | `{ \"verified_leads\": \"No verified emails found\" }` |\n| **Lead is verified but no email?** | **Excluded** from the output. |\n| **Lead is verified but missing LinkedIn URL or designation?** | `\"linkedin_url\": null, \"designation\": null` |\n| **Verification status is mentioned in LinkedIn reference data but not CSV?** | **Excluded from the output.** |\n| **All leads are valid and have LinkedIn info?** | Full JSON with all fields populated. |"
+            },
+            {
+              "content": "=CSV: {{ $json.data }}\nAdditional Reference Data: {{ $('Turn JSON Into String.').item.json.result }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1760,
+        960
+      ],
+      "id": "9fa2a9ae-887e-456d-b878-70423c3a73ca",
+      "name": "CSV To List - Verified Only.",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8434ea18-5129-4dac-98ef-fdfd57736b7b",
+              "leftValue": "={{ $('CSV To List - Verified Only.').first().json.message.content.verified_leads }}",
+              "rightValue": "No verified emails found",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2140,
+        960
+      ],
+      "id": "5c7b2473-9670-4d4f-8151-5b8defe54986",
+      "name": "Verified Emails?."
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "app8hDZP4kaxoTxJy",
+          "mode": "list",
+          "cachedResultName": "True Terpenes | Lead Database",
+          "cachedResultUrl": "https://airtable.com/app8hDZP4kaxoTxJy"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblh48PVC2VnHqKlL",
+          "mode": "list",
+          "cachedResultName": "Companies",
+          "cachedResultUrl": "https://airtable.com/app8hDZP4kaxoTxJy/tblh48PVC2VnHqKlL"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Start Enrichment": false,
+            "id": "={{ $('Get Company From Airtable').item.json.id }}",
+            "Enrichment Status": "No Verified Emails"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Start Enrichment",
+              "displayName": "Start Enrichment",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Enrichment Status",
+              "displayName": "Enrichment Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "To Do",
+                  "value": "To Do"
+                },
+                {
+                  "name": "Enriched",
+                  "value": "Enriched"
+                },
+                {
+                  "name": "Not Qualified",
+                  "value": "Not Qualified"
+                },
+                {
+                  "name": "No Decision Makers",
+                  "value": "No Decision Makers"
+                },
+                {
+                  "name": "No Verified Emails",
+                  "value": "No Verified Emails"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Website",
+              "displayName": "Website",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company LinkedIn URL",
+              "displayName": "Company LinkedIn URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Location",
+              "displayName": "Location",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Employees",
+              "displayName": "Employees",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn UID",
+              "displayName": "LinkedIn UID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        2340,
+        860
+      ],
+      "id": "6df08fef-873e-4a9d-b3c6-714783dd29f9",
+      "name": "Update Company - No Verified Emails.",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "JtCSqEgmEXLGgj8l",
+          "name": "Clarence | Airtable Personal Access Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "message.content.verified_leads",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        2340,
+        1060
+      ],
+      "id": "ff0d7631-4c67-4d1c-86fe-2cacbef27ddc",
+      "name": "Split Out."
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appi67VB8WjcMhmGk",
+          "mode": "list",
+          "cachedResultName": "NIELSEN_2024_SELECTION_20250310.xlsx",
+          "cachedResultUrl": "https://airtable.com/appi67VB8WjcMhmGk"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbliGSLW2G0xFlBKx",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://airtable.com/appi67VB8WjcMhmGk/tbliGSLW2G0xFlBKx"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Lead Enrichment Start": false,
+            "First Name": "={{ $json.first_name }}",
+            "Full Name": "={{ $json.first_name }} {{ $json.last_name }}",
+            "Lead Status": "Todo",
+            "Email": "={{ $json.email }}",
+            "Title": "={{ $json.designation }}",
+            "LinkedIn URL": "={{ $json.linkedin_url }}",
+            "Company Name": "={{ $('Clean Company Name').first().json.message.content.company_name_encoded }}",
+            "LinkedIn Org. URL": "={{ $('Search Apollo').first().json.linkedin_url }}",
+            "Website URL": "={{ $('Search Apollo').first().json.website_url }}",
+            "Location": "={{ $('Search Apollo').first().json.city }}, {{ $('Search Apollo').first().json.state }}, {{ $('Search Apollo').first().json.country }}",
+            "Industry": "={{ $('Search Apollo').first().json.industry }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Lead Enrichment Start",
+              "displayName": "Lead Enrichment Start",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Lead Status",
+              "displayName": "Lead Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Todo",
+                  "value": "Todo"
+                },
+                {
+                  "name": "In progress",
+                  "value": "In progress"
+                },
+                {
+                  "name": "Done",
+                  "value": "Done"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "TIme At Company",
+              "displayName": "TIme At Company",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Industry",
+              "displayName": "Industry",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Location",
+              "displayName": "Location",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn URL",
+              "displayName": "LinkedIn URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn Org. URL",
+              "displayName": "LinkedIn Org. URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Website URL",
+              "displayName": "Website URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Summary",
+              "displayName": "Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Personalization",
+              "displayName": "Personalization",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Instantly Camp. ID",
+              "displayName": "Instantly Camp. ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        2560,
+        1060
+      ],
+      "id": "8e56f9c0-c079-479f-8f34-39070ceff6b7",
+      "name": "Create Record.",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "JtCSqEgmEXLGgj8l",
+          "name": "Clarence | Airtable Personal Access Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "value": "app8hDZP4kaxoTxJy",
+          "mode": "list",
+          "cachedResultName": "True Terpenes | Lead Database",
+          "cachedResultUrl": "https://airtable.com/app8hDZP4kaxoTxJy"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl2akcSvBljvQ6fK",
+          "mode": "list",
+          "cachedResultName": "Apollo | Search URLs",
+          "cachedResultUrl": "https://airtable.com/app8hDZP4kaxoTxJy/tbl2akcSvBljvQ6fK"
+        },
+        "id": "={{ $json.query.recordId }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -2220,
+        -80
+      ],
+      "id": "a4cfb05b-b2b9-4367-aede-365e59f83399",
+      "name": "Get Keyword + Location",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "JtCSqEgmEXLGgj8l",
+          "name": "Clarence | Airtable Personal Access Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 2,
+        "unit": "minutes"
+      },
+      "id": "5b7ae4f4-b9f6-4080-a1e9-67b193e1ef0e",
+      "name": "Wait For Dataset",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -500,
+        0
+      ],
+      "webhookId": "80f46cdf-ef90-45da-9c65-a3737782e5aa"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8a723b17-b46e-4c1c-b051-e410bd3a101e",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "not ready",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -740,
+        -80
+      ],
+      "id": "3dd3efcc-13ab-4fdd-8e3d-5b50320f3fbd",
+      "name": "Available?"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -1400,
+        -60
+      ],
+      "id": "2d632e5b-802a-4c89-913e-cee53b85bd11",
+      "name": "Merge To Re-Use DatasetID",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "### **Prompt**  \n\nYou will receive a JSON object containing a **keyword** and a **location**. Your task is to:  \n\n1. **Extract** the values for `\"Keywords\"` and `\"Location\"`.  \n2. **Encode** both values so they can be safely used in a URL.  \n   - Convert spaces to `%20`  \n   - Properly encode special characters (e.g., `&` → `%26`, `/` → `%2F`)  \n3. **Return** a structured JSON output with both the original and encoded values.  \n\n### **Input Example:**  \n```json\n{\n  \"id\": \"recFdDBTduJWa6E0B\",\n  \"createdTime\": \"2025-03-20T08:28:45.000Z\",\n  \"Keywords\": \"CBD\",\n  \"Location\": \"United States\",\n  \"Start Lead Scraping\": true\n}\n```\n\n### **Expected JSON Output:**  \n```json\n{\n  \"original_keywords\": \"CBD\",\n  \"encoded_keywords\": \"CBD\",\n  \"original_location\": \"United States\",\n  \"encoded_location\": \"United%20States\"\n}\n```"
+            },
+            {
+              "content": "=Keyword: {{ $json.Keywords }}\nLocation: {{ $json.Location }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -2000,
+        -80
+      ],
+      "id": "34c31dc8-6cf9-44c3-95fe-7bb2311baf95",
+      "name": "Encode Keyword + Location",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "app8hDZP4kaxoTxJy",
+          "mode": "list",
+          "cachedResultName": "True Terpenes | Lead Database",
+          "cachedResultUrl": "https://airtable.com/app8hDZP4kaxoTxJy"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl2akcSvBljvQ6fK",
+          "mode": "list",
+          "cachedResultName": "Apollo | Search URLs",
+          "cachedResultUrl": "https://airtable.com/app8hDZP4kaxoTxJy/tbl2akcSvBljvQ6fK"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Start Lead Scraping": false,
+            "id": "={{ $('Get Keyword + Location').item.json.id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Keywords",
+              "displayName": "Keywords",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Location",
+              "displayName": "Location",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Start Lead Scraping",
+              "displayName": "Start Lead Scraping",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Date Last Scraped",
+              "displayName": "Date Last Scraped",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -60,
+        -260
+      ],
+      "id": "53513c27-9baa-4f9b-af38-b9a553252629",
+      "name": "Update Apollo URL + Date Last Scraped",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "JtCSqEgmEXLGgj8l",
+          "name": "Clarence | Airtable Personal Access Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "2527ca51-5f8f-4c5c-99ad-2f737fb275c9",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -2440,
+        -80
+      ],
+      "id": "ab0fb510-bed4-4efa-afe3-5cbfa776f49c",
+      "name": "Receive Trigger Airtable - Apollo URL",
+      "webhookId": "2527ca51-5f8f-4c5c-99ad-2f737fb275c9"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get Company From Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Define Company Size": {
+      "main": [
+        [
+          {
+            "node": "Company Size Range",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter HTML LinkedIn": {
+      "main": [
+        [
+          {
+            "node": "Match For TrueTerpenes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Company Size Range": {
+      "main": [
+        [
+          {
+            "node": "Scrape Sales Nav. Employees",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Scrape Sales Nav. Employees.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scrape Sales Nav. Employees": {
+      "main": [
+        [
+          {
+            "node": "Merge Employees",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Determine Decision Makers": {
+      "main": [
+        [
+          {
+            "node": "Turn JSON Into String",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CSV To List - Verified Only": {
+      "main": [
+        [
+          {
+            "node": "Verified Emails?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Download Emails CSV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bulk Email Finder": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Emails CSV": {
+      "main": [
+        [
+          {
+            "node": "CSV To List - Verified Only",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Turn JSON Into String": {
+      "main": [
+        [
+          {
+            "node": "DM Available?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Create Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Employees": {
+      "main": [
+        [
+          {
+            "node": "Determine Decision Makers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Comp. LinkedIn": {
+      "main": [
+        [
+          {
+            "node": "Filter HTML LinkedIn",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Dataset Availability": {
+      "main": [
+        [
+          {
+            "node": "Available?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retrieve Dataset": {
+      "main": [
+        [
+          {
+            "node": "Verify Dataset Availability",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apollo Lead Scraper": {
+      "main": [
+        [
+          {
+            "node": "Merge To Re-Use DatasetID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Leads to CRM": {
+      "main": [
+        [
+          {
+            "node": "Update Apollo URL + Date Last Scraped",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicates": {
+      "main": [
+        [
+          {
+            "node": "Add Leads to CRM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Company From Airtable": {
+      "main": [
+        [
+          {
+            "node": "Comp. LinkedIn",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Identify Exact Company Name + Company Website": {
+      "main": [
+        [
+          {
+            "node": "Define Company Size",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Match For TrueTerpenes": {
+      "main": [
+        [
+          {
+            "node": "TT Match?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TT Match?": {
+      "main": [
+        [
+          {
+            "node": "Identify Exact Company Name + Company Website",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Company - No Match",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DM Available?": {
+      "main": [
+        [
+          {
+            "node": "Update Company - No Decision Makers",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Bulk Email Finder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verified Emails?": {
+      "main": [
+        [
+          {
+            "node": "Update Company - No Verified Emails",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "Download Emails CSV.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scrape Sales Nav. Employees.": {
+      "main": [
+        [
+          {
+            "node": "Merge Employees.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Employees.": {
+      "main": [
+        [
+          {
+            "node": "Determine Decision Makers.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Determine Decision Makers.": {
+      "main": [
+        [
+          {
+            "node": "Turn JSON Into String.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Turn JSON Into String.": {
+      "main": [
+        [
+          {
+            "node": "DM Available?.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DM Available?.": {
+      "main": [
+        [
+          {
+            "node": "Update Company - No Decision Makers.",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Bulk Email Finder.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bulk Email Finder.": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Emails CSV.": {
+      "main": [
+        [
+          {
+            "node": "CSV To List - Verified Only.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CSV To List - Verified Only.": {
+      "main": [
+        [
+          {
+            "node": "Verified Emails?.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verified Emails?.": {
+      "main": [
+        [
+          {
+            "node": "Update Company - No Verified Emails.",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Split Out.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out.": {
+      "main": [
+        [
+          {
+            "node": "Create Record.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Keyword + Location": {
+      "main": [
+        [
+          {
+            "node": "Encode Keyword + Location",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait For Dataset": {
+      "main": [
+        [
+          {
+            "node": "Merge To Re-Use DatasetID",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Available?": {
+      "main": [
+        [
+          {
+            "node": "Remove Duplicates",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait For Dataset",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge To Re-Use DatasetID": {
+      "main": [
+        [
+          {
+            "node": "Retrieve Dataset",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Encode Keyword + Location": {
+      "main": [
+        [
+          {
+            "node": "Apollo Lead Scraper",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Receive Trigger Airtable - Apollo URL": {
+      "main": [
+        [
+          {
+            "node": "Get Keyword + Location",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "68e69ffb-e8b9-4de1-8470-168d6596a83b",
+  "meta": {
+    "instanceId": "be9861782fae15eac6af5bd3da39e0377359813f71b0e0ed19ed3a98eb035f79"
+  },
+  "id": "hWrOsN8UGJHKOnK8",
+  "tags": []
+}

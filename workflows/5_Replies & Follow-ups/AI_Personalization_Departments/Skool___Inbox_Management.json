@@ -1,0 +1,2604 @@
+{
+  "name": "Skool | Inbox Management",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appJhNlGK8yWq6XQr",
+          "mode": "list",
+          "cachedResultName": "EffiSys | Leads",
+          "cachedResultUrl": "https://airtable.com/appJhNlGK8yWq6XQr"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblFJtYun0KM3Pq1r",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://airtable.com/appJhNlGK8yWq6XQr/tblFJtYun0KM3Pq1r"
+        },
+        "filterByFormula": "={{ `{Email Address} = \"${$('Fetch Email').first().json.data[0].lead}\"` }}",
+        "options": {}
+      },
+      "id": "422948fb-b5f3-461a-af60-57e53b530985",
+      "name": "Get Lead Info",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        180,
+        -20
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "JtCSqEgmEXLGgj8l",
+          "name": "Clarence | Airtable Personal Access Token"
+        }
+      },
+      "notes": "Should be grabbing their email from Instantly because they are truly original"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6915469b-8479-414d-a1e9-f79a03540942",
+              "name": "message.content",
+              "value": "={{ $json.message.content }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "832ae8af-c7eb-4885-88d9-533aa558c47e",
+      "name": "Edit Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        480,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.instantly.ai/api/v1/unibox/emails?is_unread=1",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "api_key"
+            },
+            {
+              "name": "preview_only",
+              "value": "false"
+            },
+            {
+              "name": "lead"
+            },
+            {
+              "name": "campaign_id",
+              "value": "="
+            },
+            {
+              "name": "sent_emails",
+              "value": "false"
+            },
+            {
+              "name": "email_type",
+              "value": "received"
+            },
+            {
+              "name": "latest_of_thread",
+              "value": "true"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "id": "4f4c7da7-bde1-442d-8fb5-6cb315d2e72f",
+      "name": "Fetch Email",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -40,
+        -180
+      ],
+      "notes": "CgwfRotQoCbxKVC1ABR4lDVrjwsBz"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are an email classifier designed to analyze incoming email from B2B cold outreach campaigns. Your goal is to accurately classify responses into predefined categories based on their content. Use keywords, phrases, patterns, and sentiment analysis to determine the most appropriate label for each email.\n\nInto the following categories:\n- Ready to Schedule\n- More Info Needed\n- Not Interested\n\nHere is the email to analyze: {{ $json.message.content.emails[0].content }}\n\nOutput only the label you've assigned, nothing else. ",
+              "role": "system"
+            },
+            {
+              "content": "Ready to Schedule:\n\nKey Phrases/Sentences:\n\"I'm available for a call.\"\n\"Let’s schedule a time.\"\n\"When works for you?\"\n\"I’m interested in learning more.\"\n\"Can we set up a meeting?\"\n\nPatterns:\nContains words like \"schedule,\" \"call,\" \"available,\" or \"meeting.\"\nTime suggestions: \"next Tuesday,\" \"this week,\" \"at 10 AM.\""
+            },
+            {
+              "content": "More Info Needed:\n\nKey Phrases/Sentences:\n\"Can you send more details?\"\n\"What exactly do you offer?\"\n\"I need more information.\"\n\"Can you explain further?\"\n\"Do you have a brochure or case study?\"\n\"What do you mean by...\"\n\"I don’t fully understand...\"\n\"Can you elaborate on...\"\n\"What makes this different?\"\n\nPatterns:\nQuestions seeking clarification: \"What,\" \"How does,\" \"Explain.\"\nRequests for documents: \"send,\" \"share,\" \"link,\" \"attachment.\""
+            },
+            {
+              "content": "Not Interested:\n\nKey Phrases/Sentences:\n\"We’re not interested.\"\n\"No, thank you.\"\n\"This isn’t relevant to us.\"\n\"Not a fit for us.\"\n\nPatterns:\nPolite rejections: \"thanks, but no,\" \"appreciate, but.\"\nWords like \"not interested,\" \"no need,\" \"no thanks.\""
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1dc9f12f-8f9f-49ea-b64c-eca9628dd859",
+      "name": "Classify Email Response",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.6,
+      "position": [
+        100,
+        220
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      },
+      "notes": "{{ $json.filteredText }}"
+    },
+    {
+      "parameters": {
+        "multipleMethods": true,
+        "httpMethod": [
+          "POST"
+        ],
+        "path": "46c4ad34-8319-486d-a217-4b961114a298",
+        "options": {}
+      },
+      "id": "cb3bf614-eb5d-4bca-a334-8397268c8f3b",
+      "name": "Instantly Webhook on Reply",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        -20
+      ],
+      "webhookId": "46c4ad34-8319-486d-a217-4b961114a298",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const htmlContent = $node[\"Fetch Email\"].json.data[0].body.html; // Replace this with the field containing your HTML content\n\n// Function to strip HTML tags and clean the text\nconst extractPlainText = (html) => {\n    if (!html) return \"\";\n\n    // Remove script and style tags along with their content\n    const withoutScriptsAndStyles = html.replace(/<script[\\s\\S]*?>[\\s\\S]*?<\\/script>/gi, \"\")\n                                        .replace(/<style[\\s\\S]*?>[\\s\\S]*?<\\/style>/gi, \"\");\n\n    // Remove all remaining HTML tags\n    const strippedText = withoutScriptsAndStyles.replace(/<\\/?[^>]+(>|$)/g, \"\");\n\n    // Replace HTML entities with their plain-text equivalents\n    const decodedText = strippedText.replace(/&nbsp;/gi, \" \")\n                                    .replace(/&amp;/gi, \"&\")\n                                    .replace(/&lt;/gi, \"<\")\n                                    .replace(/&gt;/gi, \">\")\n                                    .replace(/&quot;/gi, \"\\\"\")\n                                    .replace(/&#39;/gi, \"'\");\n\n    // Replace multiple spaces, tabs, and newlines with a single space\n    const cleanedText = decodedText.replace(/\\s+/g, \" \").trim();\n\n    return cleanedText;\n};\n\n// Call the function to process the HTML content\nconst filteredText = extractPlainText(htmlContent);\n\n// Return the plain text as the output of this node\nreturn {\n    filteredText: filteredText,\n};\n\n"
+      },
+      "id": "cd51f289-0e87-4f19-87b4-835db9829941",
+      "name": "Filter HTML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        -20
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are an advanced AI assistant designed to analyze email threads and produce organized outputs. Your task is to process the email thread and create a JSON object where all emails are listed in reverse chronological order (newest first).\n\nTask Details:\nContext Analysis:\n\nReview the provided email thread, which includes all emails exchanged.\nFocus on extracting the content, sender, and date of each email.\nOutput Requirements:\n\nOutput the emails in newest to oldest order.\nUse a JSON array where each email is an object with the following keys:\n\"sender\": The person who sent the email.\n\"date\": The date the email was sent.\n\"content\": The body of the email.\nEmail Extraction:\n\nParse the email thread to identify and separate each email.\nRemove unnecessary formatting, such as quoted previous messages (e.g., \"On [date] wrote:\").\nOutput Format:\nThe output must be in JSON format and include an array of emails sorted by date from newest to oldest.\n\nNote\n- The email without a timestamp is always the most recent one.",
+              "role": "system"
+            },
+            {
+              "content": "=Here are all the emails: {{ $json.filteredText }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -280,
+        220
+      ],
+      "id": "5c4ea804-55f8-40ba-a397-da926755856d",
+      "name": "Split Out Mails + Order",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.content }}",
+                    "rightValue": "Ready to Schedule",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Ready to Schedule"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "42fec93e-f37f-45b7-92cc-9f9f01cbd5cd",
+                    "leftValue": "={{ $json.message.content }}",
+                    "rightValue": "More Info Needed",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "More Info Needed"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "09e9c050-4e2f-4401-bd19-5892ca8addea",
+                    "leftValue": "={{ $json.message.content }}",
+                    "rightValue": "Not Interested",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Not Interested"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "none"
+        }
+      },
+      "id": "56263adc-84c1-44d5-9609-41911ea2e8a5",
+      "name": "Switch",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        700,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appJhNlGK8yWq6XQr",
+          "mode": "list",
+          "cachedResultName": "EffiSys | Leads",
+          "cachedResultUrl": "https://airtable.com/appJhNlGK8yWq6XQr"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblFJtYun0KM3Pq1r",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://airtable.com/appJhNlGK8yWq6XQr/tblFJtYun0KM3Pq1r"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Start Lead Enrichment": false,
+            "Lead Status": "Interested - RtS",
+            "id": "={{ $('Get Lead Info').item.json.id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Start Lead Enrichment",
+              "displayName": "Start Lead Enrichment",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Lead Status",
+              "displayName": "Lead Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Lead Yet to be Enriched",
+                  "value": "Lead Yet to be Enriched"
+                },
+                {
+                  "name": "Cold",
+                  "value": "Cold"
+                },
+                {
+                  "name": "Interested - RtS",
+                  "value": "Interested - RtS"
+                },
+                {
+                  "name": "Interested - MiN",
+                  "value": "Interested - MiN"
+                },
+                {
+                  "name": "Interested - CN",
+                  "value": "Interested - CN"
+                },
+                {
+                  "name": "Interested - FUL",
+                  "value": "Interested - FUL"
+                },
+                {
+                  "name": "Wrong Person - R",
+                  "value": "Wrong Person - R"
+                },
+                {
+                  "name": "Not Interested - NI",
+                  "value": "Not Interested - NI"
+                },
+                {
+                  "name": "Not Interested - NB",
+                  "value": "Not Interested - NB"
+                },
+                {
+                  "name": "Not Interested - AUS",
+                  "value": "Not Interested - AUS"
+                },
+                {
+                  "name": "Meeting Booked",
+                  "value": "Meeting Booked"
+                },
+                {
+                  "name": "No Show",
+                  "value": "No Show"
+                },
+                {
+                  "name": "Awaiting Proposal",
+                  "value": "Awaiting Proposal"
+                },
+                {
+                  "name": "Proposal Sent",
+                  "value": "Proposal Sent"
+                },
+                {
+                  "name": "Closed",
+                  "value": "Closed"
+                },
+                {
+                  "name": "Lost - U/DNC",
+                  "value": "Lost - U/DNC"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Country",
+              "displayName": "Country",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn URL",
+              "displayName": "LinkedIn URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Time At Company",
+              "displayName": "Time At Company",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email Address",
+              "displayName": "Email Address",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Headline",
+              "displayName": "Headline",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Clean Company Name",
+              "displayName": "Clean Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Industry",
+              "displayName": "Industry",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company Website",
+              "displayName": "Company Website",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Meeting Date",
+              "displayName": "Meeting Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Google Meet URL",
+              "displayName": "Google Meet URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Personal Profile Summary",
+              "displayName": "Personal Profile Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Main Revenue Generating Activities",
+              "displayName": "Main Revenue Generating Activities",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Case Studies/Success Stories",
+              "displayName": "Case Studies/Success Stories",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email 1",
+              "displayName": "Email 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email 2",
+              "displayName": "Email 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email 3",
+              "displayName": "Email 3",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "96f60042-878a-47ad-8676-d5d92e8a7050",
+      "name": "Ready to Schedule",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1040,
+        -140
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "JtCSqEgmEXLGgj8l",
+          "name": "Clarence | Airtable Personal Access Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C087M2UQNLA",
+          "mode": "list",
+          "cachedResultName": "effisys-leads"
+        },
+        "text": "={{ $('Get Lead Info').item.json['Full Name'] }} Responded\n\nEmail Received: {{ $('Split Out Mails + Order').item.json.message.content.emails[0].content }}\n\nThis is my response: {{ $json.message.content }}",
+        "otherOptions": {}
+      },
+      "id": "c9771cc5-ac9d-4969-b646-4f7918ac5779",
+      "name": "Slack3",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [
+        2460,
+        -60
+      ],
+      "webhookId": "4f24f6df-5ce9-4a4d-9be7-a1b550ebd2cd",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "LWCx2LZdGqT2wahf",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are an AI assistant with access to my Google Calendar and the user's suggested times and timezone. Your task is to determine if any of the suggested times match my availability.\n\nHere’s how to process the input:\n- Convert the user's suggested times from their timezone to my timezone (Amsterdam time, GMT +1).\n- Check these times against my Google Calendar availability.\n- Consider my working hours, which are from 11:00 AM to 11:00 PM (Amsterdam time, GMT +1). Times outside these hours are automatically unavailable.\n- Identify the earliest possible time that is both within my working hours and available in my calendar.\n\nOutput:\n- If one of the suggested times is available, output yes and the selected time in my timezone (e.g., yes, 2025-01-14 15:00).\n- If none of the suggested times are available, find the closest available time to any of the suggested times (within my working hours), and output: no, but available at [closest time in my timezone] ([closest time in their timezone]).\n- If no time is available at all, output no.\n\nNote:\n- The output must always include both my timezone and the user's timezone for suggested times.\n- If no suggestion is possible, output only no.\n- Do not provide any additional explanations or processing details—only the required output.\n\n[\n  {\n    \"index\": 0,\n    \"message\": {\n      \"role\": \"assistant\",\n      \"content\": {\n        \"result\": \"\"\n      },\n      \"refusal\": null\n    },\n    \"logprobs\": null,\n    \"finish_reason\": \"stop\"\n  }\n]\n",
+              "role": "system"
+            },
+            {
+              "content": "=Email:{{ $('Split Out Mails + Order').item.json.message.content.emails[0].content }}\nToday's date: {{ $now }}\nMy timezone: (Amsterdam GMT +1)\nUser's timezone: {{ $('Ready to Schedule').item.json.fields.Location }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "id": "2347a954-3674-45f8-9361-b116adead900",
+      "name": "Check Availability. ",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.6,
+      "position": [
+        1280,
+        -140
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "clarence.nap@gmail.com",
+          "mode": "list",
+          "cachedResultName": "clarence.nap@gmail.com"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.2,
+      "position": [
+        1520,
+        40
+      ],
+      "id": "e7993879-e46c-4548-be3b-a98c84b2ed07",
+      "name": "Availibility",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "hWDMXYMlJSbXVuQQ",
+          "name": "Clarence | Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e7ad6115-ea87-405c-b5ca-1937daffcb0a",
+              "leftValue": "={{ $json.message.content.result }}",
+              "rightValue": "no",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1680,
+        -140
+      ],
+      "id": "c659223e-9c71-49c4-b893-3ad9f926920f",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are a professional email assistant specializing in crafting concise and professional responses. Your task is to draft an email reply informing the recipient that none of the proposed times are available. Offer an alternative by sharing a scheduling link to book a time directly.\n\nGuidelines:\nCompose a Reply:\nPolitely inform the recipient that none of the proposed times work.\nShare the scheduling link for them to book a time that suits them.\nKeep the tone professional, polite, and action-oriented.\n\nOutput Formatting:\nNo greetings or sign-offs unless explicitly specified.\nAvoid filler words or unnecessary details.\nWrite for clarity and action. \n\nInput:\nScheduling link: https://cal.com/effisys/effisys-discovery-call\n\nNotes:\n- Ensure the response feels polite and helpful.\n- Avoid overly complex or technical language; use eighth-grade language.\n- Do not include code block markers or backticks in the output.\n- Structure the response for readability.\n- Please provide the HTML content without any backticks or code block markers, avoid using \\n \\n.",
+              "role": "system"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1860,
+        -220
+      ],
+      "id": "a9d2ea0e-29fd-4d0a-9257-632f1e153228",
+      "name": "Dates Not Available",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=System Prompt:\nYou are a professional email assistant specializing in crafting concise and professional responses. Your task is to draft an email reply confirming availability for a proposed meeting time, using the pre-identified time provided by another LLM.\n\nGuidelines:\n\nAnalyze Input:\nConfirm the pre-identified available time and the proposed time zone.\nAdjust the time to the recipient's time zone, considering the sender's time zone.\n\nCompose a Reply:\nClearly confirm the selected meeting time.\nInclude the adjusted time in the recipient’s time zone.\nEnsure the tone is professional, concise, and polite.\n\nOutput Formatting:\nNo greetings or sign-offs unless explicitly specified.\nAvoid filler words or unnecessary details.\nWrite for clarity and action.\n\nInput:\nAvailable time identified: {{ $json.message.content.result }}\nRecipient time zone: {{ $('Ready to Schedule').item.json.fields.Location }}\nSender time zone: Amsterdam (+1 GMT)\n\nNotes:\n- Ensure the time provided is accurate for the recipient’s time zone.\n- Avoid overly complex or technical language; use eighth-grade language.\n- Do not include code block markers or backticks in the output.\n- Structure the response for readability.\n",
+              "role": "system"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1860,
+        -60
+      ],
+      "id": "90b55f3f-9729-4dd5-bb32-bb0627292278",
+      "name": "Dates Available",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C087M2UQNLA",
+          "mode": "list",
+          "cachedResultName": "effisys-leads"
+        },
+        "text": "={{ $('Get Lead Info').item.json['Full Name'] }} Responded\n\nEmail Received: {{ $('Split Out Mails + Order').item.json.message.content.emails[0].content }}\n\nThis is my response: {{ $json.message.content }}",
+        "otherOptions": {}
+      },
+      "id": "2f62a7e7-8730-4408-b47e-4b5b58c2eea5",
+      "name": "Slack",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [
+        2460,
+        -220
+      ],
+      "webhookId": "4f24f6df-5ce9-4a4d-9be7-a1b550ebd2cd",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "LWCx2LZdGqT2wahf",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appJhNlGK8yWq6XQr",
+          "mode": "list",
+          "cachedResultName": "EffiSys | Leads",
+          "cachedResultUrl": "https://airtable.com/appJhNlGK8yWq6XQr"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblFJtYun0KM3Pq1r",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://airtable.com/appJhNlGK8yWq6XQr/tblFJtYun0KM3Pq1r"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Start Lead Enrichment": false,
+            "id": "={{ $('Get Lead Info').first().json.id }}",
+            "Lead Status": "Interested - MiN"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Start Lead Enrichment",
+              "displayName": "Start Lead Enrichment",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Lead Status",
+              "displayName": "Lead Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Lead Yet to be Enriched",
+                  "value": "Lead Yet to be Enriched"
+                },
+                {
+                  "name": "Cold",
+                  "value": "Cold"
+                },
+                {
+                  "name": "Interested - RtS",
+                  "value": "Interested - RtS"
+                },
+                {
+                  "name": "Interested - MiN",
+                  "value": "Interested - MiN"
+                },
+                {
+                  "name": "Interested - CN",
+                  "value": "Interested - CN"
+                },
+                {
+                  "name": "Interested - FUL",
+                  "value": "Interested - FUL"
+                },
+                {
+                  "name": "Wrong Person - R",
+                  "value": "Wrong Person - R"
+                },
+                {
+                  "name": "Not Interested - NI",
+                  "value": "Not Interested - NI"
+                },
+                {
+                  "name": "Not Interested - NB",
+                  "value": "Not Interested - NB"
+                },
+                {
+                  "name": "Not Interested - AUS",
+                  "value": "Not Interested - AUS"
+                },
+                {
+                  "name": "Meeting Booked",
+                  "value": "Meeting Booked"
+                },
+                {
+                  "name": "No Show",
+                  "value": "No Show"
+                },
+                {
+                  "name": "Awaiting Proposal",
+                  "value": "Awaiting Proposal"
+                },
+                {
+                  "name": "Proposal Sent",
+                  "value": "Proposal Sent"
+                },
+                {
+                  "name": "Closed",
+                  "value": "Closed"
+                },
+                {
+                  "name": "Lost - U/DNC",
+                  "value": "Lost - U/DNC"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Country",
+              "displayName": "Country",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn URL",
+              "displayName": "LinkedIn URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Time At Company",
+              "displayName": "Time At Company",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email Address",
+              "displayName": "Email Address",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Headline",
+              "displayName": "Headline",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Clean Company Name",
+              "displayName": "Clean Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Industry",
+              "displayName": "Industry",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company Website",
+              "displayName": "Company Website",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Meeting Date",
+              "displayName": "Meeting Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Google Meet URL",
+              "displayName": "Google Meet URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Personal Profile Summary",
+              "displayName": "Personal Profile Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Main Revenue Generating Activities",
+              "displayName": "Main Revenue Generating Activities",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Case Studies/Success Stories",
+              "displayName": "Case Studies/Success Stories",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email 1",
+              "displayName": "Email 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email 2",
+              "displayName": "Email 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email 3",
+              "displayName": "Email 3",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9a79a04a-4985-4096-a5f5-72599b5e3d0c",
+      "name": "More Info Needed",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1040,
+        220
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "JtCSqEgmEXLGgj8l",
+          "name": "Clarence | Airtable Personal Access Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C087M2UQNLA",
+          "mode": "list",
+          "cachedResultName": "effisys-leads"
+        },
+        "text": "={{ $('Get Lead Info').first().json['Full Name'] }} Responded\n\nEmail Received: {{ $('Split Out Mails + Order').first().json.message.content.emails[0].content }}\n\nThis is my response: {{ $json.message.content }}",
+        "otherOptions": {}
+      },
+      "id": "bb1be24e-1924-4b1d-830c-cba1905d32ae",
+      "name": "Slack11",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [
+        2460,
+        320
+      ],
+      "webhookId": "4f24f6df-5ce9-4a4d-9be7-a1b550ebd2cd",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "LWCx2LZdGqT2wahf",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "name": "effisysdatabase"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolVectorStore",
+      "typeVersion": 1,
+      "position": [
+        1300,
+        360
+      ],
+      "id": "d1a1b39b-071b-4ace-975a-c11ec010102c",
+      "name": "Vector Store Tool1"
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.1,
+      "position": [
+        1520,
+        500
+      ],
+      "id": "a546ed17-18c8-4a1e-8c6e-538c5ace7e61",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "effisys-replies",
+          "mode": "list",
+          "cachedResultName": "effisys-replies"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1,
+      "position": [
+        1140,
+        500
+      ],
+      "id": "210aa1b9-58c2-487f-9664-2bafdc16638b",
+      "name": "Pinecone Vector Store1",
+      "credentials": {
+        "pineconeApi": {
+          "id": "ejh8RigR5nISndP9",
+          "name": "Clarence | PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1240,
+        640
+      ],
+      "id": "e4b83837-02a2-436b-b652-00e0ba619c0a",
+      "name": "Embeddings OpenAI1",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "94d7645d-277b-4fa4-86de-ebe8db101c25",
+              "leftValue": "={{ $json.message.content.Answer }}",
+              "rightValue": "unavailable",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1680,
+        220
+      ],
+      "id": "3d6ad212-3ba2-41a0-a227-10a092a2ab22",
+      "name": "If4"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are an AI assistant specialized in reviewing email threads for questions. Your goal is to:\n\nAnalyze the Context:\n- Examine the provided email thread.\n- Concentrate only on the most recent email.\n\nIdentify the Question:\n- Extract and clearly state the specific question asked in the most recent email.\n- If there is no explicit question, acknowledge that no question was asked.\n\nCheck the Vector Database:\n- Search for a direct match or relevant entry in your vector database corresponding to the identified question.\n- If no matching entry is found in the database and the question is not about a case study, do not guess or provide any additional information. Simply respond with: unavailable\n\nExtracting the answer: \n- Extract the exact reply example most fitting to answer the question.\n\nNotes:\n- Take the example responses word for word, don't change anything.\n\nOutput\nPresent the question and either the retrieved answer or the “unavailable” (or “case study”) response in the following JSON format:\n{\n  \"Question\": \"The extracted question from the most recent email.\",\n  \"Answer\": \"Answer from the vector database or 'unavailable' or 'case study'.\"\n}",
+              "role": "system"
+            },
+            {
+              "content": "=Incoming email: {{ $('Split Out Mails + Order').item.json.message.content.emails[0].content }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "id": "5a8a0405-bbe1-4e04-9528-65649c50f3d3",
+      "name": "Check If Question Is on the List",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.6,
+      "position": [
+        1280,
+        220
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      },
+      "notes": "{{ $('Code').item.json.filteredText }}"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Prompt\nYou are an expert email inbox manager and advanced formatter for email content. Your task is to take an input text (which is an answer to a question) and format it into HTML for improved readability. Follow these instructions:\n\nSplit Sentences: Insert a line break (<br><br>) after each sentence-ending punctuation (., ?, or !) to create spacing between sentences.\n\nWrap in HTML: Ensure the formatted output is enclosed in appropriate HTML tags for use in an email. Use <p> to wrap the text.\n\nAnswer from previous LLM: {{ $('Check If Question Is on the List').item.json.message.content.Answer }}\n\nNotes:\n- Please provide the HTML content without any backticks or code block markers, avoid using \\n \\n.\n- You're the person responding to the email do it should be written from your perspective.",
+              "role": "system"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1880,
+        320
+      ],
+      "id": "a40e5749-c95d-48f9-a91b-9fd2923d6d9e",
+      "name": "Write MiN Response Question",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C087M2UQNLA",
+          "mode": "list",
+          "cachedResultName": "effisys-leads"
+        },
+        "text": "={{ $('Get Lead Info').first().json['Full Name'] }} Responded\n\nEmail Received: {{ $('Split Out Mails + Order').first().json.message.content.emails[0].content }}\n\nDatabase does not contain the answer.",
+        "otherOptions": {}
+      },
+      "id": "2728236c-b1eb-4b05-a21d-783ba892a88a",
+      "name": "Slack13",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [
+        1880,
+        120
+      ],
+      "webhookId": "4f24f6df-5ce9-4a4d-9be7-a1b550ebd2cd",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "LWCx2LZdGqT2wahf",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appJhNlGK8yWq6XQr",
+          "mode": "list",
+          "cachedResultName": "EffiSys | Leads",
+          "cachedResultUrl": "https://airtable.com/appJhNlGK8yWq6XQr"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblFJtYun0KM3Pq1r",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://airtable.com/appJhNlGK8yWq6XQr/tblFJtYun0KM3Pq1r"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Start Lead Enrichment": false,
+            "id": "={{ $('Get Lead Info').item.json.id }}",
+            "Lead Status": "Not Interested - NI"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Start Lead Enrichment",
+              "displayName": "Start Lead Enrichment",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Lead Status",
+              "displayName": "Lead Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Lead Yet to be Enriched",
+                  "value": "Lead Yet to be Enriched"
+                },
+                {
+                  "name": "Cold",
+                  "value": "Cold"
+                },
+                {
+                  "name": "Interested - RtS",
+                  "value": "Interested - RtS"
+                },
+                {
+                  "name": "Interested - MiN",
+                  "value": "Interested - MiN"
+                },
+                {
+                  "name": "Interested - CN",
+                  "value": "Interested - CN"
+                },
+                {
+                  "name": "Interested - FUL",
+                  "value": "Interested - FUL"
+                },
+                {
+                  "name": "Wrong Person - R",
+                  "value": "Wrong Person - R"
+                },
+                {
+                  "name": "Not Interested - NI",
+                  "value": "Not Interested - NI"
+                },
+                {
+                  "name": "Not Interested - NB",
+                  "value": "Not Interested - NB"
+                },
+                {
+                  "name": "Not Interested - AUS",
+                  "value": "Not Interested - AUS"
+                },
+                {
+                  "name": "Meeting Booked",
+                  "value": "Meeting Booked"
+                },
+                {
+                  "name": "No Show",
+                  "value": "No Show"
+                },
+                {
+                  "name": "Awaiting Proposal",
+                  "value": "Awaiting Proposal"
+                },
+                {
+                  "name": "Proposal Sent",
+                  "value": "Proposal Sent"
+                },
+                {
+                  "name": "Closed",
+                  "value": "Closed"
+                },
+                {
+                  "name": "Lost - U/DNC",
+                  "value": "Lost - U/DNC"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Country",
+              "displayName": "Country",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn URL",
+              "displayName": "LinkedIn URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Time At Company",
+              "displayName": "Time At Company",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email Address",
+              "displayName": "Email Address",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Headline",
+              "displayName": "Headline",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Clean Company Name",
+              "displayName": "Clean Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Industry",
+              "displayName": "Industry",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company Website",
+              "displayName": "Company Website",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Meeting Date",
+              "displayName": "Meeting Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Google Meet URL",
+              "displayName": "Google Meet URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Personal Profile Summary",
+              "displayName": "Personal Profile Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Main Revenue Generating Activities",
+              "displayName": "Main Revenue Generating Activities",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Case Studies/Success Stories",
+              "displayName": "Case Studies/Success Stories",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email 1",
+              "displayName": "Email 1",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email 2",
+              "displayName": "Email 2",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email 3",
+              "displayName": "Email 3",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2063120c-cc24-416d-9770-5b5c84d79f85",
+      "name": "Not Interested",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1040,
+        780
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "JtCSqEgmEXLGgj8l",
+          "name": "Clarence | Airtable Personal Access Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are a professional email assistant specializing in crafting action-oriented responses. Your task is to draft an email reply to someone who has expressed that they are not interested.\n\n**Guidelines:**\n\n1. **Analyze Input:**\n   - Acknowledge their response politely.\n   - Show appreciation for their reply.\n   - Request feedback to understand their reasoning, phrased respectfully.\n\n2. **Compose a Reply:**\n   - Thank them for their response.\n   - Politely ask for feedback on why the opportunity or offer isn’t interesting to them.\n\n3. **Output Formatting:**\n   - Format the response in clean HTML.\n   - Do not include any code block markers (like backticks) or escape characters (\\n, \\t, etc.).\n   - Maintain a clean structure using `<p>` tags for each paragraph.\n   - Ensure the final output is direct HTML without any additional formatting annotations or descriptors.\n\n4. **Additional Notes:**\n   - Use simple, polite, and professional language.\n   - Refer to actions from your perspective (e.g., \"Thanks for the note\").\n   - The output must be directly usable as HTML in an email body with no further adjustments.\n   - Maximum 1-2 sentences. \n   - Do not include greetings or sign-offs.\n\n**Input:**  \nIncoming email: {{ $('Split Out Mails + Order').item.json.message.content.emails[0].content }}\n\n**Response Example:**\n\n<p>Thanks for the note {{ $('Get Lead Info').item.json['First Name'] }} !</p><p>Just for my own feedback, what makes this not interesting?</p><p>Thanks a lot.</p>",
+              "role": "system"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ddafe8ca-4015-4e94-844d-5de5f9f750a3",
+      "name": "NI Response",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.6,
+      "position": [
+        1280,
+        780
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C087M2UQNLA",
+          "mode": "list",
+          "cachedResultName": "effisys-leads"
+        },
+        "text": "={{ $('Get Lead Info').first().json['Full Name'] }} Responded\n\nEmail Received: {{ $('Split Out Mails + Order').first().json.message.content.emails[0].content }}\n\nThis is my response: {{ $json.message.content }}",
+        "otherOptions": {}
+      },
+      "id": "d8112f15-af73-4242-bfb5-3e9d986198d9",
+      "name": "Slack6",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [
+        1920,
+        780
+      ],
+      "webhookId": "4f24f6df-5ce9-4a4d-9be7-a1b550ebd2cd",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "LWCx2LZdGqT2wahf",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.floor(Math.random() * (20 - 10 + 1) + 10) }}",
+        "unit": "minutes"
+      },
+      "id": "35fa4eff-c146-4e7c-871d-500f91ccb675",
+      "name": "Wait2",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2240,
+        320
+      ],
+      "webhookId": "84815985-6696-4e1e-9a85-9ba08d920154"
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.floor(Math.random() * (20 - 10 + 1) + 10) }}",
+        "unit": "minutes"
+      },
+      "id": "7661708b-4c8c-4bf2-be57-65f02820e2e7",
+      "name": "Wait",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2240,
+        -220
+      ],
+      "webhookId": "84815985-6696-4e1e-9a85-9ba08d920154"
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.floor(Math.random() * (20 - 10 + 1) + 10) }}",
+        "unit": "minutes"
+      },
+      "id": "0fe9b1f2-15ab-4cc8-a078-0053fefb07e5",
+      "name": "Wait1",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2240,
+        -60
+      ],
+      "webhookId": "84815985-6696-4e1e-9a85-9ba08d920154"
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.floor(Math.random() * (20 - 10 + 1) + 10) }}",
+        "unit": "minutes"
+      },
+      "id": "d2441fd0-34d1-4f01-aa19-07301d8f0123",
+      "name": "Wait3",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1680,
+        780
+      ],
+      "webhookId": "84815985-6696-4e1e-9a85-9ba08d920154"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.instantly.ai/api/v1/unibox/emails/reply",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "api_key",
+              "value": "CgwfRotQoCbxKVC1ABR4lDVrjwsBz"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "reply_to_uuid",
+              "value": "={{ $('Fetch Email').first().json.data[0].id }}"
+            },
+            {
+              "name": "subject",
+              "value": "={{ $('Fetch Email').first().json.data[0].subject }}"
+            },
+            {
+              "name": "from",
+              "value": "={{ $('Fetch Email').first().json.data[0].to_address_json[0].address }}"
+            },
+            {
+              "name": "to",
+              "value": "={{ $('Fetch Email').first().json.data[0].from_address_email }}"
+            },
+            {
+              "name": "body",
+              "value": "=Hey [First Name]\n\n{{ $json.message.content }}\n\nCheers\n\nClarence \n\nSent from iPhone"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "id": "87070641-2c25-4d98-a5b0-a876d4469a30",
+      "name": "Send RtS1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2700,
+        -220
+      ],
+      "notes": "CgwfRotQoCbxKVC1ABR4lDVrjwsBz"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.instantly.ai/api/v1/unibox/emails/reply",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "api_key",
+              "value": "CgwfRotQoCbxKVC1ABR4lDVrjwsBz"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "reply_to_uuid",
+              "value": "={{ $('Fetch Email').first().json.data[0].id }}"
+            },
+            {
+              "name": "subject",
+              "value": "={{ $('Fetch Email').first().json.data[0].subject }}"
+            },
+            {
+              "name": "from",
+              "value": "={{ $('Fetch Email').first().json.data[0].to_address_json[0].address }}"
+            },
+            {
+              "name": "to",
+              "value": "={{ $('Fetch Email').first().json.data[0].from_address_email }}"
+            },
+            {
+              "name": "body",
+              "value": "=Hey [First Name]\n\n{{ $json.message.content }}\n\nCheers\n\nClarence \n\nSent from iPhone"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "id": "32b5131d-ea78-4201-8f88-05b27524391d",
+      "name": "Send RtS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2700,
+        -60
+      ],
+      "notes": "CgwfRotQoCbxKVC1ABR4lDVrjwsBz"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.instantly.ai/api/v1/unibox/emails/reply",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "api_key"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "reply_to_uuid",
+              "value": "={{ $('Fetch Email').first().json.data[0].id }}"
+            },
+            {
+              "name": "subject",
+              "value": "={{ $('Fetch Email').first().json.data[0].subject }}"
+            },
+            {
+              "name": "from",
+              "value": "={{ $('Fetch Email').first().json.data[0].to_address_json[0].address }}"
+            },
+            {
+              "name": "to",
+              "value": "={{ $('Fetch Email').first().json.data[0].from_address_email }}"
+            },
+            {
+              "name": "body",
+              "value": "={{ $json.message.content }}"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "id": "794a88e0-734f-46f1-9588-c2d6274ee54b",
+      "name": "Send MiN",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2700,
+        320
+      ],
+      "notes": "CgwfRotQoCbxKVC1ABR4lDVrjwsBz\n"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.instantly.ai/api/v1/unibox/emails/reply",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "api_key",
+              "value": "CgwfRotQoCbxKVC1ABR4lDVrjwsBz"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "reply_to_uuid",
+              "value": "={{ $('Fetch Email').first().json.data[0].id }}"
+            },
+            {
+              "name": "subject",
+              "value": "={{ $('Fetch Email').first().json.data[0].subject }}"
+            },
+            {
+              "name": "from",
+              "value": "={{ $('Fetch Email').first().json.data[0].to_address_json[0].address }}"
+            },
+            {
+              "name": "to",
+              "value": "={{ $('Fetch Email').first().json.data[0].from_address_email }}"
+            },
+            {
+              "name": "body",
+              "value": "=Hey [First Name]\n\n{{ $json.message.content }}\n\nCheers\n\nClarence \n\nSent from iPhone"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "id": "aac0e18d-f6ad-42fc-b781-5603cf9f0e01",
+      "name": "Send NI",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2160,
+        780
+      ],
+      "notes": "CgwfRotQoCbxKVC1ABR4lDVrjwsBz"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get Lead Info": {
+      "main": [
+        [
+          {
+            "node": "Filter HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Email": {
+      "main": [
+        [
+          {
+            "node": "Get Lead Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify Email Response": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Instantly Webhook on Reply": {
+      "main": [
+        []
+      ]
+    },
+    "Filter HTML": {
+      "main": [
+        [
+          {
+            "node": "Split Out Mails + Order",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out Mails + Order": {
+      "main": [
+        [
+          {
+            "node": "Classify Email Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ready to Schedule": {
+      "main": [
+        [
+          {
+            "node": "Check Availability. ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack3": {
+      "main": [
+        []
+      ]
+    },
+    "Check Availability. ": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Availibility": {
+      "ai_tool": [
+        [
+          {
+            "node": "Check Availability. ",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Dates Not Available",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Dates Available",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dates Not Available": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dates Available": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack": {
+      "main": [
+        []
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Ready to Schedule",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "More Info Needed",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Not Interested",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "More Info Needed": {
+      "main": [
+        [
+          {
+            "node": "Check If Question Is on the List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack11": {
+      "main": [
+        []
+      ]
+    },
+    "Vector Store Tool1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Check If Question Is on the List",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Vector Store Tool1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store1": {
+      "ai_vectorStore": [
+        [
+          {
+            "node": "Vector Store Tool1",
+            "type": "ai_vectorStore",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If4": {
+      "main": [
+        [
+          {
+            "node": "Slack13",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Write MiN Response Question",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check If Question Is on the List": {
+      "main": [
+        [
+          {
+            "node": "If4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write MiN Response Question": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Not Interested": {
+      "main": [
+        [
+          {
+            "node": "NI Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NI Response": {
+      "main": [
+        [
+          {
+            "node": "Wait3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Slack3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "Slack11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait3": {
+      "main": [
+        [
+          {
+            "node": "Slack6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "0a991c35-1f9a-4d01-86cc-85d725f0c07f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "be9861782fae15eac6af5bd3da39e0377359813f71b0e0ed19ed3a98eb035f79"
+  },
+  "id": "J9vCJHqucWFfDFx6",
+  "tags": []
+}

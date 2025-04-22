@@ -1,0 +1,2162 @@
+{
+  "name": "Skool | Enrichment | Complete + Departments",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "093caafa-c56d-4a48-a7bd-6632b5b9a78d",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -3360,
+        500
+      ],
+      "id": "9e164072-f53b-4c06-a624-1612501c1727",
+      "name": "Webhook",
+      "webhookId": "093caafa-c56d-4a48-a7bd-6632b5b9a78d"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  mergedData: items.map(item => item.json.url) // Extract only the URLs, removing unnecessary objects\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1820,
+        500
+      ],
+      "id": "2e8e4a74-ce47-4c20-874c-7017c03e9a75",
+      "name": "Turn X Items Into 1"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are given a **list of URLs extracted from a company’s website**. Your task is to **identify and categorize the most relevant URLs** to help enrich lead data.  \n\nEach URL should be classified into **one of four key categories** that provide meaningful insights into the company’s operations. If a category **does not have a matching URL**, return `\"no relevant URL\"` instead.  \n\n## **Selection Criteria & Context**  \n\n### **1. Company & Mission (About the Business & People Behind It)**  \n- **Purpose:** Find a page that explains **who the company is, what they stand for, and who runs it**.  \n- **Look for:** Company history, mission, vision, leadership, team, and core values.  \n- **Example matches:**  \n  - `/about`, `/company`, `/who-we-are`, `/our-story`, `/overview`, `/leadership`, `/team`, `/mission`, `/vision`  \n- **Avoid:** Generic pages like `/home`, contact pages, and customer support sections.  \n\n### **2. Offerings & Positioning (What They Sell & Their Market Fit)**  \n- **Purpose:** Identify a page that describes the company’s **products, services, industries served, or unique differentiators**.  \n- **Look for:** Offerings, solutions, industry focus, and use cases.  \n- **Example matches:**  \n  - `/services`, `/what-we-do`, `/solutions`, `/products`, `/industries`, `/use-cases`, `/capabilities`  \n- **Avoid:** Pages that **only mention** clients but do not describe the company’s services.  \n\n### **3. Process & Differentiation (How They Deliver Value)**  \n- **Purpose:** Identify a page that explains **how** the company operates and what makes them unique.  \n- **Look for:** Methodologies, workflows, onboarding process, value proposition, or unique technology/frameworks.  \n- **Example matches:**  \n  - `/how-it-works`, `/our-process`, `/methodology`, `/why-us`, `/why-choose-us`, `/approach`  \n- **Avoid:** Basic service descriptions without any details on processes or methodologies.  \n\n### **4. Proof of Success (Social Proof & Track Record)**  \n- **Purpose:** Find a page that demonstrates **the company’s credibility through client results, testimonials, or case studies**.  \n- **Look for:** Success stories, partnerships, and testimonials.  \n- **Example matches:**  \n  - `/case-studies`, `/testimonials`, `/success-stories`, `/clients`, `/portfolio`  \n- **Avoid:** Generic client lists that do not contain results or success metrics.  \n\n## **Output Requirements**  \n- **Return exactly one URL per category** (or `\"no relevant URL\"` if none exist).  \n- **Output must be in JSON format** as shown below.  \n- **Only return the path (e.g., `/about` instead of `https://example.com/about`).**  \n- **Strictly follow the structured format—no extra explanations or additional text.**  \n\n### **Expected Output Format**  \n```json\n{\n  \"selected_urls\": {\n    \"company_mission\": \"/about\",\n    \"offerings_positioning\": \"/solutions\",\n    \"process_differentiation\": \"/our-process\",\n    \"proof_of_success\": \"no relevant URL\"\n  }\n}\n```\n\n## **Additional Guidelines**  \n- **Prioritize broader coverage:** If multiple URLs match a category, choose the **most comprehensive one** (e.g., `/about` over `/company-overview`).  \n- **Handle duplicates:** If a URL appears more than once, select only one.  \n- **Exclude irrelevant pages:** Ignore contact pages, blog articles, FAQs, legal pages, or careers pages.  \n- **Do NOT infer missing information:** If no clear match exists, return `\"no relevant URL\"`.  "
+            },
+            {
+              "content": "={{ $('Turn X Items Into 1').item.json.mergedData }}\n"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -1220,
+        500
+      ],
+      "id": "f36721b1-dfd8-4e31-8f52-c229518f6567",
+      "name": "Determine Valuable URLs",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "message.content.selected_urls",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -2920,
+        820
+      ],
+      "id": "7545b728-f25c-46e2-a19b-0cc831785110",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Pull Lead From Airtable,').first().json['Company Website'] }}{{ $json['message.content.selected_urls'] === 'no relevant url' ? '' : $json['message.content.selected_urls'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2700,
+        820
+      ],
+      "id": "46bb7d68-1eef-4dfe-b9dd-5186f24eb903",
+      "name": "HTTP Request",
+      "alwaysOutputData": false,
+      "onError": "continueRegularOutput",
+      "notes": "{{ $('Pull Lead From Airtable,').first().json['Company Website'] }}{{ $json['message.content.selected_urls'] }}"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -2480,
+        820
+      ],
+      "id": "7d0387d9-b7e4-4581-aebc-9a6a538b3264",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const htmlContent = $node[\"Company Website Scraper\"].json[\"data\"]; // Replace this with the field containing your HTML content\n\n// Function to strip HTML tags and clean the text\nconst extractPlainText = (html) => {\n    if (!html) return \"\";\n\n    // Remove script and style tags along with their content\n    const withoutScriptsAndStyles = html.replace(/<script[\\s\\S]*?>[\\s\\S]*?<\\/script>/gi, \"\")\n                                        .replace(/<style[\\s\\S]*?>[\\s\\S]*?<\\/style>/gi, \"\");\n\n    // Remove all remaining HTML tags\n    const strippedText = withoutScriptsAndStyles.replace(/<\\/?[^>]+(>|$)/g, \"\");\n\n    // Replace HTML entities with their plain-text equivalents\n    const decodedText = strippedText.replace(/&nbsp;/gi, \" \")\n                                    .replace(/&amp;/gi, \"&\")\n                                    .replace(/&lt;/gi, \"<\")\n                                    .replace(/&gt;/gi, \">\")\n                                    .replace(/&quot;/gi, \"\\\"\")\n                                    .replace(/&#39;/gi, \"'\");\n\n    // Replace multiple spaces, tabs, and newlines with a single space\n    const cleanedText = decodedText.replace(/\\s+/g, \" \").trim();\n\n    return cleanedText;\n};\n\n// Call the function to process the HTML content\nconst plainText = extractPlainText(htmlContent);\n\n// Return the plain text as the output of this node\nreturn {\n    plainText: plainText,\n};"
+      },
+      "id": "a39c5818-4766-455e-b35c-31707fc3c87e",
+      "name": "Remove HTML Homepage",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2700,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nconst cleanText = (html) => {\n    return html\n        .replace(/<script[\\s\\S]*?>[\\s\\S]*?<\\/script>/gi, '')  // Remove scripts\n        .replace(/<style[\\s\\S]*?>[\\s\\S]*?<\\/style>/gi, '')    // Remove styles\n        .replace(/<!--[\\s\\S]*?-->/g, '')                     // Remove comments\n        .replace(/<\\/?[^>]+(>|$)/g, '')                      // Remove HTML tags\n        .replace(/&nbsp;/gi, \" \")                           // Decode HTML entities\n        .replace(/&amp;/gi, \"&\")\n        .replace(/&lt;/gi, \"<\")\n        .replace(/&gt;/gi, \">\")\n        .replace(/&quot;/gi, \"\\\"\")\n        .replace(/&#39;/gi, \"'\")\n        .replace(/\\s+/g, ' ')                                // Normalize whitespace\n        .trim();\n};\n\nconst updatedItems = items.map((item) => {\n    const data = item.json.data.map(cleanText);\n    return { ...item.json, data };\n});\n\nreturn updatedItems;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2260,
+        820
+      ],
+      "id": "5028fb37-ffd9-4ce5-9d0a-62520e58744b",
+      "name": "Remove HTML Webpages"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=**Prompt:**  \n\nAnalyze the following company data and extract **only verifiable information** from the text. The output should be written as a **cohesive business overview** without unnecessary repetition or conclusions. **Do not fabricate or infer missing details**—only include what is explicitly stated.  \n\nThe analysis should cover:  \n\n1. **Company Name & Branding** – Full company name, abbreviations used, slogans, and branding statements.  \n2. **Company History & Founders** – Who founded it, when (if stated), and any background on why it was established.  \n3. **Mission Statement & Core Values** – The company’s core purpose, guiding principles, and approach to business.  \n4. **Vision Statement & Future Goals** – Any stated long-term objectives or future aspirations.  \n5. **Industries Served & Target Audience** – Broad industry classification and specific client types served.  \n6. **Services & Specialties** – The exact services offered and any notable areas of specialization.  \n7. **Company Achievements & Recognition** – Any awards, recognitions, partnerships, or milestones mentioned.  \n\n**Output Format:**  \n\nWrite the response as a **well-structured business overview** in clear paragraphs. **Do not include bullet points, lists, or conclusions.** Keep the tone **neutral, factual, and concise** while ensuring clarity. If specific details (e.g., founding year, awards) are not mentioned, **state that they are not provided** instead of assuming.  \n\n### **Additional Instruction:**  \nFor any detail that is not explicitly provided in the text, simply state \"Not mentioned in the text.\" Do not add extra commentary, qualifiers like \"However,\" or any inferred information. Keep your response strictly factual and concise.",
+              "role": "system"
+            },
+            {
+              "content": "=Input: {{ $json.finalText }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -1840,
+        820
+      ],
+      "id": "9feeea13-0447-43cc-9b7e-e7a7106fd2bc",
+      "name": "Analyze Company/Mission",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=### **Prompt:**  \n\nAnalyze the following company data and extract **only verifiable information** from the text. The output should be written as a **cohesive business overview** without unnecessary repetition or conclusions. **Do not fabricate or infer missing details**—only include what is explicitly stated.  \n\nThe analysis should cover:  \n\n1. **Core Products & Services** – The exact products or services the company offers, how they function, and their benefits to customers.  \n2. **Feature Lists & Differentiators** – What makes the company’s offerings unique compared to competitors (e.g., superior technology, customization, industry expertise).  \n3. **Pricing Models** – If mentioned, describe the company's pricing approach (e.g., subscription-based, enterprise-level, one-time fee). If pricing is not provided, state that it is not mentioned.  \n4. **Industries Served** – A more detailed look at niche verticals or specialized markets the company caters to.  \n5. **Use Cases & Applications** – Real-world applications of the company’s solutions, who benefits from them, and how they solve specific problems.  \n6. **Target Customers** – Whether the company serves SMBs, enterprises, B2B, B2C, or a specific customer segment.  \n7. **Service & Support Approach** – If mentioned, describe how the company supports its customers (e.g., dedicated account management, 24/7 support, implementation services).  \n8. **Geographical Reach** – If applicable, mention whether the company operates locally, nationally, or globally.  \n\n### **Output Format:**  \nWrite the response as a **well-structured business overview** in clear paragraphs. **Do not use bullet points, lists, or conclusions.** Keep the tone **neutral, factual, and concise** while ensuring clarity. If specific details (e.g., pricing, support) are not mentioned, **state that they are not provided** instead of assuming.  \n\n### **Additional Instruction:**  \nFor any detail that is not explicitly provided in the text, simply state \"Not mentioned in the text.\" Do not add extra commentary, qualifiers like \"However,\" or any inferred information. Keep your response strictly factual and concise.",
+              "role": "system"
+            },
+            {
+              "content": "=Input: {{ $json.finalText }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -1280,
+        820
+      ],
+      "id": "2f7b3c23-6fcb-4d2c-9518-17cd16a59631",
+      "name": "Analyze Offerings & Positioning",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=### **Prompt:**  \n\nAnalyze the following company data and extract **only verifiable information** from the text. The output should be written as a **cohesive business overview** without unnecessary repetition or conclusions. **Do not fabricate or infer missing details**—only include what is explicitly stated.  \n\nThe analysis should cover:  \n\n1. **Company Methodology** – How the company delivers its services (e.g., agile, data-driven, consultative, customer-centric). If specific methodologies or approaches are mentioned, describe them.  \n2. **Step-by-Step Process** – If outlined, explain how the company operates from client onboarding to delivering results. Include any structured workflows or frameworks.  \n3. **Proprietary Tech or Frameworks** – Mention any unique models, software, patents, or proprietary methodologies that differentiate the company.  \n4. **Value Proposition** – What makes this company stand out? Identify key selling points compared to competitors, such as efficiency, customization, cost-effectiveness, or expertise.  \n5. **Onboarding Experience** – How the company interacts with new clients, including the initial consultation, setup, or integration process.  \n6. **Key Metrics & Focus Areas** – Identify any performance indicators they highlight, such as cost reduction, ROI, revenue impact, speed, or efficiency.  \n7. **Customer Engagement & Communication** – If mentioned, describe how the company interacts with clients (e.g., regular reporting, dedicated account managers, transparent feedback loops).  \n8. **Scalability & Adaptability** – If relevant, include how the company adapts to different client needs, business sizes, or industries.  \n\n### **Output Format:**  \nWrite the response as a **well-structured business overview** in clear paragraphs. **Do not use bullet points, lists, or conclusions.** Keep the tone **neutral, factual, and concise** while ensuring clarity. If specific details (e.g., proprietary tech, onboarding steps) are not mentioned, **state that they are not provided** instead of assuming.  \n\n### **Additional Instruction:**  \nFor any detail that is not explicitly provided in the text, simply state \"Not mentioned in the text.\" Do not add extra commentary, qualifiers like \"However,\" or any inferred information. Keep your response strictly factual and concise.",
+              "role": "system"
+            },
+            {
+              "content": "=Input: {{ $json.finalText }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -720,
+        820
+      ],
+      "id": "23a7c345-ab09-493b-97e5-af17ee606734",
+      "name": "Analyze Process & Differentiation",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=### **Prompt:**  \n\nAnalyze the following company data and extract **only verifiable proof of success** from the text. The output should be written as a **detailed, fact-based summary** without unnecessary repetition, speculation, or conclusions. **Do not fabricate or infer missing details—only include what is explicitly stated.**  \n\nThe analysis should cover:  \n\n1. **Case Studies & Real-World Success** – Extract any case studies, including company names, industries, and specific outcomes achieved. Summarize the challenge, the company’s solution, and the measurable results. If numerical improvements (e.g., increased revenue, cost reduction, hiring efficiency) are provided, include them.  \n2. **Testimonials & Client Feedback** – Identify any direct client quotes, including who provided them (e.g., job title, company). If a testimonial includes specific praise (e.g., speed, expertise, impact), highlight the most compelling details.  \n3. **Notable Clients & Partnerships** – If company names are mentioned, extract them accurately. If industries or company sizes are referenced, include them.  \n4. **Key Results & Metrics** – If quantifiable outcomes are stated (e.g., \"helped hire 500+ executives,\" \"reduced time-to-hire by 40%\"), extract these with precise figures.  \n5. **Awards & Recognition** – If industry awards, certifications, or high-profile partnerships are mentioned, list them with dates where available.  \n6. **Long-Term Impact & Reputation** – If there are statements about repeat clients, high retention rates, or ongoing relationships, include them.  \n7. **Third-Party Validation** – If the company’s success has been referenced in media, research reports, or by industry experts, extract relevant mentions.  \n\n### **Output Format:**  \nWrite the response as a **detailed business overview** in **clear, structured paragraphs**. **Do not use bullet points, lists, or conclusions.** Maintain a **neutral, factual, and concise tone** while ensuring clarity. If no case studies, testimonials, or quantifiable proof are found, **state that the text does not contain this information** instead of assuming.  \n\n### **Additional Instruction:**  \nFor any detail that is not explicitly provided in the text, simply state \"Not mentioned in the text.\" Do not add extra commentary, qualifiers like \"However,\" or any inferred information. Keep your response strictly factual and concise.",
+              "role": "system"
+            },
+            {
+              "content": "=Input: {{ $json.finalText }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -160,
+        820
+      ],
+      "id": "bde9682c-a7fd-4a52-aa61-d8525425606c",
+      "name": "Analyze Proof Of Success",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const homepageText = $('Remove HTML Homepage').first()?.json?.plainText || \"\";\nconst sectionText = $('Remove HTML Webpages').first()?.json?.data?.[0] || \"\";\n\n// Normalize text by replacing multiple whitespace characters with a single space and trimming.\nconst normalizeText = text => (text ? text.replace(/\\s+/g, ' ').trim() : \"\");\n\nconst normalizedHomepageText = normalizeText(homepageText);\nconst normalizedSectionText = normalizeText(sectionText);\n\nconst finalText = normalizedHomepageText === normalizedSectionText\n  ? homepageText\n  : (homepageText && sectionText) \n    ? homepageText + \"\\n\" + sectionText\n    : homepageText || sectionText; // Return whichever one is available\n\nreturn [{ json: { finalText } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2040,
+        820
+      ],
+      "id": "f3510172-920d-46de-af98-f5ded2e21a8f",
+      "name": "Remove Duplicates Texts C/M"
+    },
+    {
+      "parameters": {
+        "jsCode": "const homepageText = $('Remove HTML Homepage').first()?.json?.plainText || \"\";\nconst sectionText = $('Remove HTML Webpages').first()?.json?.data?.[1] || \"\";\n\n// Normalize text by replacing multiple whitespace characters with a single space and trimming.\nconst normalizeText = text => (text ? text.replace(/\\s+/g, ' ').trim() : \"\");\n\nconst normalizedHomepageText = normalizeText(homepageText);\nconst normalizedSectionText = normalizeText(sectionText);\n\nconst finalText = normalizedHomepageText === normalizedSectionText\n  ? homepageText\n  : (homepageText && sectionText) \n    ? homepageText + \"\\n\" + sectionText\n    : homepageText || sectionText; // Return whichever one is available\n\nreturn [{ json: { finalText } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1480,
+        820
+      ],
+      "id": "5645982b-55e0-4ca4-970a-7a643ca27ae1",
+      "name": "Remove Duplicates Texts O/P"
+    },
+    {
+      "parameters": {
+        "jsCode": "const homepageText = $('Remove HTML Homepage').first()?.json?.plainText || \"\";\nconst sectionText = $('Remove HTML Webpages').first()?.json?.data?.[2] || \"\";\n\n// Normalize text by replacing multiple whitespace characters with a single space and trimming.\nconst normalizeText = text => (text ? text.replace(/\\s+/g, ' ').trim() : \"\");\n\nconst normalizedHomepageText = normalizeText(homepageText);\nconst normalizedSectionText = normalizeText(sectionText);\n\nconst finalText = normalizedHomepageText === normalizedSectionText\n  ? homepageText\n  : (homepageText && sectionText) \n    ? homepageText + \"\\n\" + sectionText\n    : homepageText || sectionText; // Return whichever one is available\n\nreturn [{ json: { finalText } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -920,
+        820
+      ],
+      "id": "2d2cc6af-f5ef-4c42-95b8-9a6e91ad3a1b",
+      "name": "Remove Duplicates Texts P/D"
+    },
+    {
+      "parameters": {
+        "jsCode": "const homepageText = $('Remove HTML Homepage').first()?.json?.plainText || \"\";\nconst sectionText = $('Remove HTML Webpages').first()?.json?.data?.[3] || \"\";\n\n// Normalize text by replacing multiple whitespace characters with a single space and trimming.\nconst normalizeText = text => (text ? text.replace(/\\s+/g, ' ').trim() : \"\");\n\nconst normalizedHomepageText = normalizeText(homepageText);\nconst normalizedSectionText = normalizeText(sectionText);\n\nconst finalText = normalizedHomepageText === normalizedSectionText\n  ? homepageText\n  : (homepageText && sectionText) \n    ? homepageText + \"\\n\" + sectionText\n    : homepageText || sectionText; // Return whichever one is available\n\nreturn [{ json: { finalText } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -360,
+        820
+      ],
+      "id": "f3240aa3-a7d6-44ab-9c42-ff9a44657b0b",
+      "name": "Remove Duplicates Texts PoS"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.apify.com/v2/acts/curious_coder~linkedin-profile-scraper/run-sync-get-dataset-items?token=[YOUR API KEY]",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "=[INPUT JSON BODY FROM APIFY SCRAPER HERE]",
+        "options": {}
+      },
+      "id": "2be114c4-7c0f-42ea-a418-b420f287803f",
+      "name": "LinkedIn Profile Scraper",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        200,
+        820
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst text = items.map((item) => JSON.stringify(item.json)).join(\", \");\n\nreturn { text };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        820
+      ],
+      "id": "19eca198-156c-4b23-ade6-cd573e6b6145",
+      "name": "JSON Into Text"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=### **Prompt: LinkedIn Personal Profile Data Extraction**  \n\nAnalyze the following **LinkedIn personal profile data** and extract **only verifiable information** from the text. The output should be written as a **cohesive and structured overview**, divided into three sections:  \n\n1. **Profile Overview** – Extract the **individual’s full name** as stated on the profile. Summarize their **core expertise and skills**, focusing on areas of specialization, professional strengths, and industry focus. Highlight any **major career achievements, awards, or significant contributions** explicitly mentioned. If stated, include their **aspirations, long-term career goals, and professional ambitions**. If the profile contains information about their **personal mission, values, or guiding principles**, integrate those as well. Finally, describe their **unique value proposition**—what differentiates them in their field, whether it’s **technical expertise, leadership, or strategic vision**.  \n\n2. **Experience Summary** – Extract and provide a structured summary of the individual's **current job title, company, and tenure** as stated on their profile. Describe their **responsibilities, leadership role, and contributions to business growth** based on the text. If listed, include **previous positions and career trajectory**, showing how they have progressed over time. Mention **seniority level** (executive, management, specialist) if explicitly stated. Highlight any **key projects, deals, or initiatives** they have led or contributed to. If the profile contains details about their **industry background or sector expertise**, integrate that as well.  \n\n3. **Education & Training** – Extract and list the **individual’s academic background, degrees earned, and universities attended** as displayed on their profile. Include **fields of study and specializations** relevant to their industry. If additional **certifications, executive programs, or professional development courses** are mentioned, summarize those as well. If no education details are provided, state **\"Not mentioned in the text.\"** instead of making assumptions.  \n\nThe response should be **fact-based, clearly structured, and free from assumptions or interpretations**. **Do not fabricate or infer missing details**—only include what is explicitly stated in the text.  \n\n### **Output Format:**  \n\n#### **Profile Overview**  \n[Write a structured paragraph containing the full name, core expertise, skills, major career achievements, aspirations, professional goals, personal mission, values, and unique value proposition.]  \n\n#### **Experience Summary**  \n[Write a structured paragraph detailing their current role, responsibilities, tenure, contributions, career progression, seniority level, and key projects or business initiatives.]  \n\n#### **Education & Training**  \n[Write a structured paragraph listing degrees, universities, specializations, and certifications. If no education details are provided, state \"Not mentioned in the text.\"]  \n\n\n### **Additional Instructions:**  \n- Do **not** include bullet points—write in **clear, structured paragraphs** for readability.  \n- Avoid redundancy—**keep it concise yet informative**.  \n- If a specific detail is not explicitly provided, state **\"Not mentioned in the text.\"** Do **not** add extra commentary or inferred details.  \n- **Extract text exactly as written** in the profile; do not paraphrase or reword personal descriptions.  ",
+              "role": "system"
+            },
+            {
+              "content": "=Input: {{ $json.text }}\nToday's date: {{ $now }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        600,
+        820
+      ],
+      "id": "d96c3e61-3638-49da-a0aa-5d71d05b6d3c",
+      "name": "Analyze Personal LinkedIn",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const htmlContent = $node[\"Company LinkedIn Scraper\"].json[\"data\"]; // Replace this with the field containing your HTML content\n\n// Function to strip HTML tags and clean the text\nconst extractPlainText = (html) => {\n    if (!html) return \"\";\n\n    // Remove script and style tags along with their content\n    const withoutScriptsAndStyles = html.replace(/<script[\\s\\S]*?>[\\s\\S]*?<\\/script>/gi, \"\")\n                                        .replace(/<style[\\s\\S]*?>[\\s\\S]*?<\\/style>/gi, \"\");\n\n    // Remove all remaining HTML tags\n    const strippedText = withoutScriptsAndStyles.replace(/<\\/?[^>]+(>|$)/g, \"\");\n\n    // Replace HTML entities with their plain-text equivalents\n    const decodedText = strippedText.replace(/&nbsp;/gi, \" \")\n                                    .replace(/&amp;/gi, \"&\")\n                                    .replace(/&lt;/gi, \"<\")\n                                    .replace(/&gt;/gi, \">\")\n                                    .replace(/&quot;/gi, \"\\\"\")\n                                    .replace(/&#39;/gi, \"'\");\n\n    // Replace multiple spaces, tabs, and newlines with a single space\n    const cleanedText = decodedText.replace(/\\s+/g, \" \").trim();\n\n    return cleanedText;\n};\n\n// Call the function to process the HTML content\nconst plainText = extractPlainText(htmlContent);\n\n// Return the plain text as the output of this node\nreturn {\n    plainText: plainText,\n};\n\n"
+      },
+      "id": "c151fe86-3896-40c4-bd87-2a3efdf475eb",
+      "name": "Remove HTML LinkedIn Page",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1160,
+        820
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=### **Prompt:**  \n\nAnalyze the following **LinkedIn company profile data** and extract **only verifiable information** from the text. The output should be written as a **cohesive and structured overview**, divided into three sections:  \n\n1. **Company Overview** – Extract the **full official company name** as stated on the profile. Provide the **overview statement** exactly as written in the \"About\" section without modification. Identify the **industry classification** as explicitly mentioned.  \n\n2. **Company Details** – Extract the **company size range** as stated on LinkedIn (e.g., 51-200 employees). If available, include the **exact number of employees listed as \"associated members\"** on LinkedIn. Provide the **year of founding** if explicitly stated. Extract **specializations** exactly as written in the \"Specialties\" section. List **office locations** as stated under the \"Locations\" section. If any of these details are missing, state **\"Not mentioned in the text.\"**  \n\n3. **Funding Information** – If applicable, extract details on the **most recent funding round**, including the funding type (e.g., Series A, Series B) and the date if provided. Identify the **company’s funding stage or status** (e.g., bootstrapped, venture-backed, acquired). If funding information is not available, state **\"Not mentioned in the text.\"**  \n\nThe response should be **fact-based, clearly structured, and free from assumptions or interpretations**. **Do not fabricate or infer missing details**—only include what is explicitly stated in the text.  \n\n### **Output Format:**  \n\n#### **Company Overview**  \n[Write a structured paragraph including the company name, overview statement, and industry classification.]  \n\n#### **Company Details**  \n[Write a structured paragraph listing company size, exact employee count (if available), founding year, specializations, and office locations.]  \n\n#### **Funding Information**  \n[Write a structured paragraph summarizing funding details if available. If no funding information is provided, state \"Not mentioned in the text.\"]  \n\n**Additional Instruction:**  \n- Do not include bullet points—write in **clear, well-structured paragraphs** for easy readability.  \n- Avoid redundancy and unnecessary filler text—**keep it concise yet informative**.  \n- For any detail that is not explicitly provided in the text, simply state \"Not mentioned in the text.\" Do not add extra commentary, qualifiers like \"However,\" or any inferred information. Keep your response strictly factual and concise.",
+              "role": "system"
+            },
+            {
+              "content": "=Input: {{ $json.plainText }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1360,
+        820
+      ],
+      "id": "19e4b695-7332-4e54-b65e-ac30413515bc",
+      "name": "Analyze Company LinkedIn",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Get Record From Airtable').first().json[\"LinkedIn Org. URL\"] }}",
+        "options": {}
+      },
+      "id": "f9411e25-1f33-412a-b822-e6a5871b6308",
+      "name": "Company LinkedIn Scraper",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        960,
+        820
+      ],
+      "notes": "{{ $json['LinkedIn Organization URL'] }}"
+    },
+    {
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "value": "app8hDZP4kaxoTxJy",
+          "mode": "list",
+          "cachedResultName": "True Terpenes | Lead Database",
+          "cachedResultUrl": "https://airtable.com/app8hDZP4kaxoTxJy"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl3xX0a2fn5meX3I",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://airtable.com/app8hDZP4kaxoTxJy/tbl3xX0a2fn5meX3I"
+        },
+        "id": "={{ $json.query.recordId }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -3140,
+        500
+      ],
+      "id": "731916c4-bfda-426c-9c17-fee8db641fbd",
+      "name": "Get Record From Airtable",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "JtCSqEgmEXLGgj8l",
+          "name": "Clarence | Airtable Personal Access Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{(() => {\n  const website = $('Get Record From Airtable,').item.json['Website URL'];\n  const email = $('Pull Lead From Airtable,').item.json['Email Address'];\n  // If 'Company Website' is empty, derive from 'Email Address'\n  return website || `https://${email.split('@')[1]}`;\n})()}}",
+        "options": {}
+      },
+      "id": "73a26f42-c9ff-4844-a1ba-002c60131c33",
+      "name": "Company Website Scraper",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2920,
+        500
+      ],
+      "onError": "continueRegularOutput",
+      "notes": "{{(() => {\n  const website = $('Pull Lead From Airtable,').item.json['Company Website'];\n  const email = $('Pull Lead From Airtable,').item.json['Email Address'];\n  // If 'Company Website' is empty, derive from 'Email Address'\n  return website || `https://${email.split('@')[1]}`;\n})()}}"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  if (!item.json.plainText || item.json.plainText.trim().length === 0) {\n    return { json: { message: \"item is empty\" } };\n  } else {\n    return { json: item.json };\n  }\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2480,
+        500
+      ],
+      "id": "70dcb1d7-3d4d-47f9-9304-11ac96e9b56b",
+      "name": "Check If Empty"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f70aeaf4-f4ef-4cd6-b239-2f4911c079de",
+              "leftValue": "={{ $json.message }}",
+              "rightValue": "item is empty",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -2260,
+        360
+      ],
+      "id": "208b8c41-a920-471f-8b74-82429e6c1d1b",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputData = $node[\"Company Website Scraper\"].json.data; // Reference the correct node\n\nfunction extractHeaderLinks(htmlString) {\n    const headerLinks = htmlString.match(/<a[^>]+href=[\"'](.*?)[\"'][^>]*>(.*?)<\\/a>/g);\n    \n    if (!headerLinks) return [];\n\n    return headerLinks.map(link => {\n        const urlMatch = link.match(/href=[\"'](.*?)[\"']/);\n        const textMatch = link.match(/>(.*?)<\\/a>/);\n        return {\n            text: textMatch ? textMatch[1].trim() : '',\n            url: urlMatch ? urlMatch[1] : ''\n        };\n    }).filter(item => item.url); // Remove any empty URLs\n}\n\nreturn extractHeaderLinks(inputData);\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2040,
+        500
+      ],
+      "id": "0f7ca4bd-6281-42cd-96af-0f00b7af4998",
+      "name": "Filter HTML For URLs",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "## **Task: Extract Instagram URL from a List of Website Links**  \n\nYou are given a list of URLs extracted from a company’s website. Your task is to identify and extract the full Instagram URL from the dataset.  \n\nIf the dataset contains a valid Instagram URL, return it exactly as it appears in the list.  \nIf no Instagram URL is present, return `\"No Instagram\"` instead.  \n\n## **Selection Criteria & Context**  \n\n### **What Qualifies as an Instagram URL?**  \n- A direct link to Instagram, typically structured as:  \n  - `\"https://www.instagram.com/[username]\"`  \n  - `\"https://instagram.com/[username]\"`  \n- The URL must contain `\"instagram.com\"` and should not be a broken or partial link.  \n\n### **What to Ignore?**  \n- URLs that mention Instagram but do not link directly (e.g., `/social-links` or a blog post mentioning Instagram).  \n- Redirect URLs that do not resolve to an Instagram profile.  \n- Tracking links that do not directly contain `\"instagram.com\"` in their domain.  \n\n## **Output Format & Requirements**  \n\n- Return only one Instagram URL if found.  \n- If no Instagram URL is found, return `\"No Instagram\"`.  \n- Do not include any explanations or extra text.  \n- The response must be in **structured JSON format** as shown below.  \n\n## **Expected Output Format**  \n\nIf an Instagram URL exists:  \n```json\n{\n  \"instagram_url\": \"https://www.instagram.com/diamondiswellness\"\n}\n```\n  \nIf no Instagram URL exists:  \n```json\n{\n  \"instagram_url\": \"No Instagram\"\n}\n```\n\n## **Additional Guidelines**  \n- Extract only one URL even if multiple Instagram URLs exist—return the first valid one.  \n- Do not attempt to infer missing links—only return what is explicitly listed.  \n- Ensure case sensitivity is handled correctly (`instagram.com` should match regardless of capitalization)."
+            },
+            {
+              "content": "={{ $json.mergedData }}\n"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -1600,
+        500
+      ],
+      "id": "e1873f29-eefc-42d6-a53f-50e7f1c17053",
+      "name": "Extract Instagram",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "81187f88-b450-4c26-81c1-c1ff212808f9",
+                    "leftValue": "={{ $json.message.content }}",
+                    "rightValue": "Executive Leadership",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Executive Leadership"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "f48ebe55-c3cd-4b3d-8821-2306ae5a05e5"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Marketing & Brand"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b39c8619-1710-4f3d-a925-afca29f35c17",
+                    "leftValue": "",
+                    "rightValue": "Product & Innovation",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Product & Innovation"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c5cb404d-0028-440f-b3c7-964e721c9310",
+                    "leftValue": "",
+                    "rightValue": "Sales & Revenue",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Sales & Revenue"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "4e9ce9d6-6c48-404f-a98d-102b4b09874d",
+                    "leftValue": "",
+                    "rightValue": "Quality, Purchasing & Compliance",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Quality, Purchasing & Compliance"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1720,
+        780
+      ],
+      "id": "2e03f5be-15d1-444d-bebe-725fa03ecbff",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "### **Prompt**  \n\nExtract the following structured variables from the provided **LinkedIn profile** and **company website**. The extracted values must be **clear, concise, and highly relevant** so that they fit naturally into a cold email template. Ensure that the output is **personalized and engaging**, making it feel like a human wrote it.\n\n### **Guidelines for Extraction & Personalization:**  \n- **Make it sound natural.** The values must flow smoothly when inserted into a cold email.  \n- **Prioritize relevance.** The extracted details should highlight what **matters most** to the lead’s role in marketing and branding.  \n- **Infer logical answers if necessary.** If exact information is missing, deduce the closest reasonable answer based on the context. Use `\"unknown\"` **only if absolutely necessary**.  \n- **Keep responses concise and impactful.** Each value should be short but informative.  \n\n### **Variables to Extract & Formatting Rules:**  \n\n#### **1. FirstName**  \n- The lead's **first name** for personalization.  \n- Example: `\"Sarah\"`\n\n#### **2. Title**  \n- The **lead’s job title**, ensuring it aligns with marketing or branding roles.  \n- Example: `\"VP of Marketing\"`\n\n#### **3. CompanyName**  \n- The **company the lead currently works for**.  \n- Example: `\"Vital Proteins\"`\n\n#### **4. Industry**  \n- The **industry the company operates in**, phrased naturally.  \n- Example: `\"Health & Wellness\"`\n\n#### **5. MarketingFocus**  \n- The **company’s key marketing or branding focus**, such as product positioning, brand messaging, or customer acquisition strategies.  \n- Example: `\"brand storytelling and influencer partnerships\"`\n\n#### **6. AudienceType**  \n- The **primary customer base the company targets**, framed in a way that makes sense in a cold email.  \n- Example: `\"health-conscious consumers and fitness enthusiasts\"`\n\n---\n\n### **Final JSON Output Format:**\n```json\n{\n  \"FirstName\": \"...\",\n  \"Title\": \"...\",\n  \"CompanyName\": \"...\",\n  \"Industry\": \"...\",\n  \"MarketingFocus\": \"...\",\n  \"AudienceType\": \"...\"\n}\n```\n\n### **Example in a Cold Email:**\n> **\"Came across Vital Proteins while researching health & wellness brands. Noticed you're the VP of Marketing there, leading brand storytelling and influencer partnerships, so figured you’d be the best contact. We’ve developed a data-driven approach to help brands like yours engage health-conscious consumers and fitness enthusiasts more effectively. Mind if I send you some details?\"**  "
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1940,
+        640
+      ],
+      "id": "e3b10eb8-ef0c-4079-89e0-c35bfadff6d4",
+      "name": "Determine Variables Marketing & Brand",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "### **Prompt**  \n\nExtract the following structured variables from the provided **LinkedIn profile** and **company website**. The extracted values must be **clear, concise, and highly relevant** so that they fit naturally into a cold email template. Ensure that the output is **personalized and engaging**, making it feel like a human wrote it.\n\n### **Guidelines for Extraction & Personalization:**  \n- **Focus on innovation and product development.** Extract details that highlight how the lead’s company differentiates itself through product advancements.  \n- **Make it sound natural.** The extracted values should seamlessly integrate into the outreach message.  \n- **Infer logical answers if necessary.** If exact information is missing, deduce the closest reasonable answer based on the context. Use `\"unknown\"` **only if absolutely necessary**.  \n- **Keep responses concise and impactful.**  \n\n### **Variables to Extract & Formatting Rules:**  \n\n#### **1. FirstName**  \n- The lead's **first name** for personalization.  \n- Example: `\"David\"`\n\n#### **2. Title**  \n- The **lead’s job title**, ensuring it aligns with product development or R&D.  \n- Example: `\"Head of Product Innovation\"`\n\n#### **3. CompanyName**  \n- The **company the lead currently works for**.  \n- Example: `\"Oatly\"`\n\n#### **4. Industry**  \n- The **industry the company operates in**, phrased naturally.  \n- Example: `\"Plant-Based Beverages\"`\n\n#### **5. InnovationFocus**  \n- The **company’s primary area of product innovation**, framed for natural email inclusion.  \n- Example: `\"sustainable oat-based dairy alternatives\"`\n\n#### **6. CompetitiveEdge**  \n- What **differentiates the company’s products from competitors**, ensuring clarity and impact.  \n- Example: `\"high protein content and a creamy texture that rivals dairy milk\"`\n\n---\n\n### **Final JSON Output Format:**\n```json\n{\n  \"FirstName\": \"...\",\n  \"Title\": \"...\",\n  \"CompanyName\": \"...\",\n  \"Industry\": \"...\",\n  \"InnovationFocus\": \"...\",\n  \"CompetitiveEdge\": \"...\"\n}\n```\n\n### **Example in a Cold Email:**\n> **\"Came across Oatly while researching plant-based beverage brands. Noticed you're the Head of Product Innovation there, driving sustainable oat-based dairy alternatives, so figured you’d be the best contact. We've developed a supply chain solution that helps brands like yours scale production while maintaining the high protein content and creamy texture that differentiates your products. Mind if I send you some details?\"**  "
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1940,
+        820
+      ],
+      "id": "bd2fa08b-32ec-4b18-9bb8-7400befa014c",
+      "name": "Determine Variables Product & Innovation",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=### **Prompt: Extract Structured Variables for Cold Outreach Emails**  \n\nExtract the following structured variables from the provided **LinkedIn profile** and **company website**. The extracted values must be **clear, concise, and highly relevant** so that they fit naturally into a cold email template. Ensure that the output is **personalized and engaging**, making it feel like a human wrote it.\n\n---\n\n### **Guidelines for Extraction & Personalization:**  \n- **Make it sound natural.** The values must flow smoothly when inserted into a cold email.  \n- **Prioritize relevance.** The extracted details should highlight what **matters most** to the lead.  \n- **Infer logical answers if necessary.** If exact information is missing, deduce the closest reasonable answer based on the context. Use `\"unknown\"` **only if absolutely necessary**.  \n- **Keep responses concise and impactful.** Each value should be short but informative.  \n\n---\n\n### **Variables to Extract & Formatting Rules:**  \n\n#### **1. FirstName**  \n- The lead's **first name** for personalization.  \n- Example: `\"John\"`\n\n#### **2. Title**  \n- The **lead’s job title** at their company.  \n- Example: `\"Head of Product Development\"`\n\n#### **3. CompanyName**  \n- The **company the lead currently works for**.  \n- Example: `\"Diamond CBD\"`\n\n#### **4. Industry**  \n- The **industry the company operates in**, framed naturally.  \n- Example: `\"Cannabinoid wellness\"`  \n\n#### **5. XYears**  \n- How long the lead has been in their **current role**.  \n- If unclear, **estimate** or return `\"unknown\"` if necessary.  \n- Example: `\"5 years\"`\n\n#### **6. ProductCategory**  \n- The **type of products the company sells**, phrased to fit naturally in a sentence.  \n- Example: `\"CBD and Delta-8 products\"`  \n\n---\n\n### **Final JSON Output Format:**\n```json\n{\n  \"FirstName\": \"...\",\n  \"Title\": \"...\",\n  \"CompanyName\": \"...\",\n  \"Industry\": \"...\",\n  \"XYears\": \"...\",\n  \"ProductCategory\": \"...\"\n}\n```\n\n### **Example in a Cold Email:**\n> **\"Came across Diamond CBD on LinkedIn while researching cannabinoid wellness brands. Noticed you're the Head of Product Development there for 5 years, so figured you'd be the best contact. We're North America's leading supplier of hemp-derived cannabinoids for CBD and Delta-8 products and recently developed some exciting new flavors to help brands stay ahead of market trends. Mind if I send you some more details?\"**  "
+            },
+            {
+              "content": "={{ $('Analyze Company/Mission').first().json.message.content }}. {{ $('Analyze Personal LinkedIn').first().json.message.content[\"Profile Overview\"] }}. {{ $('Analyze Personal LinkedIn').item.json.message.content[\"Experience Summary\"] }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1940,
+        460
+      ],
+      "id": "bf13c6f9-aa3f-447c-8972-1b17bfbab897",
+      "name": "Determine Variables Executive Leadership",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "### **Prompt**  \n\nExtract the following structured variables from the provided **LinkedIn profile** and **company website**. The extracted values must be **clear, concise, and highly relevant** so that they fit naturally into a cold email template. Ensure that the output is **personalized and engaging**, making it feel like a human wrote it.\n\n\n### **Guidelines for Extraction & Personalization:**  \n- **Focus on revenue growth and sales performance.** Extract details that highlight key business drivers for sales teams.  \n- **Make it sound natural.** The extracted values should flow smoothly when inserted into an email.  \n- **Infer logical answers if necessary.** If exact information is missing, deduce the closest reasonable answer based on the context. Use `\"unknown\"` **only if absolutely necessary**.  \n- **Keep responses concise and impactful.**  \n\n### **Variables to Extract & Formatting Rules:**  \n\n#### **1. FirstName**  \n- The lead's **first name** for personalization.  \n- Example: `\"Jessica\"`\n\n#### **2. Title**  \n- The **lead’s job title**, ensuring it aligns with sales and revenue generation.  \n- Example: `\"VP of Sales\"`\n\n#### **3. CompanyName**  \n- The **company the lead currently works for**.  \n- Example: `\"Beyond Meat\"`\n\n#### **4. Industry**  \n- The **industry the company operates in**, phrased naturally.  \n- Example: `\"Alternative Proteins\"`\n\n#### **5. SalesStrategy**  \n- The **company’s key sales strategy**, focused on growth or distribution.  \n- Example: `\"expanding retail partnerships and direct-to-consumer sales channels\"`\n\n#### **6. RevenueGrowthFocus**  \n- The **primary revenue driver the company emphasizes**.  \n- Example: `\"scaling international distribution to reach new markets\"`\n\n### **Final JSON Output Format:**\n```json\n{\n  \"FirstName\": \"...\",\n  \"Title\": \"...\",\n  \"CompanyName\": \"...\",\n  \"Industry\": \"...\",\n  \"SalesStrategy\": \"...\",\n  \"RevenueGrowthFocus\": \"...\"\n}\n```\n\n### **Example in a Cold Email:**\n> **\"Came across Beyond Meat while researching alternative protein brands. Noticed you're the VP of Sales there, leading expansion in retail partnerships and direct-to-consumer sales, so figured you'd be the best contact. We've helped brands like yours scale international distribution to reach new markets faster and more efficiently. Mind if I send you some details?\"**  "
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1940,
+        1000
+      ],
+      "id": "4f51b2a7-e20d-4b31-9076-e536fd9da373",
+      "name": "Determine Variables Sales & Revenue",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "### **Prompt**  \n\nExtract the following structured variables from the provided **LinkedIn profile** and **company website**. The extracted values must be **clear, concise, and highly relevant** so that they fit naturally into a cold email template. Ensure that the output is **personalized and engaging**, making it feel like a human wrote it.\n\n### **Guidelines for Extraction & Personalization:**  \n- **Focus on quality assurance, supply chain reliability, and compliance standards.** Extract details that highlight what matters most to professionals handling purchasing, procurement, and compliance.  \n- **Make it sound natural.** The extracted values should seamlessly integrate into the outreach message.  \n- **Infer logical answers if necessary.** If exact information is missing, deduce the closest reasonable answer based on the context. Use `\"unknown\"` **only if absolutely necessary**.  \n- **Keep responses concise and impactful.**  \n\n### **Variables to Extract & Formatting Rules:**  \n\n#### **1. FirstName**  \n- The lead's **first name** for personalization.  \n- Example: `\"Michael\"`\n\n#### **2. Title**  \n- The **lead’s job title**, ensuring it aligns with procurement, quality control, or compliance roles.  \n- Example: `\"Director of Procurement\"`\n\n#### **3. CompanyName**  \n- The **company the lead currently works for**.  \n- Example: `\"Nestlé Health Science\"`\n\n#### **4. Industry**  \n- The **industry the company operates in**, phrased naturally.  \n- Example: `\"Nutritional Supplements\"`\n\n#### **5. SupplyChainFocus**  \n- The **company’s key focus in supply chain, procurement, or compliance**, framed naturally for email inclusion.  \n- Example: `\"ensuring supplier reliability and maintaining high ingredient quality standards\"`\n\n#### **6. CompliancePriority**  \n- The **most important regulatory or quality standard the company emphasizes**.  \n- Example: `\"meeting FDA and EU food safety regulations for nutraceutical products\"`\n\n### **Final JSON Output Format:**\n```json\n{\n  \"FirstName\": \"...\",\n  \"Title\": \"...\",\n  \"CompanyName\": \"...\",\n  \"Industry\": \"...\",\n  \"SupplyChainFocus\": \"...\",\n  \"CompliancePriority\": \"...\"\n}\n```\n### **Example in a Cold Email:**\n> **\"Came across Nestlé Health Science while researching nutritional supplement brands. Noticed you're the Director of Procurement there, leading efforts in supplier reliability and ingredient quality, so figured you’d be the best contact. We've helped companies like yours streamline sourcing while ensuring full compliance with FDA and EU food safety regulations. Mind if I send you some details?\"**  "
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1940,
+        1180
+      ],
+      "id": "89c792a6-ed07-40db-b1e5-517b5045bfdb",
+      "name": "Determine Variables Quality, Purchasing & Compliance",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.instantly.ai/api/v2/leads",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"api_key\": \"\",\n  \"campaign_id\": \"\",\n  \"skip_if_in_workspace\": false,\n  \"skip_if_in_campaign\": true,\n  \"leads\": [\n    {\n      \"email\": \"\",\n      \"first_name\": \"\",\n      \"last_name\": \"\",\n      \"company_name\": \"\",\n      \"personalization\": \"\",\n      \"phone\": \"\",\n      \"website\": \"\",\n      \"custom_variables\": {\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2320,
+        460
+      ],
+      "id": "b91a0119-0889-408d-8ef8-9b3ea09d9f52",
+      "name": "Upload Lead To Instantly - Exec."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.instantly.ai/api/v2/leads",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"api_key\": \"\",\n  \"campaign_id\": \"\",\n  \"skip_if_in_workspace\": false,\n  \"skip_if_in_campaign\": true,\n  \"leads\": [\n    {\n      \"email\": \"\",\n      \"first_name\": \"\",\n      \"last_name\": \"\",\n      \"company_name\": \"\",\n      \"personalization\": \"\",\n      \"phone\": \"\",\n      \"website\": \"\",\n      \"custom_variables\": {\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2320,
+        640
+      ],
+      "id": "1f58ad80-ac95-4f17-b499-f5401ae1acba",
+      "name": "Upload Lead To Instantly - Mark."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.instantly.ai/api/v2/leads",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"api_key\": \"\",\n  \"campaign_id\": \"\",\n  \"skip_if_in_workspace\": false,\n  \"skip_if_in_campaign\": true,\n  \"leads\": [\n    {\n      \"email\": \"\",\n      \"first_name\": \"\",\n      \"last_name\": \"\",\n      \"company_name\": \"\",\n      \"personalization\": \"\",\n      \"phone\": \"\",\n      \"website\": \"\",\n      \"custom_variables\": {\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2320,
+        820
+      ],
+      "id": "8f521662-8a02-4428-98ce-e3d9594587cd",
+      "name": "Upload Lead To Instantly - Prod."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.instantly.ai/api/v2/leads",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"api_key\": \"\",\n  \"campaign_id\": \"\",\n  \"skip_if_in_workspace\": false,\n  \"skip_if_in_campaign\": true,\n  \"leads\": [\n    {\n      \"email\": \"\",\n      \"first_name\": \"\",\n      \"last_name\": \"\",\n      \"company_name\": \"\",\n      \"personalization\": \"\",\n      \"phone\": \"\",\n      \"website\": \"\",\n      \"custom_variables\": {\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2320,
+        1000
+      ],
+      "id": "167adc8c-2be8-4d9f-b69d-a84becba8432",
+      "name": "Upload Lead To Instantly - Sales"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.instantly.ai/api/v2/leads",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"api_key\": \"\",\n  \"campaign_id\": \"\",\n  \"skip_if_in_workspace\": false,\n  \"skip_if_in_campaign\": true,\n  \"leads\": [\n    {\n      \"email\": \"\",\n      \"first_name\": \"\",\n      \"last_name\": \"\",\n      \"company_name\": \"\",\n      \"personalization\": \"\",\n      \"phone\": \"\",\n      \"website\": \"\",\n      \"custom_variables\": {\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2320,
+        1180
+      ],
+      "id": "b27acfa4-6132-4d21-9535-a8b5a783609e",
+      "name": "Upload Lead To Instantly - Qual."
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "81187f88-b450-4c26-81c1-c1ff212808f9",
+                    "leftValue": "={{ $json.message.content }}",
+                    "rightValue": "Executive Leadership",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Executive Leadership"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "f48ebe55-c3cd-4b3d-8821-2306ae5a05e5"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Marketing & Brand"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b39c8619-1710-4f3d-a925-afca29f35c17",
+                    "leftValue": "",
+                    "rightValue": "Product & Innovation",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Product & Innovation"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c5cb404d-0028-440f-b3c7-964e721c9310",
+                    "leftValue": "",
+                    "rightValue": "Sales & Revenue",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Sales & Revenue"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "4e9ce9d6-6c48-404f-a98d-102b4b09874d",
+                    "leftValue": "",
+                    "rightValue": "Quality, Purchasing & Compliance",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Quality, Purchasing & Compliance"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -400,
+        180
+      ],
+      "id": "75f5b638-2743-4ca1-846b-b1bb7c4fdb6b",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.apify.com/v2/acts/curious_coder~linkedin-profile-scraper/run-sync-get-dataset-items?token=[YOUR API KEY HERE]",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "=[INPUT JSON BODY FROM APIFY SCRAPER HERE]",
+        "options": {}
+      },
+      "id": "b947247d-5271-46c1-9be1-b00b7e17f969",
+      "name": "LinkedIn Profile Scraper.",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2040,
+        220
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst text = items.map((item) => JSON.stringify(item.json)).join(\", \");\n\nreturn { text };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1820,
+        220
+      ],
+      "id": "c5c34154-1d44-49f7-9664-5fe41ab580fb",
+      "name": "JSON Into Text."
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=### **Prompt: LinkedIn Personal Profile Data Extraction**  \n\nAnalyze the following **LinkedIn personal profile data** and extract **only verifiable information** from the text. The output should be written as a **cohesive and structured overview**, divided into three sections:  \n\n1. **Profile Overview** – Extract the **individual’s full name** as stated on the profile. Summarize their **core expertise and skills**, focusing on areas of specialization, professional strengths, and industry focus. Highlight any **major career achievements, awards, or significant contributions** explicitly mentioned. If stated, include their **aspirations, long-term career goals, and professional ambitions**. If the profile contains information about their **personal mission, values, or guiding principles**, integrate those as well. Finally, describe their **unique value proposition**—what differentiates them in their field, whether it’s **technical expertise, leadership, or strategic vision**.  \n\n2. **Experience Summary** – Extract and provide a structured summary of the individual's **current job title, company, and tenure** as stated on their profile. Describe their **responsibilities, leadership role, and contributions to business growth** based on the text. If listed, include **previous positions and career trajectory**, showing how they have progressed over time. Mention **seniority level** (executive, management, specialist) if explicitly stated. Highlight any **key projects, deals, or initiatives** they have led or contributed to. If the profile contains details about their **industry background or sector expertise**, integrate that as well.  \n\n3. **Education & Training** – Extract and list the **individual’s academic background, degrees earned, and universities attended** as displayed on their profile. Include **fields of study and specializations** relevant to their industry. If additional **certifications, executive programs, or professional development courses** are mentioned, summarize those as well. If no education details are provided, state **\"Not mentioned in the text.\"** instead of making assumptions.  \n\nThe response should be **fact-based, clearly structured, and free from assumptions or interpretations**. **Do not fabricate or infer missing details**—only include what is explicitly stated in the text.  \n\n### **Output Format:**  \n\n#### **Profile Overview**  \n[Write a structured paragraph containing the full name, core expertise, skills, major career achievements, aspirations, professional goals, personal mission, values, and unique value proposition.]  \n\n#### **Experience Summary**  \n[Write a structured paragraph detailing their current role, responsibilities, tenure, contributions, career progression, seniority level, and key projects or business initiatives.]  \n\n#### **Education & Training**  \n[Write a structured paragraph listing degrees, universities, specializations, and certifications. If no education details are provided, state \"Not mentioned in the text.\"]  \n\n\n### **Additional Instructions:**  \n- Do **not** include bullet points—write in **clear, structured paragraphs** for readability.  \n- Avoid redundancy—**keep it concise yet informative**.  \n- If a specific detail is not explicitly provided, state **\"Not mentioned in the text.\"** Do **not** add extra commentary or inferred details.  \n- **Extract text exactly as written** in the profile; do not paraphrase or reword personal descriptions.  ",
+              "role": "system"
+            },
+            {
+              "content": "=Input: {{ $json.text }}\nToday's date: {{ $now }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -1600,
+        220
+      ],
+      "id": "2ff1de1b-c6f5-40b4-8343-40fe509a160e",
+      "name": "Analyze Personal LinkedIn.",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://www.linkedin.com/company/apifytech/",
+        "options": {}
+      },
+      "id": "07a4a3f3-0238-49aa-af2b-f3c163a0eb66",
+      "name": "Company LinkedIn Scraper.",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1220,
+        220
+      ],
+      "notes": "{{ $json['LinkedIn Organization URL'] }}"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const htmlContent = $node[\"Company LinkedIn Scraper.\"].json[\"data\"]; // Replace this with the field containing your HTML content\n\n// Function to strip HTML tags and clean the text\nconst extractPlainText = (html) => {\n    if (!html) return \"\";\n\n    // Remove script and style tags along with their content\n    const withoutScriptsAndStyles = html.replace(/<script[\\s\\S]*?>[\\s\\S]*?<\\/script>/gi, \"\")\n                                        .replace(/<style[\\s\\S]*?>[\\s\\S]*?<\\/style>/gi, \"\");\n\n    // Remove all remaining HTML tags\n    const strippedText = withoutScriptsAndStyles.replace(/<\\/?[^>]+(>|$)/g, \"\");\n\n    // Replace HTML entities with their plain-text equivalents\n    const decodedText = strippedText.replace(/&nbsp;/gi, \" \")\n                                    .replace(/&amp;/gi, \"&\")\n                                    .replace(/&lt;/gi, \"<\")\n                                    .replace(/&gt;/gi, \">\")\n                                    .replace(/&quot;/gi, \"\\\"\")\n                                    .replace(/&#39;/gi, \"'\");\n\n    // Replace multiple spaces, tabs, and newlines with a single space\n    const cleanedText = decodedText.replace(/\\s+/g, \" \").trim();\n\n    return cleanedText;\n};\n\n// Call the function to process the HTML content\nconst plainText = extractPlainText(htmlContent);\n\n// Return the plain text as the output of this node\nreturn {\n    plainText: plainText,\n};\n\n"
+      },
+      "id": "51bd65fb-8212-4e1e-b2ec-9d1477d9858d",
+      "name": "Remove HTML LinkedIn Page.",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1000,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=### **Prompt:**  \n\nAnalyze the following **LinkedIn company profile data** and extract **only verifiable information** from the text. The output should be written as a **cohesive and structured overview**, divided into three sections:  \n\n1. **Company Overview** – Extract the **full official company name** as stated on the profile. Provide the **overview statement** exactly as written in the \"About\" section without modification. Identify the **industry classification** as explicitly mentioned.  \n\n2. **Company Details** – Extract the **company size range** as stated on LinkedIn (e.g., 51-200 employees). If available, include the **exact number of employees listed as \"associated members\"** on LinkedIn. Provide the **year of founding** if explicitly stated. Extract **specializations** exactly as written in the \"Specialties\" section. List **office locations** as stated under the \"Locations\" section. If any of these details are missing, state **\"Not mentioned in the text.\"**  \n\n3. **Funding Information** – If applicable, extract details on the **most recent funding round**, including the funding type (e.g., Series A, Series B) and the date if provided. Identify the **company’s funding stage or status** (e.g., bootstrapped, venture-backed, acquired). If funding information is not available, state **\"Not mentioned in the text.\"**  \n\nThe response should be **fact-based, clearly structured, and free from assumptions or interpretations**. **Do not fabricate or infer missing details**—only include what is explicitly stated in the text.  \n\n### **Output Format:**  \n\n#### **Company Overview**  \n[Write a structured paragraph including the company name, overview statement, and industry classification.]  \n\n#### **Company Details**  \n[Write a structured paragraph listing company size, exact employee count (if available), founding year, specializations, and office locations.]  \n\n#### **Funding Information**  \n[Write a structured paragraph summarizing funding details if available. If no funding information is provided, state \"Not mentioned in the text.\"]  \n\n**Additional Instruction:**  \n- Do not include bullet points—write in **clear, well-structured paragraphs** for easy readability.  \n- Avoid redundancy and unnecessary filler text—**keep it concise yet informative**.  \n- For any detail that is not explicitly provided in the text, simply state \"Not mentioned in the text.\" Do not add extra commentary, qualifiers like \"However,\" or any inferred information. Keep your response strictly factual and concise.",
+              "role": "system"
+            },
+            {
+              "content": "=Input: {{ $json.plainText }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -780,
+        220
+      ],
+      "id": "a5bc7183-0ae6-4ac6-9134-589227b28fb6",
+      "name": "Analyze Company LinkedIn.",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=### **Prompt: Extract Structured Variables for Cold Outreach Emails**  \n\nExtract the following structured variables from the provided **LinkedIn profile** and **company website**. The extracted values must be **clear, concise, and highly relevant** so that they fit naturally into a cold email template. Ensure that the output is **personalized and engaging**, making it feel like a human wrote it.\n\n---\n\n### **Guidelines for Extraction & Personalization:**  \n- **Make it sound natural.** The values must flow smoothly when inserted into a cold email.  \n- **Prioritize relevance.** The extracted details should highlight what **matters most** to the lead.  \n- **Infer logical answers if necessary.** If exact information is missing, deduce the closest reasonable answer based on the context. Use `\"unknown\"` **only if absolutely necessary**.  \n- **Keep responses concise and impactful.** Each value should be short but informative.  \n\n---\n\n### **Variables to Extract & Formatting Rules:**  \n\n#### **1. FirstName**  \n- The lead's **first name** for personalization.  \n- Example: `\"John\"`\n\n#### **2. Title**  \n- The **lead’s job title** at their company.  \n- Example: `\"Head of Product Development\"`\n\n#### **3. CompanyName**  \n- The **company the lead currently works for**.  \n- Example: `\"Diamond CBD\"`\n\n#### **4. Industry**  \n- The **industry the company operates in**, framed naturally.  \n- Example: `\"Cannabinoid wellness\"`  \n\n#### **5. XYears**  \n- How long the lead has been in their **current role**.  \n- If unclear, **estimate** or return `\"unknown\"` if necessary.  \n- Example: `\"5 years\"`\n\n#### **6. ProductCategory**  \n- The **type of products the company sells**, phrased to fit naturally in a sentence.  \n- Example: `\"CBD and Delta-8 products\"`  \n\n---\n\n### **Final JSON Output Format:**\n```json\n{\n  \"FirstName\": \"...\",\n  \"Title\": \"...\",\n  \"CompanyName\": \"...\",\n  \"Industry\": \"...\",\n  \"XYears\": \"...\",\n  \"ProductCategory\": \"...\"\n}\n```\n\n### **Example in a Cold Email:**\n> **\"Came across Diamond CBD on LinkedIn while researching cannabinoid wellness brands. Noticed you're the Head of Product Development there for 5 years, so figured you'd be the best contact. We're North America's leading supplier of hemp-derived cannabinoids for CBD and Delta-8 products and recently developed some exciting new flavors to help brands stay ahead of market trends. Mind if I send you some more details?\"**  "
+            },
+            {
+              "content": "={{ $('Analyze Company/Mission').first().json.message.content }}. {{ $('Analyze Personal LinkedIn.').first().json.message.content[\"Profile Overview\"] }}. {{ $('Analyze Personal LinkedIn.').item.json.message.content[\"Experience Summary\"] }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -180,
+        -140
+      ],
+      "id": "fd96da80-9528-45db-8a13-d70a93723c3f",
+      "name": "Determine Variables Executive Leadership.",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "### **Prompt**  \n\nExtract the following structured variables from the provided **LinkedIn profile** and **company website**. The extracted values must be **clear, concise, and highly relevant** so that they fit naturally into a cold email template. Ensure that the output is **personalized and engaging**, making it feel like a human wrote it.\n\n### **Guidelines for Extraction & Personalization:**  \n- **Make it sound natural.** The values must flow smoothly when inserted into a cold email.  \n- **Prioritize relevance.** The extracted details should highlight what **matters most** to the lead’s role in marketing and branding.  \n- **Infer logical answers if necessary.** If exact information is missing, deduce the closest reasonable answer based on the context. Use `\"unknown\"` **only if absolutely necessary**.  \n- **Keep responses concise and impactful.** Each value should be short but informative.  \n\n### **Variables to Extract & Formatting Rules:**  \n\n#### **1. FirstName**  \n- The lead's **first name** for personalization.  \n- Example: `\"Sarah\"`\n\n#### **2. Title**  \n- The **lead’s job title**, ensuring it aligns with marketing or branding roles.  \n- Example: `\"VP of Marketing\"`\n\n#### **3. CompanyName**  \n- The **company the lead currently works for**.  \n- Example: `\"Vital Proteins\"`\n\n#### **4. Industry**  \n- The **industry the company operates in**, phrased naturally.  \n- Example: `\"Health & Wellness\"`\n\n#### **5. MarketingFocus**  \n- The **company’s key marketing or branding focus**, such as product positioning, brand messaging, or customer acquisition strategies.  \n- Example: `\"brand storytelling and influencer partnerships\"`\n\n#### **6. AudienceType**  \n- The **primary customer base the company targets**, framed in a way that makes sense in a cold email.  \n- Example: `\"health-conscious consumers and fitness enthusiasts\"`\n\n---\n\n### **Final JSON Output Format:**\n```json\n{\n  \"FirstName\": \"...\",\n  \"Title\": \"...\",\n  \"CompanyName\": \"...\",\n  \"Industry\": \"...\",\n  \"MarketingFocus\": \"...\",\n  \"AudienceType\": \"...\"\n}\n```\n\n### **Example in a Cold Email:**\n> **\"Came across Vital Proteins while researching health & wellness brands. Noticed you're the VP of Marketing there, leading brand storytelling and influencer partnerships, so figured you’d be the best contact. We’ve developed a data-driven approach to help brands like yours engage health-conscious consumers and fitness enthusiasts more effectively. Mind if I send you some details?\"**  "
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -180,
+        40
+      ],
+      "id": "3581fd7c-b98d-46be-bb05-6a8cac41cb21",
+      "name": "Determine Variables Marketing & Brand.",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "### **Prompt**  \n\nExtract the following structured variables from the provided **LinkedIn profile** and **company website**. The extracted values must be **clear, concise, and highly relevant** so that they fit naturally into a cold email template. Ensure that the output is **personalized and engaging**, making it feel like a human wrote it.\n\n### **Guidelines for Extraction & Personalization:**  \n- **Focus on innovation and product development.** Extract details that highlight how the lead’s company differentiates itself through product advancements.  \n- **Make it sound natural.** The extracted values should seamlessly integrate into the outreach message.  \n- **Infer logical answers if necessary.** If exact information is missing, deduce the closest reasonable answer based on the context. Use `\"unknown\"` **only if absolutely necessary**.  \n- **Keep responses concise and impactful.**  \n\n### **Variables to Extract & Formatting Rules:**  \n\n#### **1. FirstName**  \n- The lead's **first name** for personalization.  \n- Example: `\"David\"`\n\n#### **2. Title**  \n- The **lead’s job title**, ensuring it aligns with product development or R&D.  \n- Example: `\"Head of Product Innovation\"`\n\n#### **3. CompanyName**  \n- The **company the lead currently works for**.  \n- Example: `\"Oatly\"`\n\n#### **4. Industry**  \n- The **industry the company operates in**, phrased naturally.  \n- Example: `\"Plant-Based Beverages\"`\n\n#### **5. InnovationFocus**  \n- The **company’s primary area of product innovation**, framed for natural email inclusion.  \n- Example: `\"sustainable oat-based dairy alternatives\"`\n\n#### **6. CompetitiveEdge**  \n- What **differentiates the company’s products from competitors**, ensuring clarity and impact.  \n- Example: `\"high protein content and a creamy texture that rivals dairy milk\"`\n\n---\n\n### **Final JSON Output Format:**\n```json\n{\n  \"FirstName\": \"...\",\n  \"Title\": \"...\",\n  \"CompanyName\": \"...\",\n  \"Industry\": \"...\",\n  \"InnovationFocus\": \"...\",\n  \"CompetitiveEdge\": \"...\"\n}\n```\n\n### **Example in a Cold Email:**\n> **\"Came across Oatly while researching plant-based beverage brands. Noticed you're the Head of Product Innovation there, driving sustainable oat-based dairy alternatives, so figured you’d be the best contact. We've developed a supply chain solution that helps brands like yours scale production while maintaining the high protein content and creamy texture that differentiates your products. Mind if I send you some details?\"**  "
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -180,
+        220
+      ],
+      "id": "57e4058e-0aef-48ab-befb-fd3839a9972a",
+      "name": "Determine Variables Product & Innovation.",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "### **Prompt**  \n\nExtract the following structured variables from the provided **LinkedIn profile** and **company website**. The extracted values must be **clear, concise, and highly relevant** so that they fit naturally into a cold email template. Ensure that the output is **personalized and engaging**, making it feel like a human wrote it.\n\n\n### **Guidelines for Extraction & Personalization:**  \n- **Focus on revenue growth and sales performance.** Extract details that highlight key business drivers for sales teams.  \n- **Make it sound natural.** The extracted values should flow smoothly when inserted into an email.  \n- **Infer logical answers if necessary.** If exact information is missing, deduce the closest reasonable answer based on the context. Use `\"unknown\"` **only if absolutely necessary**.  \n- **Keep responses concise and impactful.**  \n\n### **Variables to Extract & Formatting Rules:**  \n\n#### **1. FirstName**  \n- The lead's **first name** for personalization.  \n- Example: `\"Jessica\"`\n\n#### **2. Title**  \n- The **lead’s job title**, ensuring it aligns with sales and revenue generation.  \n- Example: `\"VP of Sales\"`\n\n#### **3. CompanyName**  \n- The **company the lead currently works for**.  \n- Example: `\"Beyond Meat\"`\n\n#### **4. Industry**  \n- The **industry the company operates in**, phrased naturally.  \n- Example: `\"Alternative Proteins\"`\n\n#### **5. SalesStrategy**  \n- The **company’s key sales strategy**, focused on growth or distribution.  \n- Example: `\"expanding retail partnerships and direct-to-consumer sales channels\"`\n\n#### **6. RevenueGrowthFocus**  \n- The **primary revenue driver the company emphasizes**.  \n- Example: `\"scaling international distribution to reach new markets\"`\n\n### **Final JSON Output Format:**\n```json\n{\n  \"FirstName\": \"...\",\n  \"Title\": \"...\",\n  \"CompanyName\": \"...\",\n  \"Industry\": \"...\",\n  \"SalesStrategy\": \"...\",\n  \"RevenueGrowthFocus\": \"...\"\n}\n```\n\n### **Example in a Cold Email:**\n> **\"Came across Beyond Meat while researching alternative protein brands. Noticed you're the VP of Sales there, leading expansion in retail partnerships and direct-to-consumer sales, so figured you'd be the best contact. We've helped brands like yours scale international distribution to reach new markets faster and more efficiently. Mind if I send you some details?\"**  "
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -180,
+        400
+      ],
+      "id": "e5479594-ecc5-480c-bc63-ecb6cf168904",
+      "name": "Determine Variables Sales & Revenue.",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "### **Prompt**  \n\nExtract the following structured variables from the provided **LinkedIn profile** and **company website**. The extracted values must be **clear, concise, and highly relevant** so that they fit naturally into a cold email template. Ensure that the output is **personalized and engaging**, making it feel like a human wrote it.\n\n### **Guidelines for Extraction & Personalization:**  \n- **Focus on quality assurance, supply chain reliability, and compliance standards.** Extract details that highlight what matters most to professionals handling purchasing, procurement, and compliance.  \n- **Make it sound natural.** The extracted values should seamlessly integrate into the outreach message.  \n- **Infer logical answers if necessary.** If exact information is missing, deduce the closest reasonable answer based on the context. Use `\"unknown\"` **only if absolutely necessary**.  \n- **Keep responses concise and impactful.**  \n\n### **Variables to Extract & Formatting Rules:**  \n\n#### **1. FirstName**  \n- The lead's **first name** for personalization.  \n- Example: `\"Michael\"`\n\n#### **2. Title**  \n- The **lead’s job title**, ensuring it aligns with procurement, quality control, or compliance roles.  \n- Example: `\"Director of Procurement\"`\n\n#### **3. CompanyName**  \n- The **company the lead currently works for**.  \n- Example: `\"Nestlé Health Science\"`\n\n#### **4. Industry**  \n- The **industry the company operates in**, phrased naturally.  \n- Example: `\"Nutritional Supplements\"`\n\n#### **5. SupplyChainFocus**  \n- The **company’s key focus in supply chain, procurement, or compliance**, framed naturally for email inclusion.  \n- Example: `\"ensuring supplier reliability and maintaining high ingredient quality standards\"`\n\n#### **6. CompliancePriority**  \n- The **most important regulatory or quality standard the company emphasizes**.  \n- Example: `\"meeting FDA and EU food safety regulations for nutraceutical products\"`\n\n### **Final JSON Output Format:**\n```json\n{\n  \"FirstName\": \"...\",\n  \"Title\": \"...\",\n  \"CompanyName\": \"...\",\n  \"Industry\": \"...\",\n  \"SupplyChainFocus\": \"...\",\n  \"CompliancePriority\": \"...\"\n}\n```\n### **Example in a Cold Email:**\n> **\"Came across Nestlé Health Science while researching nutritional supplement brands. Noticed you're the Director of Procurement there, leading efforts in supplier reliability and ingredient quality, so figured you’d be the best contact. We've helped companies like yours streamline sourcing while ensuring full compliance with FDA and EU food safety regulations. Mind if I send you some details?\"**  "
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -180,
+        580
+      ],
+      "id": "2b9cb5ae-466c-4d10-8ada-8f2bd5326e65",
+      "name": "Determine Variables Quality, Purchasing & Compliance.",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.instantly.ai/api/v2/leads",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"api_key\": \"\",\n  \"campaign_id\": \"\",\n  \"skip_if_in_workspace\": false,\n  \"skip_if_in_campaign\": true,\n  \"leads\": [\n    {\n      \"email\": \"\",\n      \"first_name\": \"\",\n      \"last_name\": \"\",\n      \"company_name\": \"\",\n      \"personalization\": \"\",\n      \"phone\": \"\",\n      \"website\": \"\",\n      \"custom_variables\": {\n      }\n    }\n  ]\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        200,
+        -140
+      ],
+      "id": "76838fd9-dff3-4d91-a1f8-35adb2687d73",
+      "name": "Upload Lead To Instantly - Exec.."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.instantly.ai/api/v2/leads",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"api_key\": \"\",\n  \"campaign_id\": \"\",\n  \"skip_if_in_workspace\": false,\n  \"skip_if_in_campaign\": true,\n  \"leads\": [\n    {\n      \"email\": \"\",\n      \"first_name\": \"\",\n      \"last_name\": \"\",\n      \"company_name\": \"\",\n      \"personalization\": \"\",\n      \"phone\": \"\",\n      \"website\": \"\",\n      \"custom_variables\": {\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        200,
+        40
+      ],
+      "id": "ac05b56a-cc6a-4c80-86a4-cb09ee6bc9e7",
+      "name": "Upload Lead To Instantly - Mark.."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.instantly.ai/api/v2/leads",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"api_key\": \"\",\n  \"campaign_id\": \"\",\n  \"skip_if_in_workspace\": false,\n  \"skip_if_in_campaign\": true,\n  \"leads\": [\n    {\n      \"email\": \"\",\n      \"first_name\": \"\",\n      \"last_name\": \"\",\n      \"company_name\": \"\",\n      \"personalization\": \"\",\n      \"phone\": \"\",\n      \"website\": \"\",\n      \"custom_variables\": {\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        200,
+        220
+      ],
+      "id": "cf7acf44-324a-4881-b95e-08da6d54c90b",
+      "name": "Upload Lead To Instantly - Prod.."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.instantly.ai/api/v2/leads",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"api_key\": \"\",\n  \"campaign_id\": \"\",\n  \"skip_if_in_workspace\": false,\n  \"skip_if_in_campaign\": true,\n  \"leads\": [\n    {\n      \"email\": \"\",\n      \"first_name\": \"\",\n      \"last_name\": \"\",\n      \"company_name\": \"\",\n      \"personalization\": \"\",\n      \"phone\": \"\",\n      \"website\": \"\",\n      \"custom_variables\": {\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        200,
+        400
+      ],
+      "id": "61414bc7-8dd9-457c-9902-86ec820dedec",
+      "name": "Upload Lead To Instantly - Sales."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.instantly.ai/api/v2/leads",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"api_key\": \"\",\n  \"campaign_id\": \"\",\n  \"skip_if_in_workspace\": false,\n  \"skip_if_in_campaign\": true,\n  \"leads\": [\n    {\n      \"email\": \"\",\n      \"first_name\": \"\",\n      \"last_name\": \"\",\n      \"company_name\": \"\",\n      \"personalization\": \"\",\n      \"phone\": \"\",\n      \"website\": \"\",\n      \"custom_variables\": {\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        200,
+        580
+      ],
+      "id": "cf43b5c9-1729-49d4-8fc8-a32dea3ef334",
+      "name": "Upload Lead To Instantly - Qual.."
+    },
+    {
+      "parameters": {
+        "content": "Link to Apify scraper used:\nhttps://console.apify.com/actors/PEgClm7RgRD7YO94b/input",
+        "height": 80,
+        "width": 440,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        140,
+        1000
+      ],
+      "id": "2dff6f53-439f-4005-b723-50f6706860bc",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "Link to Apify scraper used:\nhttps://console.apify.com/actors/PEgClm7RgRD7YO94b/input",
+        "height": 80,
+        "width": 440,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2100,
+        100
+      ],
+      "id": "788bcd42-39b3-48a5-9246-b160634baf9b",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get Record From Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Turn X Items Into 1": {
+      "main": [
+        [
+          {
+            "node": "Extract Instagram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Determine Valuable URLs": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Remove HTML Webpages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove HTML Homepage": {
+      "main": [
+        [
+          {
+            "node": "Check If Empty",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove HTML Webpages": {
+      "main": [
+        [
+          {
+            "node": "Remove Duplicates Texts C/M",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Company/Mission": {
+      "main": [
+        [
+          {
+            "node": "Remove Duplicates Texts O/P",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Offerings & Positioning": {
+      "main": [
+        [
+          {
+            "node": "Remove Duplicates Texts P/D",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Process & Differentiation": {
+      "main": [
+        [
+          {
+            "node": "Remove Duplicates Texts PoS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Proof Of Success": {
+      "main": [
+        [
+          {
+            "node": "LinkedIn Profile Scraper",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicates Texts C/M": {
+      "main": [
+        [
+          {
+            "node": "Analyze Company/Mission",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicates Texts O/P": {
+      "main": [
+        [
+          {
+            "node": "Analyze Offerings & Positioning",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicates Texts P/D": {
+      "main": [
+        [
+          {
+            "node": "Analyze Process & Differentiation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicates Texts PoS": {
+      "main": [
+        [
+          {
+            "node": "Analyze Proof Of Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LinkedIn Profile Scraper": {
+      "main": [
+        [
+          {
+            "node": "JSON Into Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JSON Into Text": {
+      "main": [
+        [
+          {
+            "node": "Analyze Personal LinkedIn",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Personal LinkedIn": {
+      "main": [
+        [
+          {
+            "node": "Company LinkedIn Scraper",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove HTML LinkedIn Page": {
+      "main": [
+        [
+          {
+            "node": "Analyze Company LinkedIn",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Company LinkedIn": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Company LinkedIn Scraper": {
+      "main": [
+        [
+          {
+            "node": "Remove HTML LinkedIn Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Record From Airtable": {
+      "main": [
+        [
+          {
+            "node": "Company Website Scraper",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Company Website Scraper": {
+      "main": [
+        [
+          {
+            "node": "Remove HTML Homepage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check If Empty": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "LinkedIn Profile Scraper.",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Filter HTML For URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter HTML For URLs": {
+      "main": [
+        [
+          {
+            "node": "Turn X Items Into 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Instagram": {
+      "main": [
+        [
+          {
+            "node": "Determine Valuable URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Determine Variables Executive Leadership",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Determine Variables Marketing & Brand",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Determine Variables Product & Innovation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Determine Variables Sales & Revenue",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Determine Variables Quality, Purchasing & Compliance",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Determine Variables Marketing & Brand": {
+      "main": [
+        [
+          {
+            "node": "Upload Lead To Instantly - Mark.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Determine Variables Product & Innovation": {
+      "main": [
+        [
+          {
+            "node": "Upload Lead To Instantly - Prod.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Determine Variables Executive Leadership": {
+      "main": [
+        [
+          {
+            "node": "Upload Lead To Instantly - Exec.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Determine Variables Sales & Revenue": {
+      "main": [
+        [
+          {
+            "node": "Upload Lead To Instantly - Sales",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Determine Variables Quality, Purchasing & Compliance": {
+      "main": [
+        [
+          {
+            "node": "Upload Lead To Instantly - Qual.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Determine Variables Executive Leadership.",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Determine Variables Marketing & Brand.",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Determine Variables Product & Innovation.",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Determine Variables Sales & Revenue.",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Determine Variables Quality, Purchasing & Compliance.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LinkedIn Profile Scraper.": {
+      "main": [
+        [
+          {
+            "node": "JSON Into Text.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JSON Into Text.": {
+      "main": [
+        [
+          {
+            "node": "Analyze Personal LinkedIn.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Personal LinkedIn.": {
+      "main": [
+        [
+          {
+            "node": "Company LinkedIn Scraper.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Company LinkedIn Scraper.": {
+      "main": [
+        [
+          {
+            "node": "Remove HTML LinkedIn Page.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove HTML LinkedIn Page.": {
+      "main": [
+        [
+          {
+            "node": "Analyze Company LinkedIn.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Company LinkedIn.": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Determine Variables Executive Leadership.": {
+      "main": [
+        [
+          {
+            "node": "Upload Lead To Instantly - Exec..",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Determine Variables Marketing & Brand.": {
+      "main": [
+        [
+          {
+            "node": "Upload Lead To Instantly - Mark..",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Determine Variables Product & Innovation.": {
+      "main": [
+        [
+          {
+            "node": "Upload Lead To Instantly - Prod..",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Determine Variables Sales & Revenue.": {
+      "main": [
+        [
+          {
+            "node": "Upload Lead To Instantly - Sales.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Determine Variables Quality, Purchasing & Compliance.": {
+      "main": [
+        [
+          {
+            "node": "Upload Lead To Instantly - Qual..",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e9f8023f-3689-4d77-8544-01e7166f7946",
+  "meta": {
+    "instanceId": "be9861782fae15eac6af5bd3da39e0377359813f71b0e0ed19ed3a98eb035f79"
+  },
+  "id": "oUL29VDR9lrdzMaU",
+  "tags": []
+}

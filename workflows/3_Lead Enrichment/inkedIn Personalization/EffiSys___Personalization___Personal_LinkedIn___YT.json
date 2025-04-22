@@ -1,0 +1,1137 @@
+{
+  "name": "EffiSys | Personalization - Personal LinkedIn - YT",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appJhNlGK8yWq6XQr",
+          "mode": "list",
+          "cachedResultName": "EffiSys | Leads",
+          "cachedResultUrl": "https://airtable.com/appJhNlGK8yWq6XQr"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblFJtYun0KM3Pq1r",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://airtable.com/appJhNlGK8yWq6XQr/tblFJtYun0KM3Pq1r"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Start Lead Enrichment": false,
+            "id": "={{ $('Pull Lead From Airtable').first().json.id }}",
+            "Lead Status": "Cold",
+            "Company Website Scrape": "={{ $('Fuse Input Into 1 Item').item.json.source1 }}",
+            "LinkedIn Personal": "=",
+            "LinkedIn Company": "={{ $('Fuse Input Into 1 Item').item.json.source2 }}",
+            "Summary": "={{ $('Fuse Input Into 1 Item2').item.json.plainText }}",
+            "Posts": "=",
+            "Personalization": "={{ $('Write Personalization - Fill Template').item.json.output.Personalization }}",
+            "Clean Company Name": "={{ $('Clean Company Name').item.json.message.content }}",
+            "Date Lead Enriched": "={{ new Date().toISOString().split('T')[0] }}",
+            "Product/Service": "={{ $('Summarize Input').item.json.message.content['Product/Service'] }}",
+            "Type of Company": "={{ $('Summarize Input').item.json.message.content['Type of Company'] }}",
+            "Instantly Camp. ID": "991e31fe-a0dd-489f-bf75-5fb93032677e"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Start Lead Enrichment",
+              "displayName": "Start Lead Enrichment",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Lead Status",
+              "displayName": "Lead Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Lead Yet to be Enriched",
+                  "value": "Lead Yet to be Enriched"
+                },
+                {
+                  "name": "Cold",
+                  "value": "Cold"
+                },
+                {
+                  "name": "Interested - RtS",
+                  "value": "Interested - RtS"
+                },
+                {
+                  "name": "Interested - MiN",
+                  "value": "Interested - MiN"
+                },
+                {
+                  "name": "Interested - CN",
+                  "value": "Interested - CN"
+                },
+                {
+                  "name": "Interested - FUL",
+                  "value": "Interested - FUL"
+                },
+                {
+                  "name": "Wrong Person - R",
+                  "value": "Wrong Person - R"
+                },
+                {
+                  "name": "Not Interested - NI",
+                  "value": "Not Interested - NI"
+                },
+                {
+                  "name": "Not Interested - NB",
+                  "value": "Not Interested - NB"
+                },
+                {
+                  "name": "Not Interested - AUS",
+                  "value": "Not Interested - AUS"
+                },
+                {
+                  "name": "Meeting Booked",
+                  "value": "Meeting Booked"
+                },
+                {
+                  "name": "No Show",
+                  "value": "No Show"
+                },
+                {
+                  "name": "Awaiting Proposal",
+                  "value": "Awaiting Proposal"
+                },
+                {
+                  "name": "Proposal Sent",
+                  "value": "Proposal Sent"
+                },
+                {
+                  "name": "Closed",
+                  "value": "Closed"
+                },
+                {
+                  "name": "Lost - U/DNC",
+                  "value": "Lost - U/DNC"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email Address",
+              "displayName": "Email Address",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Time At Company",
+              "displayName": "Time At Company",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Clean Company Name",
+              "displayName": "Clean Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Industry",
+              "displayName": "Industry",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Location",
+              "displayName": "Location",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn URL",
+              "displayName": "LinkedIn URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn Organization URL",
+              "displayName": "LinkedIn Organization URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Crunchbase URL",
+              "displayName": "Crunchbase URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company Website",
+              "displayName": "Company Website",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Meeting Date",
+              "displayName": "Meeting Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Google Meet URL",
+              "displayName": "Google Meet URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn Personal",
+              "displayName": "LinkedIn Personal",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn Company",
+              "displayName": "LinkedIn Company",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company Website Scrape",
+              "displayName": "Company Website Scrape",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Summary",
+              "displayName": "Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Posts",
+              "displayName": "Posts",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Personalization",
+              "displayName": "Personalization",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Instantly Camp. ID",
+              "displayName": "Instantly Camp. ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Date Lead Enriched",
+              "displayName": "Date Lead Enriched",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Type of Company",
+              "displayName": "Type of Company",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Product/Service",
+              "displayName": "Product/Service",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9c477f60-e9d5-4519-90df-68394e00cbac",
+      "name": "Airtable",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        2020,
+        960
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "JtCSqEgmEXLGgj8l",
+          "name": "Clarence | Airtable Personal Access Token"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.instantly.ai/api/v1/lead/add",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"api_key\": \"CgwfRotQoCbxKVC1ABR4lDVrjwsBz\",\n  \"campaign_id\": \"991e31fe-a0dd-489f-bf75-5fb93032677e\",\n  \"skip_if_in_workspace\": false,\n  \"skip_if_in_campaign\": true,\n  \"leads\": [\n    {\n      \"email\": \"{{ $('Pull Lead From Airtable').first().json['Email Address'] }}\",\n      \"first_name\": \"{{ $('Pull Lead From Airtable').first().json['First Name'] }}\",\n      \"last_name\": \"{{ $('Pull Lead From Airtable').first().json['Full Name'].split(' ').slice(-1)[0] }}\",\n      \"company_name\": \"{{ $('Clean Company Name').item.json.message.content }}\",\n      \"personalization\": \"{{ $('Write Personalization - Fill Template').item.json.output.Personalization }}\",\n      \"phone\": \"\",\n      \"website\": \"{{ $('Pull Lead From Airtable').first().json['Company Website'] }}\",\n      \"custom_variables\": {\n        \"Type_of_Company\": \"{{ $('Summarize Input').item.json.message.content['Type of Company'] }}\",\n        \"Location\": \"{{ $('Pull Lead From Airtable').first().json['Location'].split(',')[1].trim() }}\",\n        \"Product/Service\": \"{{ $('Summarize Input').item.json.message.content['Summarized Product/Service'] }}\"\n      }\n    }\n  ]\n}\n",
+        "options": {}
+      },
+      "id": "5a658564-55e0-493e-a6d9-63c5ffadc697",
+      "name": "Update Lead to Instantly",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2020,
+        1140
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "value": "appJhNlGK8yWq6XQr",
+          "mode": "list",
+          "cachedResultName": "EffiSys | Leads",
+          "cachedResultUrl": "https://airtable.com/appJhNlGK8yWq6XQr"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblFJtYun0KM3Pq1r",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://airtable.com/appJhNlGK8yWq6XQr/tblFJtYun0KM3Pq1r"
+        },
+        "id": "=reckZ4ilWFseKFKXO",
+        "options": {}
+      },
+      "id": "ba01b5e1-b4dd-4565-9f82-e62faa0a2187",
+      "name": "Pull Lead From Airtable",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1040,
+        160
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "JtCSqEgmEXLGgj8l",
+          "name": "Clarence | Airtable Personal Access Token"
+        }
+      },
+      "notes": "{{ $json.query.recordId }}"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are an expert in analyzing and synthesizing business insights for B2B lead generation. Your task is to analyze the input data from the lead’s LinkedIn company profile and company website. Use your expertise in the B2B space to derive the most accurate, fact-based answers. The output must be structured, actionable, and grounded in the provided data without making up numbers or unsupported claims.\n\nNotes\n- If and only when the input from the Company website and Company LinkedIn are conflicting. ALWAYS prioritize the input from the Company LinkedIn.",
+              "role": "system"
+            },
+            {
+              "content": "=Answer the following questions comprehensively while maintaining a professional tone. Provide concise, clear, and insightful responses that can be directly used in crafting effective cold emails:\n\nAnalysis Questions:\nIndustry:\nCarefully define the company’s industry.\n\nMission/Values:\nSummarize the company’s main mission or values.\n\nProduct/Service:\nDescribe the main product or service the company offers.\n\nSummarize Products/Services:\nSummarize the main products/services in 4 words maximum. To be used at the end of a sentence, so first letter is of sentence is NEVER uppercase. It MUST be grammatically correct.\n\nUnique Selling Proposition (USP):\nHighlight the company’s main unique selling proposition.\n\nType of Company:\nIdentify the lead's EXACT company type from the input data, be as specific as possible. 5 words maximum.\nIt must fit into this sentence: Just wrapped up an amazing project with a \"Type of Company\" in — helped them add $100K/month in revenue in just 3 months.\nThe 'Type of Company\" MUST perfectly align with the \"Products/Services\" you've identified for this company\n\nTarget Audience, what are their ICP’s:\nIdentify the company’s main target audience.\n\nSpecific Achievement:\nHighlight a notable accomplishment by {{ $('Pull Lead From Airtable').item.json['Full Name'] }}'s company.\n- If personal name is mentioned in \"Specific Achievement\", it must be equal to {{ $('Pull Lead From Airtable').item.json['Full Name'] }}, If NOT, choose different achievement. Achievement picked can never be older than 9 months. \n\nPlease format the response as a JSON object in the following structure:\n\n{\n\"Industry\", \n\"Mission/Values\", \n\"Product/Service\",\n\"Summarized Product/Service\"\n\"Unique Selling Proposition (USP)\", \n\"Type of Company\",\n\"Target Audience\",\n\"Specific Achievement\" \n},\nEnsure all sections are included even if specific information is not available. For missing information, use \"Not specified.\""
+            },
+            {
+              "content": "=Company Website: {{ $('Fuse Input Into 1 Item').item.json.source1 }}\n\nCompany LinkedIn: {{ $('Fuse Input Into 1 Item').item.json.source2 }}\n\nLead's Name: {{ $('Pull Lead From Airtable').item.json['Full Name'] }}\n\nToday's date: {{ $now }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "id": "a85154a5-ea30-4adc-85d6-761e22a56f17",
+      "name": "Summarize Input",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.7,
+      "position": [
+        1040,
+        960
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "claude-3-5-sonnet-20241022",
+        "options": {}
+      },
+      "id": "b3ccf135-8ae7-425d-b52c-2af2f4eda26e",
+      "name": "Anthropic Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.2,
+      "position": [
+        1660,
+        1140
+      ],
+      "credentials": {
+        "anthropicApi": {
+          "id": "yDhhQblXJg7yONbY",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Fuse Input Into 1 Item').item.json.combinedText }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are an expert in crafting warm, ego-boosting compliments tailored to businesses' success. \n\nAnalyze the input data to identify:\n- When the company was founded by its lead.\n- How long they've been in business.\n- Their current exact number of employees.\n- The type of business/industry they operate in.\n- Based on this analysis, write a short, polite compliment highlighting their growth in the specific industry.\n\nRules:\n- Use fifth-grade language.\n- Be warm and kind; avoid overcomplicating.\n- Use \"Congrats\" instead of \"Congratulations\" when applicable.\n- NEVER mention the lead's personal name.\n- NEVER say things like, \"Hope you're having a great day.\"\n- 30 word maximum. \n- Compliment should only be focussed on the business. \n\nExamples, to model:\n- I stumbled upon your firm while researching top {type of industry}. Seeing that you founded {Company} in {founding year} and have already built a {employee count}-member team is incredible—really inspiring!\n- I’ve been looking into the {type of industry}, and {Company} really caught my eye. Launching in {founding year} and now managing a {employee count}-person team is so impressive—would love to hear more about your journey!\n- It’s awesome to see how much impact {Company} has made in {type of industry} since {founding year}. Reaching {employee count} team members in that timeframe is no small feat—congrats on your growth!"
+            }
+          ]
+        }
+      },
+      "id": "766f6949-3a2a-4a1e-89a4-f590453b09e0",
+      "name": "Write Personalization - Fill Template",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        1640,
+        960
+      ],
+      "onError": "continueRegularOutput",
+      "notes": "Notes: \n- Only output the email personalization (the one-line opener). \n- Never make it a question. \n- Use the cleaned version of the company name when referencing it. \n- Do not assume authorship of LinkedIn posts, blog content, or other materials unless the input explicitly states that the lead is the author or is featured. \n- Avoid using personal names in the output, keeping the focus on the company or professional context.\n- 15 words maximum.\n- Use 'Congrats' (not 'Congratulations') when there is something specific to congratulate them about.\n\nExamples for Inspiration:\nReally impressed by (Achievement) - impressive stuff\nCongrats on you feature in Forbes - remarkable achievement\nFascinating that you've doubled your revenue in 3 years - truly inspiring\nGood work on the (project) - masterful execution\n\nYour task is to write a concise, conversational, and professional opener based on the provided topic. \nThe goal is to compliment the recipient or their company in a genuine, tailored way while sparking curiosity and setting a positive tone for the email.\n\n"
+    },
+    {
+      "parameters": {
+        "path": "05de9002-16c1-4396-b9ba-1d8ecaa7a003",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        820,
+        160
+      ],
+      "id": "889e5a92-0298-4fa0-8502-ad249e9ba7a1",
+      "name": "Webhook",
+      "webhookId": "05de9002-16c1-4396-b9ba-1d8ecaa7a003"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Recursive function to parse JSON into plain text\nconst parseJSONToText = (data, depth = 0) => {\n  const indent = \"  \".repeat(depth); // Indentation for readability\n  let text = \"\";\n\n  if (typeof data === \"object\" && !Array.isArray(data) && data !== null) {\n    // Handle objects\n    for (const key in data) {\n      text += `${indent}${key}:\\n`;\n      text += parseJSONToText(data[key], depth + 1);\n    }\n  } else if (Array.isArray(data)) {\n    // Handle arrays\n    data.forEach((item, index) => {\n      text += `${indent}- [${index + 1}]\\n`;\n      text += parseJSONToText(item, depth + 1);\n    });\n  } else {\n    // Handle primitive values (string, number, boolean, etc.)\n    text += `${indent}${data}\\n`;\n  }\n\n  return text;\n};\n\n// Get the input JSON from the previous node\nconst inputData = $node[\"Summarize Input\"].json;\n\n// Convert the entire JSON into plain text\nconst plainText = parseJSONToText(inputData);\n\n// Return the plain-text result\nreturn {\n  json: {\n    plainText\n  }\n};\n"
+      },
+      "id": "72013926-6f1f-4990-99f1-7cb2f36702fe",
+      "name": "Fuse Input Into 1 Item2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1420,
+        960
+      ]
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"Personalization\": \"\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        1800,
+        1140
+      ],
+      "id": "18bfa10c-f310-4632-ba82-c79c3c318c26",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.apify.com/v2/acts/PEgClm7RgRD7YO94b/runs",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"cookie\": [\n        {\n            \"domain\": \".linkedin.com\",\n            \"expirationDate\": 1752352621,\n            \"hostOnly\": false,\n            \"httpOnly\": false,\n            \"name\": \"s_ips\",\n            \"path\": \"/\",\n            \"sameSite\": null,\n            \"secure\": false,\n            \"session\": false,\n            \"storeId\": null,\n            \"value\": \"1242\"\n        },\n        {\n            \"domain\": \".linkedin.com\",\n            \"expirationDate\": 1768465556.847648,\n            \"hostOnly\": false,\n            \"httpOnly\": false,\n            \"name\": \"bcookie\",\n            \"path\": \"/\",\n            \"sameSite\": \"no_restriction\",\n            \"secure\": true,\n            \"session\": false,\n            \"storeId\": null,\n            \"value\": \"\\\"v=2&2ca7a3d1-dd0c-40b0-836b-dbdc068c3736\\\"\"\n        },\n        {\n            \"domain\": \".linkedin.com\",\n            \"expirationDate\": 1736933162.372532,\n            \"hostOnly\": false,\n            \"httpOnly\": true,\n            \"name\": \"__cf_bm\",\n            \"path\": \"/\",\n            \"sameSite\": \"no_restriction\",\n            \"secure\": true,\n            \"session\": false,\n            \"storeId\": null,\n            \"value\": \"qk8VcIVf3Dte5QJdbwpKkpt0xhlMVnjlcobesYYD15I-1736931362-1.0.1.1-XRMyBy9Z0e.4g20P0hlw1MMg8.CqP_BEqhDL_6gCo4u7_WnpuRr5P886PkRac91F7pQAiZEqGcYtbHT87IO1_Q\"\n        },\n        {\n            \"domain\": \".linkedin.com\",\n            \"expirationDate\": 1740926582,\n            \"hostOnly\": false,\n            \"httpOnly\": false,\n            \"name\": \"_gcl_au\",\n            \"path\": \"/\",\n            \"sameSite\": null,\n            \"secure\": false,\n            \"session\": false,\n            \"storeId\": null,\n            \"value\": \"1.1.958191509.1733150582\"\n        },\n        {\n            \"domain\": \"www.linkedin.com\",\n            \"expirationDate\": 1748702568,\n            \"hostOnly\": true,\n            \"httpOnly\": false,\n            \"name\": \"g_state\",\n            \"path\": \"/\",\n            \"sameSite\": null,\n            \"secure\": false,\n            \"session\": false,\n            \"storeId\": null,\n            \"value\": \"{\\\"i_l\\\":0}\"\n        },\n        {\n            \"domain\": \"www.linkedin.com\",\n            \"expirationDate\": 1764928394,\n            \"hostOnly\": true,\n            \"httpOnly\": false,\n            \"name\": \"li_alerts\",\n            \"path\": \"/\",\n            \"sameSite\": \"no_restriction\",\n            \"secure\": true,\n            \"session\": false,\n            \"storeId\": null,\n            \"value\": \"e30=\"\n        },\n        {\n            \"domain\": \".www.linkedin.com\",\n            \"expirationDate\": 1768336625.332404,\n            \"hostOnly\": false,\n            \"httpOnly\": true,\n            \"name\": \"li_ep_auth_context\",\n            \"path\": \"/\",\n            \"sameSite\": \"no_restriction\",\n            \"secure\": true,\n            \"session\": false,\n            \"storeId\": null,\n            \"value\": \"AHVhcHA9c2FsZXNOYXZpZ2F0b3IsYWlkPTM4NDUzNjc4NixpaWQ9NTEwMDUyOTM4LHBpZD0zOTc4MzAwNjQsZXhwPTE3MzkzOTI2MjUzMTQsY3VyPXRydWUsc2lkPTE1MjA3MTcxMDQsY2lkPTE3MzcxNTgxMDcBSn2ViFz-5JdlKX0YKG-6wnNjYMQ\"\n        },\n        {\n            \"domain\": \".linkedin.com\",\n            \"hostOnly\": false,\n            \"httpOnly\": false,\n            \"name\": \"AMCVS_14215E3D5995C57C0A495C55%40AdobeOrg\",\n            \"path\": \"/\",\n            \"sameSite\": null,\n            \"secure\": false,\n            \"session\": true,\n            \"storeId\": null,\n            \"value\": \"1\"\n        },\n        {\n            \"domain\": \".linkedin.com\",\n            \"hostOnly\": false,\n            \"httpOnly\": true,\n            \"name\": \"fptctx2\",\n            \"path\": \"/\",\n            \"sameSite\": null,\n            \"secure\": true,\n            \"session\": true,\n            \"storeId\": null,\n            \"value\": \"taBcrIH61PuCVH7eNCyH0MJojnuUODHcZ6x9WoxhgCmO64tZKJCyJFsNAq7R%252fYEHgLsA637QbG9w3Vw0ES3Hdd4juglQT85WAHTL1jOicO3UQZHM0mM%252biQPSKOC5pVRpQyhwPaiOmyha26JNzSCbJN5D1OcU2cr1ZETmoR80DIiFJ2YhZK%252f91YC2ct3MYnYfVqZ4U4Q%252fQiJGxa6%252fohB0X6rRoE%252fvvHU4cirufblqgyQdbSl387XXbNfMLag3cIrLbgh2VwSzur27dNGkke8ZNhOCMGIuIOfKGwzS6fMylSLNYVg7g17wna5uezB9IiQlEx%252bY1rmmMkzKD21GGPl4H7Xcn7SJ5TQs7z7m73lBeoE%253d\"\n        },\n        {\n            \"domain\": \".www.linkedin.com\",\n            \"expirationDate\": 1768336625.332278,\n            \"hostOnly\": false,\n            \"httpOnly\": true,\n            \"name\": \"li_at\",\n            \"path\": \"/\",\n            \"sameSite\": \"no_restriction\",\n            \"secure\": true,\n            \"session\": false,\n            \"storeId\": null,\n            \"value\": \"AQEFAREBAAAAABNjHgYAAAGTh9LxYAAAAZSFbuaMTgAAtHVybjpsaTplbnRlcnByaXNlQXV0aFRva2VuOmVKeGpaQUFDc2RjVExvRm84VzNwRzBDMFhOb3BMMFlRSTczcjdXMHdJMnFKcndFREl3RGl1d29ZXnVybjpsaTplbnRlcnByaXNlUHJvZmlsZToodXJuOmxpOmVudGVycHJpc2VBY2NvdW50OjM4NDUzNjc4NiwzOTc4MzAwNjQpXnVybjpsaTptZW1iZXI6MTQyMTM2NTUxMhc70RZv-u35n3lzOzk7mxkDwIVUg38imFohmCLCmR6xXQInZB5eIPalSrdXi12tb4iWBU_qi_vbAkHu151U8N1V1EEiRMU6L5HzSaZsgR2pYG3K5y_oQE-sgDGi5tW3-NzM9ObGeJUOOt22Xtm-9ih8ly62SRiLIbHS5-XFbVkqe6YWwA_P24rmA22CXUQVTht8ZW4\"\n        },\n        {\n            \"domain\": \".linkedin.com\",\n            \"hostOnly\": false,\n            \"httpOnly\": false,\n            \"name\": \"lang\",\n            \"path\": \"/\",\n            \"sameSite\": \"no_restriction\",\n            \"secure\": true,\n            \"session\": true,\n            \"storeId\": null,\n            \"value\": \"\\\"v=2&lang=en-us\\\"\"\n        },\n        {\n            \"domain\": \".linkedin.com\",\n            \"expirationDate\": 1737015917.852562,\n            \"hostOnly\": false,\n            \"httpOnly\": false,\n            \"name\": \"lidc\",\n            \"path\": \"/\",\n            \"sameSite\": \"no_restriction\",\n            \"secure\": true,\n            \"session\": false,\n            \"storeId\": null,\n            \"value\": \"\\\"b=TB12:s=T:r=T:a=T:p=T:g=5380:u=30:x=1:i=1736929517:t=1737015917:v=2:sig=AQGZl31xwf9uGEOXs77JcCdJQdf2D_XX\\\"\"\n        },\n        {\n            \"domain\": \".linkedin.com\",\n            \"expirationDate\": 1752352623,\n            \"hostOnly\": false,\n            \"httpOnly\": false,\n            \"name\": \"gpv_pn\",\n            \"path\": \"/\",\n            \"sameSite\": null,\n            \"secure\": false,\n            \"session\": false,\n            \"storeId\": null,\n            \"value\": \"www.linkedin.com%2Fpremium%2Fwelcome-flow%2F\"\n        },\n        {\n            \"domain\": \".linkedin.com\",\n            \"hostOnly\": false,\n            \"httpOnly\": false,\n            \"name\": \"s_sq\",\n            \"path\": \"/\",\n            \"sameSite\": null,\n            \"secure\": false,\n            \"session\": true,\n            \"storeId\": null,\n            \"value\": \"lnkdprod%3D%2526c.%2526a.%2526activitymap.%2526page%253Dwww.linkedin.com%25252Fpremium%25252Fwelcome-flow%25252F%2526link%253DContinue%2526region%253Dpremium-welcome-flow%2526pageIDType%253D1%2526.activitymap%2526.a%2526.c%2526pid%253Dwww.linkedin.com%25252Fpremium%25252Fwelcome-flow%25252F%2526pidt%253D1%2526oid%253Dhttps%25253A%25252F%25252Fwww.linkedin.com%25252Fsales%2526ot%253DA\"\n        },\n        {\n            \"domain\": \".linkedin.com\",\n            \"expirationDate\": 1739965391,\n            \"hostOnly\": false,\n            \"httpOnly\": false,\n            \"name\": \"_gcl_gs\",\n            \"path\": \"/\",\n            \"sameSite\": null,\n            \"secure\": false,\n            \"session\": false,\n            \"storeId\": null,\n            \"value\": \"2.1.k1$i1732189390$u121251227\"\n        },\n        {\n            \"domain\": \".linkedin.com\",\n            \"expirationDate\": 1767088394,\n            \"hostOnly\": false,\n            \"httpOnly\": false,\n            \"name\": \"_uetvid\",\n            \"path\": \"/\",\n            \"sameSite\": null,\n            \"secure\": false,\n            \"session\": false,\n            \"storeId\": null,\n            \"value\": \"c9778490a7fd11ef91a3d37b9faeb929\"\n        },\n        {\n            \"domain\": \".linkedin.com\",\n            \"expirationDate\": 1752420901,\n            \"hostOnly\": false,\n            \"httpOnly\": false,\n            \"name\": \"AMCV_14215E3D5995C57C0A495C55%40AdobeOrg\",\n            \"path\": \"/\",\n            \"sameSite\": null,\n            \"secure\": false,\n            \"session\": false,\n            \"storeId\": null,\n            \"value\": \"-637568504%7CMCIDTS%7C20102%7CMCMID%7C46288899380478030161216720525720455769%7CMCAAMLH-1737473701%7C6%7CMCAAMB-1737473701%7CRKhpRz8krg2tLO6pguXWp5olkAcUniQYPHaMWWgdJ3xzPWQmdj0y%7CMCOPTOUT-1736876101s%7Cpartner%2Cpartner%7CMCCIDH%7C-1263610749%7CvVersion%7C5.1.1\"\n        },\n        {\n            \"domain\": \".www.linkedin.com\",\n            \"expirationDate\": 1768465556.847735,\n            \"hostOnly\": false,\n            \"httpOnly\": true,\n            \"name\": \"bscookie\",\n            \"path\": \"/\",\n            \"sameSite\": \"no_restriction\",\n            \"secure\": true,\n            \"session\": false,\n            \"storeId\": null,\n            \"value\": \"\\\"v=1&2023011920111524e121ac-8383-4344-89c4-f6ec6804f73aAQFkFEnZ4uVWDpbyfDqPy-LZg2MWCVb_\\\"\"\n        },\n        {\n            \"domain\": \".linkedin.com\",\n            \"expirationDate\": 1759407926.527174,\n            \"hostOnly\": false,\n            \"httpOnly\": true,\n            \"name\": \"dfpfpt\",\n            \"path\": \"/\",\n            \"sameSite\": null,\n            \"secure\": true,\n            \"session\": false,\n            \"storeId\": null,\n            \"value\": \"9e03f101a7834201b56d3fb6925d149d\"\n        },\n        {\n            \"domain\": \".www.linkedin.com\",\n            \"expirationDate\": 1768053044.344919,\n            \"hostOnly\": false,\n            \"httpOnly\": false,\n            \"name\": \"JSESSIONID\",\n            \"path\": \"/\",\n            \"sameSite\": \"no_restriction\",\n            \"secure\": true,\n            \"session\": false,\n            \"storeId\": null,\n            \"value\": \"\\\"ajax:2477331584481704010\\\"\"\n        },\n        {\n            \"domain\": \".www.linkedin.com\",\n            \"expirationDate\": 1739392626.521175,\n            \"hostOnly\": false,\n            \"httpOnly\": true,\n            \"name\": \"li_a\",\n            \"path\": \"/\",\n            \"sameSite\": \"no_restriction\",\n            \"secure\": true,\n            \"session\": false,\n            \"storeId\": null,\n            \"value\": \"AQJ2PTEmc2FsZXNfY2lkPTUxMDA1MjkzOCUzQSUzQTUxMDA0NTE3MCUzQSUzQXRpZXIxJTNBJTNBMzg0NTM2Nzg2aSR9BokvfSyXCgRNGDBiUjXeYUo\"\n        },\n        {\n            \"domain\": \".linkedin.com\",\n            \"expirationDate\": 1742716936.20112,\n            \"hostOnly\": false,\n            \"httpOnly\": false,\n            \"name\": \"li_gc\",\n            \"path\": \"/\",\n            \"sameSite\": \"no_restriction\",\n            \"secure\": true,\n            \"session\": false,\n            \"storeId\": null,\n            \"value\": \"MTs0MjsxNzI3MTY0OTM4OzI7MDIxod88oYJNBlkzSS5yRB912sO3sdmofWjRzBHviSlEHI0=\"\n        },\n        {\n            \"domain\": \".linkedin.com\",\n            \"expirationDate\": 1752483632.905422,\n            \"hostOnly\": false,\n            \"httpOnly\": false,\n            \"name\": \"li_mc\",\n            \"path\": \"/\",\n            \"sameSite\": \"no_restriction\",\n            \"secure\": true,\n            \"session\": false,\n            \"storeId\": null,\n            \"value\": \"MTsyMTsxNzM2OTMxNjMyOzI7MDIxNnYKhMK53xrxMq1uDONQrGh+xS4Gzlaj6LcKLpcs6Rg=\"\n        },\n        {\n            \"domain\": \".www.linkedin.com\",\n            \"expirationDate\": 1752480029,\n            \"hostOnly\": false,\n            \"httpOnly\": false,\n            \"name\": \"li_theme\",\n            \"path\": \"/\",\n            \"sameSite\": null,\n            \"secure\": true,\n            \"session\": false,\n            \"storeId\": null,\n            \"value\": \"light\"\n        },\n        {\n            \"domain\": \".www.linkedin.com\",\n            \"expirationDate\": 1752480029,\n            \"hostOnly\": false,\n            \"httpOnly\": false,\n            \"name\": \"li_theme_set\",\n            \"path\": \"/\",\n            \"sameSite\": null,\n            \"secure\": true,\n            \"session\": false,\n            \"storeId\": null,\n            \"value\": \"app\"\n        },\n        {\n            \"domain\": \".linkedin.com\",\n            \"expirationDate\": 1768336625.332361,\n            \"hostOnly\": false,\n            \"httpOnly\": false,\n            \"name\": \"liap\",\n            \"path\": \"/\",\n            \"sameSite\": \"no_restriction\",\n            \"secure\": true,\n            \"session\": false,\n            \"storeId\": null,\n            \"value\": \"true\"\n        },\n        {\n            \"domain\": \"www.linkedin.com\",\n            \"hostOnly\": true,\n            \"httpOnly\": false,\n            \"name\": \"PLAY_LANG\",\n            \"path\": \"/\",\n            \"sameSite\": null,\n            \"secure\": false,\n            \"session\": true,\n            \"storeId\": null,\n            \"value\": \"en\"\n        },\n        {\n            \"domain\": \"www.linkedin.com\",\n            \"hostOnly\": true,\n            \"httpOnly\": true,\n            \"name\": \"PLAY_SESSION\",\n            \"path\": \"/\",\n            \"sameSite\": \"lax\",\n            \"secure\": true,\n            \"session\": true,\n            \"storeId\": null,\n            \"value\": \"eyJhbGciOiJIUzI1NiJ9.eyJkYXRhIjp7InNlc3Npb25faWQiOiI2MDAzM2NlYy03N2RlLTRiYTgtOTdlZi03NjQzZjEyZjkwNGR8MTczNDQyNjc0OSIsImFsbG93bGlzdCI6Int9IiwicmVjZW50bHktc2VhcmNoZWQiOiIiLCJyZWZlcnJhbC11cmwiOiJodHRwczovL3d3dy5saW5rZWRpbi5jb20vaGVscC9saW5rZWRpbi9hbnN3ZXIvYTUyMzE0MS8_bGFuZz1lbiIsInJlY2VudGx5LXZpZXdlZCI6IiIsIkNQVC1pZCI6IsOVw6nCg1x1MDAxQcOxIDR-XHUwMDBFXHUwMDExU1x1MDAxMHNcdTAwMDLDq8KDIiwiZXhwZXJpZW5jZSI6IiIsInRyayI6IiJ9LCJuYmYiOjE3MzQ0MjY3NDksImlhdCI6MTczNDQyNjc0OX0.FYijKPoF0vLFWJfAK4hvT2Yod2nLY1APHWsSAaPQIcQ\"\n        },\n        {\n            \"domain\": \".linkedin.com\",\n            \"hostOnly\": false,\n            \"httpOnly\": false,\n            \"name\": \"s_cc\",\n            \"path\": \"/\",\n            \"sameSite\": null,\n            \"secure\": false,\n            \"session\": true,\n            \"storeId\": null,\n            \"value\": \"true\"\n        },\n        {\n            \"domain\": \".linkedin.com\",\n            \"hostOnly\": false,\n            \"httpOnly\": false,\n            \"name\": \"s_plt\",\n            \"path\": \"/\",\n            \"sameSite\": null,\n            \"secure\": false,\n            \"session\": true,\n            \"storeId\": null,\n            \"value\": \"1.61\"\n        },\n        {\n            \"domain\": \".linkedin.com\",\n            \"hostOnly\": false,\n            \"httpOnly\": false,\n            \"name\": \"s_pltp\",\n            \"path\": \"/\",\n            \"sameSite\": null,\n            \"secure\": false,\n            \"session\": true,\n            \"storeId\": null,\n            \"value\": \"www.linkedin.com%2Fpremium%2Fwelcome-flow%2F\"\n        },\n        {\n            \"domain\": \".linkedin.com\",\n            \"hostOnly\": false,\n            \"httpOnly\": false,\n            \"name\": \"s_ppv\",\n            \"path\": \"/\",\n            \"sameSite\": null,\n            \"secure\": false,\n            \"session\": true,\n            \"storeId\": null,\n            \"value\": \"www.linkedin.com%2Fpremium%2Fwelcome-flow%2F%2C100%2C100%2C1242%2C1%2C1\"\n        },\n        {\n            \"domain\": \".linkedin.com\",\n            \"expirationDate\": 1752352621,\n            \"hostOnly\": false,\n            \"httpOnly\": false,\n            \"name\": \"s_tp\",\n            \"path\": \"/\",\n            \"sameSite\": null,\n            \"secure\": false,\n            \"session\": false,\n            \"storeId\": null,\n            \"value\": \"1242\"\n        },\n        {\n            \"domain\": \".linkedin.com\",\n            \"expirationDate\": 1752352623,\n            \"hostOnly\": false,\n            \"httpOnly\": false,\n            \"name\": \"s_tslv\",\n            \"path\": \"/\",\n            \"sameSite\": null,\n            \"secure\": false,\n            \"session\": false,\n            \"storeId\": null,\n            \"value\": \"1736800623176\"\n        },\n        {\n            \"domain\": \".www.linkedin.com\",\n            \"expirationDate\": 1738141229,\n            \"hostOnly\": false,\n            \"httpOnly\": false,\n            \"name\": \"timezone\",\n            \"path\": \"/\",\n            \"sameSite\": null,\n            \"secure\": true,\n            \"session\": false,\n            \"storeId\": null,\n            \"value\": \"Europe/Amsterdam\"\n        },\n        {\n            \"domain\": \".linkedin.com\",\n            \"expirationDate\": 1766656401.811944,\n            \"hostOnly\": false,\n            \"httpOnly\": false,\n            \"name\": \"visit\",\n            \"path\": \"/\",\n            \"sameSite\": \"no_restriction\",\n            \"secure\": true,\n            \"session\": false,\n            \"storeId\": null,\n            \"value\": \"v=1&M\"\n        }\n    ],\n    \"findContacts\": false,\n    \"maxDelay\": 30,\n    \"minDelay\": 15,\n    \"proxy\": {\n        \"useApifyProxy\": true,\n        \"apifyProxyGroups\": [\n            \"RESIDENTIAL\"\n        ],\n        \"apifyProxyCountry\": \"NL\"\n    },\n    \"scrapeCompany\": false,\n    \"urls\": [\n        \"{{ $('Pull Lead From Airtable').item.json['LinkedIn URL'] }}\"\n    ]\n}",
+        "options": {}
+      },
+      "id": "4127f828-081c-4caf-affb-d5d1a9c9ef20",
+      "name": "LinkedIn Profile Scraper",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1040,
+        560
+      ],
+      "onError": "continueRegularOutput",
+      "notes": "apify_api_XKBcenjb3kTEc8AYVwJY1O5TyIjZ3f2InUct"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.apify.com/v2/datasets/{{ $json.data.defaultDatasetId }}/items?format=json",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer "
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "734feedf-57e5-4334-b069-e43ac2c2ad57",
+      "name": "LinkedIn Profile Scraper1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1480,
+        560
+      ],
+      "onError": "continueRegularOutput",
+      "notes": "apify_api_XKBcenjb3kTEc8AYVwJY1O5TyIjZ3f2InUct"
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "minutes"
+      },
+      "id": "97061739-5304-4e97-a27d-eac76040c5a3",
+      "name": "Wait",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1260,
+        560
+      ],
+      "webhookId": "80f46cdf-ef90-45da-9c65-a3737782e5aa"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are an expert in analyzing personal LinkedIn profiles to create comprehensive and detailed summaries for personalization. Your task is to extract key insights and structure them into a clear, professional format. Focus on accuracy, relevance, and clarity while ensuring the output is concise and actionable. Include only information explicitly provided in the profile and avoid assumptions or filler.\n",
+              "role": "system"
+            },
+            {
+              "content": "=Analyze the LinkedIn profile of a person and provide a structured, comprehensive summary for personalization based on the following criteria:\n\nHeadline and About Section Summary:\n- Summarize their profile headline to capture their professional identity.\n- Condense the main points of their About section, focusing on their key skills, expertise, and career objectives.\n\nCareer Timeline:\n- Provide a timeline of their most recent and relevant career changes, including company names, job titles, and durations.\n- Emphasize roles that showcase career progression, major achievements, or relevance to their current position.\n\nIndustry:\n- Mention the industry they are currently working in or are most associated with.\n\nOutput Requirements:\n- Each section should be clearly labeled and well-organized.\n- Use bullet points or concise paragraphs for readability.\n- The response should focus on delivering actionable insights and avoid unnecessary filler.\n- Title all the output as LinkedIn Profile\n\n{\n  \"LinkedInProfile\": {\n    \"HeadlineAndAboutSectionSummary\": {\n      \"Headline\": \"\",\n      \"AboutSummary\": [\n        \"\",\n        \"\"\n      ]\n    },\n    \"CareerTimeline\": [\n      {\n        \"Company\": \"\",\n        \"Position\": \"\",\n        \"Duration\": \"\",\n        \"Description\": \"\"\n      },\n      {\n        \"Company\": \"\",\n        \"Position\": \"\",\n        \"Duration\": \"\",\n        \"Description\": \"\"\n      },\n      {\n        \"Company\": \"\",\n        \"Position\": \"\",\n        \"Duration\": \"\",\n        \"Description\": \"\"\n      }\n    ],\n    \"Industry\": {\n      \"CurrentIndustry\": \"\"\n    }\n  }\n}\n"
+            },
+            {
+              "content": "={{ $json.result }}\nCompany Size: \n- Today's date: {{$now}}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "id": "a36ebcc7-c5fd-4d9a-bf17-274ae0958a30",
+      "name": "Take Most Important - About/Posts",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.7,
+      "position": [
+        1040,
+        760
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Personal LinkedIn profile scraper.\n",
+        "height": 220,
+        "width": 920,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        980,
+        520
+      ],
+      "id": "1448d479-a6a0-4892-80af-8bd36ad48a9c",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "o1-mini",
+          "mode": "list",
+          "cachedResultName": "O1-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are an expert in simplifying and cleaning company names for conversational and professional use in email communication. Your task is to reduce the provided company name to the core term that employees or customers would naturally use when referring to the company. Remove unnecessary elements such as 'LLC,' 'Inc.,' or 'Ltd.' and avoid additional formalities like 'and Co' or similar suffixes. Ensure the name is concise, informal, and aligns with how people inside or outside the organization would refer to it in day-to-day conversations.\n\nNotes:\nOutput only the clean version of the company name."
+            },
+            {
+              "content": "={{ $json.combinedText }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e24c5df3-71f4-4fd2-8b13-9f910bb6ae8c",
+      "name": "Clean Company Name",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.7,
+      "position": [
+        1860,
+        760
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Recursive function to parse JSON into plain text\nconst parseJSONToText = (data, depth = 0) => {\n  const indent = \"  \".repeat(depth); // Indentation for readability\n  let text = \"\";\n\n  if (typeof data === \"object\" && !Array.isArray(data) && data !== null) {\n    // Handle objects\n    for (const key in data) {\n      text += `${indent}${key}:\\n`;\n      text += parseJSONToText(data[key], depth + 1);\n    }\n  } else if (Array.isArray(data)) {\n    // Handle arrays\n    data.forEach((item, index) => {\n      text += `${indent}- [${index + 1}]\\n`;\n      text += parseJSONToText(item, depth + 1);\n    });\n  } else {\n    // Handle primitive values (string, number, boolean, etc.)\n    text += `${indent}${data}\\n`;\n  }\n\n  return text;\n};\n\n// Get the input JSON from the previous node\nconst inputData = $node[\"Relevant Info Company LinkedIn\"].json;\n\n// Convert the entire JSON into plain text\nconst plainText = parseJSONToText(inputData);\n\n// Return the plain-text result\nreturn {\n  json: {\n    plainText\n  }\n};\n"
+      },
+      "id": "4db25ac7-53be-4c4c-b9fb-29bdb94e3db3",
+      "name": "Fuse Input Into 1 Item1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        820,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const htmlContent = $node[\"LinkedIn Company Scraper\"].json[\"data\"]; // Replace this with the field containing your HTML content\n\n// Function to strip HTML tags and clean the text\nconst extractPlainText = (html) => {\n    if (!html) return \"\";\n\n    // Remove script and style tags along with their content\n    const withoutScriptsAndStyles = html.replace(/<script[\\s\\S]*?>[\\s\\S]*?<\\/script>/gi, \"\")\n                                        .replace(/<style[\\s\\S]*?>[\\s\\S]*?<\\/style>/gi, \"\");\n\n    // Remove all remaining HTML tags\n    const strippedText = withoutScriptsAndStyles.replace(/<\\/?[^>]+(>|$)/g, \"\");\n\n    // Replace HTML entities with their plain-text equivalents\n    const decodedText = strippedText.replace(/&nbsp;/gi, \" \")\n                                    .replace(/&amp;/gi, \"&\")\n                                    .replace(/&lt;/gi, \"<\")\n                                    .replace(/&gt;/gi, \">\")\n                                    .replace(/&quot;/gi, \"\\\"\")\n                                    .replace(/&#39;/gi, \"'\");\n\n    // Replace multiple spaces, tabs, and newlines with a single space\n    const cleanedText = decodedText.replace(/\\s+/g, \" \").trim();\n\n    return cleanedText;\n};\n\n// Call the function to process the HTML content\nconst plainText = extractPlainText(htmlContent);\n\n// Return the plain text as the output of this node\nreturn {\n    plainText: plainText,\n};\n\n"
+      },
+      "id": "ad7318a9-1efa-449e-a7ee-bdc11284c62e",
+      "name": "Remove HTML LinkedIn Page",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json['LinkedIn Organization URL'] }}",
+        "options": {}
+      },
+      "id": "34fb2755-5535-4603-bbfc-5e423fa5e8a1",
+      "name": "LinkedIn Company Scraper",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        820,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Collect all the incoming data\nconst input1 = $node[\"Fuse Input Into 1 Item3\"].json.plainText; // Extract the 'content' field\nconst input2 = $node[\"Fuse Input Into 1 Item1\"].json.plainText; // Access the 'plainText' field from the JSON output\n\n// Merge the inputs into one item\nreturn [\n  {\n    json: {\n      combinedText: `${input1}\\n\\n${input2}`, // Combine the content fields with line breaks\n      source1: input1, // Include full details from input 1\n      source2: input2, // Include full details from input 2\n    },\n  },\n];\n"
+      },
+      "id": "f4194ecb-f13b-4f48-85d4-bd49576cea07",
+      "name": "Fuse Input Into 1 Item",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1640,
+        760
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all().map((item) => item.json);\nconst result = JSON.stringify(items);\n\nreturn { result };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1700,
+        560
+      ],
+      "id": "ce67ada3-19f2-4255-b5a8-e7eddbc2a008",
+      "name": "Turn Scraped Data Into Text"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are an expert in professional business analysis and LinkedIn data extraction. Your task is to analyze the scraped LinkedIn profile of a company to produce a high-quality, detailed report. Your response must be precise, structured, and focused on the specific insights outlined below. Ensure all outputs are professional, fact-based, and well-organized.",
+              "role": "system"
+            },
+            {
+              "content": "=Analyze the scraped LinkedIn profile data to provide detailed insights in the following areas and provide a structured response with exactly three sections:\n\n1.) Company Insights:\n- Identify and summarize the company’s stated mission and vision.\n- Highlight how their mission or vision aligns with their activities or services, if applicable.\n- Identify any mentions of recent company growth, such as new offices, product launches, or increased workforce.\n- Highlight specific details that indicate expansion or scaling (e.g., \"Opened a new office in London,\" \"Grew by 25% in the past year\").\n- Retrieve any recent posts or updates shared by the company, along with their timestamps (e.g., \"22h,\" \"2w\").\n- Summarize the key points or topics covered in these updates (e.g., \"Announced partnership with XYZ,\" \"Promoted upcoming event\").\n\n2.) Business Model:\nBusiness Model (B2B/B2C): Identify whether the company operates in a B2B (business-to-business) or B2C (business-to-consumer). Always output an answer based on the analysis, can only pick ONE.\n\n3.) Number of Employees:\nMention the company’s industry and its approximate number of employees, as indicated on the profile.\nAlso extract the exact number of employees. \n\nOutput Requirements:\n- 3 Sections: 1.) Company Insights, 2.) Business Model 3.) Number of Employees. Ensure each section is clearly labeled and in a consistent format.\n- Ensure the analysis is concise, actionable, and avoids unnecessary filler.\n\nNotes\n- Your responses must be based entirely on the input data, avoiding assumptions or filler.\n- Include dates wherever possible to provide chronological context.\n- Always output everything as a string\n- Title all the output as Company  LinkedIn\n- Never mentions, Shows, Events, Nominations as \"recent growth\".\n\nPlease format the response as a JSON object in the following structure:\n\n{\n  \"1.) Company Insights\": {\n    \"Mission\": \"Insert mission statement here.\",\n    \"Vision\": \"Insert vision statement here.\",\n    \"Alignment with Activities\": \"Describe how the activities align with the mission.\",\n    \"Recent Growth\": {\n      \"Expansion Details\": \"Describe any expansions.\",\n      \"Specific Mentions\": \"Include any specific mentions of growth.\"\n    },\n    \"Recent Posts and Updates\": {\n      \"Posts\": [\n        {\n          \"content\": \"Include recent posts here.\",\n          \"timestamp\": \"Provide timestamp for the post.\"\n        }\n      ]\n    },\n  \"2.) Business Model\": {\n    \"Business Model (B2B/B2C)\": \"Specify whether B2B or B2C.\",\n    \"Description\": \"Provide a description of the business model.\"\n  },\n  \"3.) Number of Employees\": {\n    \"Industry\": \"Specify the industry.\",\n    \"Approximate Number of Employees\": \"Provide the approximate number of employees.\"\n    \"Exact number of employees\"\n  }\n}\nEnsure all sections are included even if specific information is not available. For missing information, use \"Not specified.\"\n"
+            },
+            {
+              "content": "={{ $json.plainText }}\n- Today's date: {{$now}}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "id": "7cc6190c-82c1-43dc-8982-3883fd409023",
+      "name": "Relevant Info Company LinkedIn",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.7,
+      "position": [
+        460,
+        560
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Recursive function to parse JSON into plain text\nconst parseJSONToText = (data, depth = 0) => {\n  const indent = \"  \".repeat(depth); // Indentation for readability\n  let text = \"\";\n\n  if (typeof data === \"object\" && !Array.isArray(data) && data !== null) {\n    // Handle objects\n    for (const key in data) {\n      text += `${indent}${key}:\\n`;\n      text += parseJSONToText(data[key], depth + 1);\n    }\n  } else if (Array.isArray(data)) {\n    // Handle arrays\n    data.forEach((item, index) => {\n      text += `${indent}- [${index + 1}]\\n`;\n      text += parseJSONToText(item, depth + 1);\n    });\n  } else {\n    // Handle primitive values (string, number, boolean, etc.)\n    text += `${indent}${data}\\n`;\n  }\n\n  return text;\n};\n\n// Get the input JSON from the previous node\nconst inputData = $node[\"Take Most Important - About/Posts\"].json;\n\n// Convert the entire JSON into plain text\nconst plainText = parseJSONToText(inputData);\n\n// Return the plain-text result\nreturn {\n  json: {\n    plainText\n  }\n};\n"
+      },
+      "id": "c4663a9d-3bba-45fa-a2fa-c7c92191a797",
+      "name": "Fuse Input Into 1 Item3",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1420,
+        760
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Pull Lead From Airtable": {
+      "main": [
+        [
+          {
+            "node": "LinkedIn Company Scraper",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarize Input": {
+      "main": [
+        [
+          {
+            "node": "Fuse Input Into 1 Item2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Write Personalization - Fill Template",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write Personalization - Fill Template": {
+      "main": [
+        [
+          {
+            "node": "Airtable",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update Lead to Instantly",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Pull Lead From Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fuse Input Into 1 Item2": {
+      "main": [
+        [
+          {
+            "node": "Write Personalization - Fill Template",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Write Personalization - Fill Template",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LinkedIn Profile Scraper": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "LinkedIn Profile Scraper1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LinkedIn Profile Scraper1": {
+      "main": [
+        [
+          {
+            "node": "Turn Scraped Data Into Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Take Most Important - About/Posts": {
+      "main": [
+        [
+          {
+            "node": "Fuse Input Into 1 Item3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Company Name": {
+      "main": [
+        [
+          {
+            "node": "Summarize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fuse Input Into 1 Item1": {
+      "main": [
+        [
+          {
+            "node": "LinkedIn Profile Scraper",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove HTML LinkedIn Page": {
+      "main": [
+        [
+          {
+            "node": "Relevant Info Company LinkedIn",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LinkedIn Company Scraper": {
+      "main": [
+        [
+          {
+            "node": "Remove HTML LinkedIn Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fuse Input Into 1 Item": {
+      "main": [
+        [
+          {
+            "node": "Clean Company Name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Turn Scraped Data Into Text": {
+      "main": [
+        [
+          {
+            "node": "Take Most Important - About/Posts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Relevant Info Company LinkedIn": {
+      "main": [
+        [
+          {
+            "node": "Fuse Input Into 1 Item1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fuse Input Into 1 Item3": {
+      "main": [
+        [
+          {
+            "node": "Fuse Input Into 1 Item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f01ad90b-7166-4e70-8113-0b68c558d964",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "be9861782fae15eac6af5bd3da39e0377359813f71b0e0ed19ed3a98eb035f79"
+  },
+  "id": "y2DNfDADYtG9TV7i",
+  "tags": [
+    {
+      "createdAt": "2024-11-22T10:34:31.143Z",
+      "updatedAt": "2024-11-22T10:34:31.143Z",
+      "id": "CzLOKS0NcJRCdd84",
+      "name": "Sales"
+    },
+    {
+      "createdAt": "2024-11-21T16:21:04.680Z",
+      "updatedAt": "2024-11-21T16:21:04.680Z",
+      "id": "Yv1rEhxu4YlygqU1",
+      "name": "EffiSys"
+    }
+  ]
+}

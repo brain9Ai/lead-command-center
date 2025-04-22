@@ -1,0 +1,358 @@
+{
+  "name": "Skool | LinkedIn",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "d1328067-fb7b-4fed-8032-8a7f041be873",
+      "name": "When clicking ‘Test workflow’"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1280,
+        400
+      ],
+      "id": "dbadebb2-dafe-46ba-b49f-5f4171e7dbf3",
+      "name": "HTTP Request1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1280,
+        220
+      ],
+      "id": "9ce5f7d5-da80-487c-8582-65e0602eb76c",
+      "name": "Airtable1",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "JtCSqEgmEXLGgj8l",
+          "name": "Clarence | Airtable Personal Access Token"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "value": "appJhNlGK8yWq6XQr",
+          "mode": "list",
+          "cachedResultName": "EffiSys | Leads",
+          "cachedResultUrl": "https://airtable.com/appJhNlGK8yWq6XQr"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblFJtYun0KM3Pq1r",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://airtable.com/appJhNlGK8yWq6XQr/tblFJtYun0KM3Pq1r"
+        },
+        "id": "recYk02lMQTTclfnd",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        220,
+        0
+      ],
+      "id": "034b3bc7-3195-47bb-814e-1785afe5ee8b",
+      "name": "Get Lead",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "JtCSqEgmEXLGgj8l",
+          "name": "Clarence | Airtable Personal Access Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json['LinkedIn Organization URL'] }}",
+        "options": {}
+      },
+      "id": "e20af9c6-44c7-472d-bef6-8c7e2059b0f9",
+      "name": "Get LinkedIn Company page",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const htmlContent = $node[\"Get LinkedIn Company page\"].json[\"data\"]; // Replace this with the field containing your HTML content\n\n// Function to strip HTML tags and clean the text\nconst extractPlainText = (html) => {\n    if (!html) return \"\";\n\n    // Remove script and style tags along with their content\n    const withoutScriptsAndStyles = html.replace(/<script[\\s\\S]*?>[\\s\\S]*?<\\/script>/gi, \"\")\n                                        .replace(/<style[\\s\\S]*?>[\\s\\S]*?<\\/style>/gi, \"\");\n\n    // Remove all remaining HTML tags\n    const strippedText = withoutScriptsAndStyles.replace(/<\\/?[^>]+(>|$)/g, \"\");\n\n    // Replace HTML entities with their plain-text equivalents\n    const decodedText = strippedText.replace(/&nbsp;/gi, \" \")\n                                    .replace(/&amp;/gi, \"&\")\n                                    .replace(/&lt;/gi, \"<\")\n                                    .replace(/&gt;/gi, \">\")\n                                    .replace(/&quot;/gi, \"\\\"\")\n                                    .replace(/&#39;/gi, \"'\");\n\n    // Replace multiple spaces, tabs, and newlines with a single space\n    const cleanedText = decodedText.replace(/\\s+/g, \" \").trim();\n\n    return cleanedText;\n};\n\n// Call the function to process the HTML content\nconst plainText = extractPlainText(htmlContent);\n\n// Return the plain text as the output of this node\nreturn {\n    plainText: plainText,\n};\n\n"
+      },
+      "id": "a544cf57-8f19-4d99-8772-3af2453c05e7",
+      "name": "Remove HTML Return Text",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "o1-mini",
+          "mode": "list",
+          "cachedResultName": "O1-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are an expert in simplifying and cleaning company names for conversational and professional use in email communication. Your task is to reduce the provided company name to the core term that employees or customers would naturally use when referring to the company. Remove unnecessary elements such as 'LLC,' 'Inc.,' or 'Ltd.' and avoid additional formalities like 'and Co' or similar suffixes. Ensure the name is concise, informal, and aligns with how people inside or outside the organization would refer to it in day-to-day conversations.\n\nNotes:\nOutput only the clean version of the company name."
+            },
+            {
+              "content": "={{ $json.plainText }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b6672068-d500-4798-9d8a-d34342ed4fb3",
+      "name": "Clean Company Name",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.7,
+      "position": [
+        880,
+        0
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are an expert in extracting and analyzing business and professional insights. Your task is to analyze the input data and identify all relevant and recent information about a company’s activities. Focus on extracting actionable and well-structured details about posts, growth, achievements, success stories, testimonials, and case studies. Include dates wherever possible to provide chronological context. Your output must be accurate, concise, and professional.",
+              "role": "system"
+            },
+            {
+              "content": "Analyze the input data to extract and organize the following:\n\nRecent Posts:\nList all recent posts shared by the company or individual, including the main content or topic.\nInclude the dates of the posts where available.\n\nRecent Growth:\nSummarize any growth-related activities such as new office locations, workforce expansion, market entry, or product/service launches.\nInclude dates or durations to establish recency.\n\nNotable Achievements:\nIdentify awards, recognitions, major funding rounds, partnerships, or other significant achievements.\nInclude dates for relevancy.\n\nSuccess Stories and Case Studies:\nExtract detailed success stories or case studies, highlighting results, key achievements, or problem-solving examples.\nMention dates if provided for chronological context.\n\nTestimonials:\nList customer testimonials, including the key praise or messages provided.\nAttribute testimonials to individuals or organizations if specified.\nEnsure your output is structured and well-organized under the specified headings. Provide a professional and actionable summary for each category, prioritizing relevance and clarity."
+            },
+            {
+              "content": "={{ $('Remove HTML Return Text').item.json.plainText }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "26c9ad14-bb81-4b5c-aac9-ae84507a2ac6",
+      "name": "Extract Posts, Achievements, Success Stories",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.7,
+      "position": [
+        1260,
+        0
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Topic & Reason: {{ $json.message.content }}\nCompany Name: {{ $('Clean Company Name').item.json.message.content }}\nLead's Name: {{ $('Get Lead').item.json['First Name'] }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are an expert in crafting concise, engaging, and human-like cold email openers for recipients you’ve never spoken to before. Your task is to write one-line openers that:\n- Sound conversational and professional, avoiding excessive formality or insincerity.\n- Show genuine research about the recipient or their company, using specific achievements, milestones, or relevant context.\n- Spark interest and curiosity, encouraging a response without coming across as overly dramatic or ingratiating.\n- Use 'Congrats' (not 'Congratulations') when there is something specific to congratulate them about."
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "Notes: \n- Only output the email personalization (the one-line opener). \n- Never make it a question. \n- Use the cleaned version of the company name when referencing it. \n- Avoid generic or overly broad language—make the personalization feel specific and natural. \n- Do not assume authorship of LinkedIn posts, blog content, or other materials unless the input explicitly states that the lead is the author or is featured. \n- Avoid using personal names in the output, keeping the focus on the company or professional context.\n- 10 words maximum."
+            }
+          ]
+        }
+      },
+      "id": "31bf2c4e-6a0c-46a6-ab05-d120dd813f03",
+      "name": "Write Personalization - Fill Template",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        880,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.2,
+      "position": [
+        900,
+        400
+      ],
+      "id": "7fe17284-44d5-48d1-9dc6-2d23d7f0ebb6",
+      "name": "Anthropic Chat Model",
+      "credentials": {
+        "anthropicApi": {
+          "id": "yDhhQblXJg7yONbY",
+          "name": "Anthropic account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable1": {
+      "main": [
+        []
+      ]
+    },
+    "Get Lead": {
+      "main": [
+        [
+          {
+            "node": "Get LinkedIn Company page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get LinkedIn Company page": {
+      "main": [
+        [
+          {
+            "node": "Remove HTML Return Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove HTML Return Text": {
+      "main": [
+        [
+          {
+            "node": "Clean Company Name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Company Name": {
+      "main": [
+        [
+          {
+            "node": "Extract Posts, Achievements, Success Stories",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Posts, Achievements, Success Stories": {
+      "main": [
+        [
+          {
+            "node": "Write Personalization - Fill Template",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write Personalization - Fill Template": {
+      "main": [
+        [
+          {
+            "node": "Airtable1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Write Personalization - Fill Template",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "cd3808c2-629e-448b-8516-9153f77f03c6",
+  "meta": {
+    "instanceId": "be9861782fae15eac6af5bd3da39e0377359813f71b0e0ed19ed3a98eb035f79"
+  },
+  "id": "f5OACsJpg878iaa8",
+  "tags": []
+}

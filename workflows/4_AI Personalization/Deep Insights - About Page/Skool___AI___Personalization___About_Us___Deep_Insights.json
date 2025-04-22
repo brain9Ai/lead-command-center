@@ -1,0 +1,910 @@
+{
+  "name": "Skool | AI & Personalization | About Us - Deep Insights",
+  "nodes": [
+    {
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "value": "appJhNlGK8yWq6XQr",
+          "mode": "list",
+          "cachedResultName": "EffiSys | Leads",
+          "cachedResultUrl": "https://airtable.com/appJhNlGK8yWq6XQr"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblFJtYun0KM3Pq1r",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://airtable.com/appJhNlGK8yWq6XQr/tblFJtYun0KM3Pq1r"
+        },
+        "id": "=rec8jmcSJYc5Fg5b2",
+        "options": {}
+      },
+      "id": "5cf33cdf-7434-440a-bc04-53201d469e72",
+      "name": "Pull Lead From Airtable,",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -1360,
+        140
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "JtCSqEgmEXLGgj8l",
+          "name": "Clarence | Airtable Personal Access Token"
+        }
+      },
+      "notes": "{{ $json.query.recordId }}"
+    },
+    {
+      "parameters": {
+        "path": "e697d609-eca3-4822-8037-65a4eac1704f",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1580,
+        140
+      ],
+      "id": "216b39ca-b361-4d0a-b98c-289b84f13846",
+      "name": "Webhook",
+      "webhookId": "e697d609-eca3-4822-8037-65a4eac1704f"
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputData = $node[\"Header Links Scraper\"].json.data; // Reference the correct node\n\nfunction extractHeaderLinks(htmlString) {\n    const headerLinks = htmlString.match(/<a[^>]+href=[\"'](.*?)[\"'][^>]*>(.*?)<\\/a>/g);\n    \n    if (!headerLinks) return [];\n\n    return headerLinks.map(link => {\n        const urlMatch = link.match(/href=[\"'](.*?)[\"']/);\n        const textMatch = link.match(/>(.*?)<\\/a>/);\n        return {\n            text: textMatch ? textMatch[1].trim() : '',\n            url: urlMatch ? urlMatch[1] : ''\n        };\n    }).filter(item => item.url); // Remove any empty URLs\n}\n\nreturn extractHeaderLinks(inputData);\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -700,
+        140
+      ],
+      "id": "fd5247c7-4b61-4ddc-9a02-1522d5b635ef",
+      "name": "Filter HTML",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "url": "={{(() => {\n  const website = $('Pull Lead From Airtable,').item.json['Company Website'];\n  const email = $('Pull Lead From Airtable,').item.json['Email Address'];\n  // If 'Company Website' is empty, derive from 'Email Address'\n  return website || `https://${email.split('@')[1]}`;\n})()}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "id": "da58f7d2-5762-401f-9d77-980d5635047f",
+      "name": "Header Links Scraper",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1140,
+        140
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  mergedData: items.map(item => item.json.url) // Extract only the URLs, removing unnecessary objects\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -460,
+        140
+      ],
+      "id": "2f3b02b3-148e-4e83-9a57-cbf6955cfc67",
+      "name": "Turn X Items Into 1"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=### **Prompt:**  \n\nYou are given a list of **URLs extracted from a company's website**. Your task is to identify the **three most relevant URLs** for enriching lead data while ensuring the output is **consistently structured**.  \n\n### **Selection Criteria:**  \nChoose URLs that provide **valuable insights** about the company, such as:  \n- **About Pages** (e.g., `/about`, `/company`, `/our-story`)  \n- **Case Studies & Success Stories** (e.g., `/case-studies`, `/customers`, `/success-stories`)  \n- **Use Cases & Solutions** (e.g., `/solutions`, `/industries`, `/how-it-works`)  \n- **Product Pages** (if relevant, e.g., `/platform`, `/features`)  \n\n### **Exclusions:**  \nDo **not** select URLs for:  \n- Blog posts (unless case studies)  \n- Pricing pages  \n- Contact pages  \n- Legal/Privacy pages  \n- Career pages  \n\n### **Output Requirements:**  \n- **Always return exactly three URLs.**  \n- **Only return the path (e.g., `/about` instead of `https://example.com/about`).**  \n- The response must be in **structured JSON format** as shown below.  \n\n### **Structured JSON Output Format:**  \n```json\n{\n  \"selected_urls\": [\n    \"/<selected-url-1>\",\n    \"/<selected-url-2>\",\n    \"/<selected-url-3>\"\n  ]\n}\n```\n\n### **Example Input (List of URLs):**  \n```json\n[\n  \"https://example.com/about\",\n  \"https://example.com/blog/how-we-built-our-team\",\n  \"https://example.com/customers/success-stories\",\n  \"https://example.com/platform\",\n  \"https://example.com/contact\"\n]\n```\n\n### **Expected Output:**  \n```json\n{\n  \"selected_urls\": [\n    \"/about\",\n    \"/customers/success-stories\",\n    \"/platform\"\n  ]\n}\n```\n\n### **Important Notes:**  \n- The **domain should be stripped**, and only the path should be returned.  \n- If multiple valid options exist, **prioritize \"About\", \"Case Studies\", and \"Solutions\" pages** over others.  \n- **The output must always follow the structured JSON format above—no additional text, explanations, or variations.**  "
+            },
+            {
+              "content": "={{ $json.mergedData[0] }}, {{ $json.mergedData[1] }}, {{ $json.mergedData[2] }}, {{ $json.mergedData[3] }}, {{ $json.mergedData[4] }}, {{ $json.mergedData[5] }}, {{ $json.mergedData[6] }}, {{ $json.mergedData[7] }}, {{ $json.mergedData[8] }}, {{ $json.mergedData[9] }}, {{ $json.mergedData[10] }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -240,
+        140
+      ],
+      "id": "85d2437f-85c9-4e09-951e-55c201599c2f",
+      "name": "Determine Valuable URLs",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "message.content.selected_urls",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -740,
+        380
+      ],
+      "id": "5e00f518-c37c-44d9-9da1-f4c16e8de3e1",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Pull Lead From Airtable,').first().json['Company Website'] }}{{ $json['message.content.selected_urls'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -520,
+        380
+      ],
+      "id": "4e9ac507-d9ab-4ff6-99d6-cf0ab4c3d041",
+      "name": "HTTP Request",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -300,
+        380
+      ],
+      "id": "d513b842-a4d8-4c92-80b0-21a170aa64c3",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appJhNlGK8yWq6XQr",
+          "mode": "list",
+          "cachedResultName": "EffiSys | Leads",
+          "cachedResultUrl": "https://airtable.com/appJhNlGK8yWq6XQr"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblFJtYun0KM3Pq1r",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://airtable.com/appJhNlGK8yWq6XQr/tblFJtYun0KM3Pq1r"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Start Lead Enrichment": false,
+            "id": "={{ $('Pull Lead From Airtable,').first().json.id }}",
+            "Lead Status": "Cold",
+            "Summary": "=",
+            "Posts": "=",
+            "Personalization": "={{ $json.text }}",
+            "Date Lead Enriched": "={{ new Date().toISOString().split('T')[0] }}",
+            "Instantly Camp. ID": "991e31fe-a0dd-489f-bf75-5fb93032677e",
+            "Company Name": "={{ $('Clean Company Name').item.json.message.content }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Start Lead Enrichment",
+              "displayName": "Start Lead Enrichment",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Lead Status",
+              "displayName": "Lead Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Lead Yet to be Enriched",
+                  "value": "Lead Yet to be Enriched"
+                },
+                {
+                  "name": "Cold",
+                  "value": "Cold"
+                },
+                {
+                  "name": "Interested - RtS",
+                  "value": "Interested - RtS"
+                },
+                {
+                  "name": "Interested - MiN",
+                  "value": "Interested - MiN"
+                },
+                {
+                  "name": "Interested - CN",
+                  "value": "Interested - CN"
+                },
+                {
+                  "name": "Interested - FUL",
+                  "value": "Interested - FUL"
+                },
+                {
+                  "name": "Wrong Person - R",
+                  "value": "Wrong Person - R"
+                },
+                {
+                  "name": "Not Interested - NI",
+                  "value": "Not Interested - NI"
+                },
+                {
+                  "name": "Not Interested - NB",
+                  "value": "Not Interested - NB"
+                },
+                {
+                  "name": "Not Interested - AUS",
+                  "value": "Not Interested - AUS"
+                },
+                {
+                  "name": "Meeting Booked",
+                  "value": "Meeting Booked"
+                },
+                {
+                  "name": "No Show",
+                  "value": "No Show"
+                },
+                {
+                  "name": "Awaiting Proposal",
+                  "value": "Awaiting Proposal"
+                },
+                {
+                  "name": "Proposal Sent",
+                  "value": "Proposal Sent"
+                },
+                {
+                  "name": "Closed",
+                  "value": "Closed"
+                },
+                {
+                  "name": "Lost - U/DNC",
+                  "value": "Lost - U/DNC"
+                },
+                {
+                  "name": "Not Qualified",
+                  "value": "Not Qualified"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email Address",
+              "displayName": "Email Address",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Time At Company",
+              "displayName": "Time At Company",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Industry",
+              "displayName": "Industry",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Location",
+              "displayName": "Location",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn URL",
+              "displayName": "LinkedIn URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn Organization URL",
+              "displayName": "LinkedIn Organization URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Crunchbase URL",
+              "displayName": "Crunchbase URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company Website",
+              "displayName": "Company Website",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Summary",
+              "displayName": "Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Posts",
+              "displayName": "Posts",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Personalization",
+              "displayName": "Personalization",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Instantly Camp. ID",
+              "displayName": "Instantly Camp. ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Date Lead Enriched",
+              "displayName": "Date Lead Enriched",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "a12a9474-d8c9-4c1a-aa76-18397fe2b23f",
+      "name": "Update Lead With Enriched Data,",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1240,
+        380
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "JtCSqEgmEXLGgj8l",
+          "name": "Clarence | Airtable Personal Access Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are an expert in refining company names for everyday use in professional email communication. When given a company name, extract and output only the core term that employees and customers naturally use—stripping away legal designations (like \"LLC,\" \"Inc.,\" \"Ltd.\") and extraneous suffixes (such as \"and Co\" or similar). Ensure the resulting name is concise, informal, and exactly as it would be referred to in day-to-day conversation.\n\n**Note:** Output only the cleaned company name."
+            },
+            {
+              "content": "={{ $('Pull Lead From Airtable,').first().json['Company Name'] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ccd4588d-9531-49e3-a10a-0624f728c243",
+      "name": "Clean Company Name",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.7,
+      "position": [
+        500,
+        380
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "claude-3-5-sonnet-20241022",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.2,
+      "position": [
+        840,
+        540
+      ],
+      "id": "a8c3c3ff-232a-4f33-a751-ea4e34a19e6d",
+      "name": "Anthropic Chat Model",
+      "credentials": {
+        "anthropicApi": {
+          "id": "yDhhQblXJg7yONbY",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=**Task:**  \nYou are given **scraped content** from web pages that belong to one of these four categories:  \n1. **About Pages** (e.g., `/about`, `/company`, `/our-story`)  \n2. **Case Studies & Success Stories** (e.g., `/case-studies`, `/customers`, `/success-stories`)  \n3. **Use Cases & Solutions** (e.g., `/solutions`, `/industries`, `/how-it-works`)  \n4. **Product Pages** (e.g., `/platform`, `/features`)  \n\nYour job is to **analyze the content** and extract the most relevant insights from each page while keeping the **output simple, structured, and strictly fact-based**.  \n\n---\n\n### **Guidelines for Extraction:**  \n- **Summarize only the most relevant and factual information from each page.**  \n- **Do NOT generate or infer any details that are not explicitly stated in the content.**  \n- **If a category is missing or no relevant details are found, return `\"not listed\"` instead of making something up.**  \n- **Ensure each page type is clearly categorized.**  \n\n---\n\n### **Structured JSON Output Format:**  \n```json\n{\n  \"about_page\": \"<summary or 'not listed'>\",\n  \"case_studies\": \"<summary or 'not listed'>\",\n  \"use_cases\": \"<summary or 'not listed'>\",\n  \"product_page\": \"<summary or 'not listed'>\"\n}\n```",
+              "role": "system"
+            },
+            {
+              "content": "=Input: {{ $json.data[0] }}, {{ $json.data[1] }}, {{ $json.data[2] }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        140,
+        380
+      ],
+      "id": "6901b07a-366d-4f22-b0d6-3f6ae5d7c49c",
+      "name": "Extract Company Website Insights",
+      "credentials": {
+        "openAiApi": {
+          "id": "b2kOBJyl5u4VWa5e",
+          "name": "Clarence | OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=About Us: {{ $('Extract Company Website Insights').item.json.message.content.about_page }}\nLead's company: {{ $json.message.content }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=### **Prompt: Crafting a Personalized Cold Email Opener Based on the About Page**  \n\n**Task:**  \nYou are an expert in crafting **personalized, cold email openers** based on a company’s **About page summary**. Using the provided details about the **company’s name, About page summary, and lead’s name (if available)**, follow these steps:  \n\n---\n\n### **1. Understand the Company’s Background and Founding Story:**  \n- Identify the **core theme** of the company’s About page, particularly the **founding story or the “why” behind the company**.  \n- If the lead’s name is available and they are the founder, reference them naturally.  \n- Keep the tone **friendly, casual, and easygoing**, avoiding anything overly formal or salesy.  \n\n---\n\n### **2. Generate a Natural and Engaging Personalization Line:**  \n- Keep it **short (1 sentence), warm, and conversational** without over-explaining.  \n- If a **founding story or personal motivation** is mentioned, acknowledge it in a way that feels genuine.  \n- If no personal story is available, reference the company’s broader mission or values.  \n- Avoid excessive praise—**keep it real and natural**.  \n\n---\n\n### **Output Format:**  \nYour final output should be a **clean JSON response**, formatted as follows:  \n\n```json\n{\n  \"personalized_opener\": \"<personalized line>\"\n}\n```\n\n**Important:**  \n- **Do not add any additional text, explanations, or escape characters.**  \n- **Ensure the output is a clean JSON object without `\\n` or unnecessary formatting artifacts.**  \n- **If no relevant information is found, return:**  \n\n```json\n{\n  \"personalized_opener\": \"not listed\"\n}\n```  \n\nImportant: Refrain from using personal names."
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        860,
+        380
+      ],
+      "id": "c1e8bf30-d905-45a0-a1ea-78b3a472917f",
+      "name": "Write Personalization - About Us"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const htmlContent = $node[\"Header Links Scraper\"].json[\"data\"]; // Replace this with the field containing your HTML content\n\n// Function to strip HTML tags and clean the text\nconst extractPlainText = (html) => {\n    if (!html) return \"\";\n\n    // Remove script and style tags along with their content\n    const withoutScriptsAndStyles = html.replace(/<script[\\s\\S]*?>[\\s\\S]*?<\\/script>/gi, \"\")\n                                        .replace(/<style[\\s\\S]*?>[\\s\\S]*?<\\/style>/gi, \"\");\n\n    // Remove all remaining HTML tags\n    const strippedText = withoutScriptsAndStyles.replace(/<\\/?[^>]+(>|$)/g, \"\");\n\n    // Replace HTML entities with their plain-text equivalents\n    const decodedText = strippedText.replace(/&nbsp;/gi, \" \")\n                                    .replace(/&amp;/gi, \"&\")\n                                    .replace(/&lt;/gi, \"<\")\n                                    .replace(/&gt;/gi, \">\")\n                                    .replace(/&quot;/gi, \"\\\"\")\n                                    .replace(/&#39;/gi, \"'\");\n\n    // Replace multiple spaces, tabs, and newlines with a single space\n    const cleanedText = decodedText.replace(/\\s+/g, \" \").trim();\n\n    return cleanedText;\n};\n\n// Call the function to process the HTML content\nconst plainText = extractPlainText(htmlContent);\n\n// Return the plain text as the output of this node\nreturn {\n    plainText: plainText,\n};\n\n"
+      },
+      "id": "b212756b-d88e-439d-b738-30ee019e22d7",
+      "name": "Filter HTML Homepage",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -920,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nconst cleanText = (html) => {\n    return html\n        .replace(/<script[\\s\\S]*?>[\\s\\S]*?<\\/script>/gi, '')  // Remove scripts\n        .replace(/<style[\\s\\S]*?>[\\s\\S]*?<\\/style>/gi, '')    // Remove styles\n        .replace(/<!--[\\s\\S]*?-->/g, '')                     // Remove comments\n        .replace(/<\\/?[^>]+(>|$)/g, '')                      // Remove HTML tags\n        .replace(/\\s+/g, ' ')                                // Normalize whitespace\n        .trim();\n};\n\nconst updatedItems = items.map((item) => {\n    const data = item.json.data.map(cleanText);\n    return { ...item.json, data };\n});\n\nreturn updatedItems;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -80,
+        380
+      ],
+      "id": "5263f086-143d-4795-a547-893f6a288e8f",
+      "name": "Filter HTML Webpages"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.instantly.ai/api/v1/lead/add",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"api_key\": \"[YOUR API KEY]\",\n  \"campaign_id\": \"{{ $('Pull Lead From Airtable,').first().json['Instantly Camp. ID'] }}\",\n  \"skip_if_in_workspace\": false,\n  \"skip_if_in_campaign\": true,\n  \"leads\": [\n    {\n      \"email\": \"{{ $('Pull Lead From Airtable,').first().json['Email Address'] }}\",\n      \"first_name\": \"{{ $('Pull Lead From Airtable,').first().json['First Name'] }}\",\n      \"last_name\": \"{{ $('Pull Lead From Airtable,').first().json['Full Name'] }}\",\n      \"company_name\": \"{{ $('Clean Company Name').item.json.message.content }}\",\n      \"personalization\": \"{{ $json.output.personalized_opener }}\",\n      \"phone\": \"\",\n      \"website\": \"\",\n      \"custom_variables\": {\n        \"Type_of_Company\": \"\",\n        \"Location\": \"\",\n        \"Product/Service\": \"\"\n      }\n    }\n  ]\n}\n",
+        "options": {}
+      },
+      "id": "70906946-f346-47a2-8a67-99b87fc3914f",
+      "name": "Update Lead to Instantly",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1240,
+        580
+      ]
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"personalized_opener\": \"Really inspired by your mission to transform talent acquisition for disabled individuals – creating equitable employment opportunities is such a critical challenge to tackle.\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        1000,
+        540
+      ],
+      "id": "0134f90b-255e-463b-9934-ac87dcea9b78",
+      "name": "Structured Output Parser"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Pull Lead From Airtable,": {
+      "main": [
+        [
+          {
+            "node": "Header Links Scraper",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter HTML": {
+      "main": [
+        [
+          {
+            "node": "Turn X Items Into 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Header Links Scraper": {
+      "main": [
+        [
+          {
+            "node": "Filter HTML Homepage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Turn X Items Into 1": {
+      "main": [
+        [
+          {
+            "node": "Determine Valuable URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Determine Valuable URLs": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Filter HTML Webpages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Company Name": {
+      "main": [
+        [
+          {
+            "node": "Write Personalization - About Us",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Write Personalization - About Us",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Company Website Insights": {
+      "main": [
+        [
+          {
+            "node": "Clean Company Name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write Personalization - About Us": {
+      "main": [
+        [
+          {
+            "node": "Update Lead With Enriched Data,",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update Lead to Instantly",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Pull Lead From Airtable,",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter HTML Homepage": {
+      "main": [
+        [
+          {
+            "node": "Filter HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter HTML Webpages": {
+      "main": [
+        [
+          {
+            "node": "Extract Company Website Insights",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Write Personalization - About Us",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4d5407ff-c571-45d8-9316-3de8f25aa4d1",
+  "meta": {
+    "instanceId": "be9861782fae15eac6af5bd3da39e0377359813f71b0e0ed19ed3a98eb035f79"
+  },
+  "id": "3dt3PH1gQd28HwyP",
+  "tags": []
+}
